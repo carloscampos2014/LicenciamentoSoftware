@@ -1,0 +1,231 @@
+# Plano de desenvolvimento
+
+## Critério de avanço
+
+Cada etapa só avança quando compila, passa nos testes e não cria dependência proibida pela arquitetura. Não haverá implementação de CRUD antes da base de segurança, validação e testes. O ciclo é sempre Red → Green → Refactor.
+
+## Decisões registradas (Fase 0)
+
+| Decisão | Escolha |
+|---|---|
+| Interfaces de administração | Web (Blazor WASM), Desktop (MAUI Windows), Mobile (MAUI Android) |
+| Paridade funcional entre interfaces | Sim — todas as interfaces têm acesso completo |
+| API de gestão | Uma REST única consumida pelas três interfaces |
+| Cliente HTTP compartilhado | `LicenciamentoSoftware.Client` — usado por Web e MAUI |
+| Autenticação da gestão | JWT local + 2FA TOTP (Google Authenticator / Authy) |
+| Credencial da API de validação | Token por licença com expiração automática + assinatura HMAC-SHA256 com timestamp |
+| Proteção anti-replay | Janela de ±5 minutos no timestamp da assinatura HMAC |
+| Renovação de token de licença | Manual pelo portal (`AdministradorCliente`), invalida token anterior imediatamente |
+| Isolamento por tenant | `IdCliente` sempre da identidade autenticada, nunca do body |
+| Primeiro usuário da empresa | Recebe papel `AdministradorCliente` automaticamente |
+| Exclusão | Sempre lógica (`Ativo = false`), nunca física |
+| Auditoria | Transacional, via interceptor EF Core, registra diff de campos |
+| Jobs | `BackgroundService` com interface `IScheduledJob` (migrável para Hangfire/Quartz) |
+| Distribuição Web | GitHub Pages (Blazor WASM estático) |
+| Distribuição Desktop | Instalador direto (Windows) |
+| Distribuição Mobile | Google Play Store (Android) |
+| Banco de dados | PostgreSQL via Supabase (gerenciado) ou Oracle Cloud VM |
+
+---
+
+## Fase 1 — Fundação da solução
+
+**Objetivo:** estrutura de projetos, build centralizado e regras de dependência verificáveis por teste.
+
+1. Criar os oito projetos: `Domain`, `Application`, `Infrastructure`, `Api`, `Client`, `Web`, `Maui` e os três projetos de teste.
+2. Configurar `Directory.Build.props` com nullable, warnings como erro e analyzers.
+3. Incluir xUnit, FluentAssertions e Testcontainers nos projetos de teste.
+4. Escrever teste de arquitetura (NetArchTest) que impede `Application` de depender de `Infrastructure` ou `Api`.
+5. Configurar tratamento global de erros, ProblemDetails, logging estruturado e health check na API.
+6. Configurar Docker Compose com PostgreSQL local e secrets por ambiente.
+
+**Testes mínimos:** solução compila sem warnings; health check retorna 200; teste de arquitetura passa.
+
+**Demo:** `dotnet build` verde na raiz; `dotnet test` passa com o teste de arquitetura; health check acessível.
+
+---
+
+## Fase 2 — Domínio e schema
+
+**Objetivo:** modelar todas as entidades com invariantes testáveis e gerar o schema no banco.
+
+1. Modelar entidades e value objects no `Domain` sem qualquer dependência de EF Core.
+2. Implementar métodos de negócio: `Desativar`, `AtualizarDados`, `CriarSessao`, `EncerrarSessao`.
+3. Escrever testes de invariantes: limites positivos, `DataInicio < DataFim`, vínculo de cliente, estado ativo.
+4. Mapear EF Core com Fluent API em `Infrastructure`: chaves, índices, unique constraints e seed dos 4 tipos de licença.
+5. Gerar migration inicial e validar contra PostgreSQL real via Testcontainers.
+
+**Testes mínimos:** invariantes de domínio — limite negativo lança exceção; data inválida lança exceção; migration sobe em banco vazio; seeds e constraints verificados por integração.
+
+**Demo:** suite de testes do domínio verde sem nenhuma referência a EF Core; migration aplica sem erro em banco limpo.
+
+---
+
+## Fase 3 — Identidade e auditoria
+
+**Objetivo:** autenticação JWT com 2FA TOTP, isolamento por tenant e auditoria transacional.
+
+1. Implementar endpoints de autenticação: `POST /auth/register`, `POST /auth/login`, `POST /auth/verify-2fa`, `POST /auth/refresh`, `POST /auth/logout`.
+2. Implementar geração de segredo TOTP e QR code para ativação do autenticador.
+3. Implementar JWT com claims de tenant (`IdCliente`) e papel; refresh token rotacionável armazenado como hash.
+4. Implementar `ICurrentUser` com tenant isolado — nunca confiar em `IdCliente` do body.
+5. Configurar políticas de autorização: `AdministradorPlataforma`, `AdministradorCliente`, `OperadorCliente`, `Leitor`.
+6. Implementar interceptor EF Core para auditoria: detecta inserções/atualizações/desativações, captura diff em JSON, persiste na mesma transação.
+7. Implementar `IAuditLogWriter` como porta da aplicação.
+8. Proteger documentação Swagger fora de ambiente de desenvolvimento.
+
+**Testes mínimos:** login sem 2FA nega; TOTP inválido nega; token expirado retorna 401; usuário de tenant A não acessa tenant B; alteração gera log com diff correto.
+
+**Demo:** fluxo completo via Swagger — registro → login → scan QR no Google Authenticator → verificar código TOTP → receber JWT → acessar endpoint protegido → verificar log de auditoria gerado.
+
+---
+
+## Fase 4 — Segurança da API de validação
+
+**Objetivo:** token por licença com expiração automática e assinatura HMAC anti-replay.
+
+1. Implementar geração de token por licença no momento da emissão (secret armazenado como hash).
+2. Implementar middleware de validação HMAC-SHA256: verifica assinatura + timestamp (janela ±5 minutos).
+3. Implementar rejeição de replay: mesma assinatura não pode ser reutilizada dentro da janela.
+4. Implementar `POST /auth/licenca/renovar-token` para rotação manual pelo `AdministradorCliente`.
+5. Implementar expiração automática de token (configurável por licença).
+6. Configurar rate limiting nos endpoints de validação.
+
+**Testes mínimos:** requisição sem assinatura retorna 401; timestamp fora da janela retorna 401; replay rejeitado; token expirado retorna 401; token renovado invalida o anterior.
+
+**Demo:** script de teste faz chamada assinada com HMAC → validação autorizada; mesma chamada repetida → rejeitada; token renovado → chamada com token antigo rejeitada.
+
+---
+
+## Fase 5 — CRUDs de gestão, um agregado por vez
+
+**Objetivo:** casos de uso de gestão para todos os agregados base, seguindo Clean Architecture.
+
+Ordem: `Cliente` (+ primeiro admin) → `Usuario` → `ClienteFinal` → `Aplicacao` → `TipoLicenca` (somente leitura).
+
+Para cada agregado:
+1. Escrever testes do caso de uso (Red primeiro).
+2. Criar command/query e validator (FluentValidation) na `Application`.
+3. Criar handler e interface de repositório específica.
+4. Implementar repositório EF Core.
+5. Criar controller fino e testes de API.
+
+Requisitos transversais:
+- Paginação, filtros e ordenação em todas as listagens.
+- Sem `GenericRepository`, sem `ManagementService`, sem controller com `DbContext`.
+- Toda escrita gera entrada no `LogOperacao` via interceptor.
+
+**Testes mínimos:** validações de negócio; handler retorna `NotFound` para inexistente; `403` para tenant errado; controller retorna códigos HTTP corretos.
+
+**Demo:** fluxo via Swagger — criar empresa + admin → logar com 2FA → criar cliente final → criar aplicação → listar com filtro e paginação → verificar log de auditoria.
+
+---
+
+## Fase 6 — Emissão e gestão de licenças
+
+**Objetivo:** emissão de licença com detalhes por tipo e operações manuais de manutenção.
+
+1. Implementar emissão de licença: validar tenant, vínculo cliente final + aplicação ao mesmo tenant, bloco de detalhe correto por tipo, gerar token HMAC.
+2. Tratar constraint de licença ativa única com `409 Conflict`.
+3. Implementar operações manuais com endpoints próprios: encerrar sessão, liberar instalação, renovar período, desabilitar licença, renovar token.
+4. Implementar endpoints de histórico: sessões, instalações registradas, alterações da licença.
+5. Garantir que histórico nunca apaga registros físicos.
+
+**Testes mínimos:** tipo errado de detalhe retorna erro de validação; licença duplicada retorna 409; operações manuais exigem `AdministradorCliente`; histórico retorna registros anteriores após desativação.
+
+**Demo:** emitir licença Por Usuários → copiar token → chamar `/validar-login` com HMAC → ver sessão ativa → encerrar sessão manualmente → vaga liberada imediatamente.
+
+---
+
+## Fase 7 — API de validação completa
+
+**Objetivo:** todos os endpoints de validação com regras de negócio, operações atômicas e testes de concorrência.
+
+1. Implementar `POST /validar-login`: Por Usuários (limite de simultâneos + por usuário), transação serializável.
+2. Implementar `POST /heartbeat`: atualiza `DataUltimaAtividade`.
+3. Implementar `POST /logout`: encerra sessão explicitamente.
+4. Implementar `POST /validar-instalacao`: Por Instalação, idempotente para máquina já registrada, transação serializável.
+5. Integrar validação Permanente e Por Período ao fluxo.
+6. Escrever testes de concorrência: múltiplas requisições simultâneas para o último slot.
+
+**Testes mínimos:** cada tipo de licença; expiração de período; bloqueio por entidade inativa; limites de usuários e instalações; concorrência no último slot; replay rejeitado pelo HMAC.
+
+**Demo:** dois clientes simultâneos tentando o último slot — um entra, o outro recebe negação com mensagem clara e código correto.
+
+---
+
+## Fase 8 — Jobs agendados
+
+**Objetivo:** rotinas automáticas de manutenção como `BackgroundService`.
+
+1. Implementar interface `IScheduledJob` (migrável futuramente para Hangfire/Quartz).
+2. Job de sessões inativas: encerra `LicencaSessao` sem heartbeat além de `TempoLimiteSessaoHoras`.
+3. Job de expiração: marca licenças Por Período vencidas sem renovação automática como inativas.
+4. Job de renovação automática: estende `DataFim` de licenças com `RenovacaoAutomatica = true`.
+5. Job de notificação: registra log de tokens de licença próximos do vencimento.
+
+**Testes mínimos:** sessão sem heartbeat após limite é encerrada; licença vencida sem renovação automática expira; licença com renovação tem `DataFim` estendida. Usar mock de `IClock`.
+
+**Demo:** criar sessão, avançar relógio via `IClock` mock, rodar job manualmente — sessão encerrada e log gerado.
+
+---
+
+## Fase 9 — Frontend Web (Blazor WASM)
+
+**Objetivo:** interface web completa publicada no GitHub Pages.
+
+1. Configurar projeto Blazor WASM consumindo `LicenciamentoSoftware.Client`.
+2. Implementar fluxo de login + 2FA TOTP com armazenamento de JWT em memória.
+3. Criar layout com menu lateral adaptado por papel e proteção de rotas.
+4. Implementar telas de CRUD: Clientes Finais, Usuários, Aplicações.
+5. Implementar telas de gestão de licenças: emissão, histórico de sessões, instalações registradas, operações manuais.
+6. Mapear erros da API (400, 403, 409) para mensagens amigáveis.
+7. Configurar publicação estática para GitHub Pages e pipeline de deploy automático.
+
+**Testes mínimos:** proteção de rota redireciona para login; papel `Leitor` não vê botões de escrita; formulário valida campos antes de submeter.
+
+**Demo:** deploy no GitHub Pages — login com 2FA funciona; emitir licença; ver sessões ativas; encerrar sessão manualmente.
+
+---
+
+## Fase 10 — MAUI Desktop e Mobile
+
+**Objetivo:** aplicativo MAUI com paridade funcional ao Blazor Web, para Windows e Android.
+
+1. Configurar projeto MAUI consumindo `LicenciamentoSoftware.Client`.
+2. Implementar fluxo de login + 2FA com `SecureStorage` para tokens.
+3. Criar Shell com navegação e guarda de rotas por papel.
+4. Implementar telas equivalentes às do Blazor, adaptadas para toque (mobile) e mouse/teclado (desktop).
+5. Configurar targets Windows (instalador) e Android (APK para Google Play).
+6. Escrever testes de UI nos fluxos críticos: login, emissão de licença, encerramento de sessão.
+
+**Testes mínimos:** login com 2FA funciona no emulador Android e no Windows; rota protegida redireciona; token armazenado no `SecureStorage` não vaza em logs.
+
+**Demo:** mesmo fluxo da Fase 9 executado no app Android — login, emitir licença, encerrar sessão manualmente.
+
+---
+
+## Fase 11 — CI/CD e infraestrutura
+
+**Objetivo:** pipeline completo e deploy automatizado para todos os componentes.
+
+1. Configurar GitHub Actions: restore → build → testes unitários → testes de integração (Testcontainers) → análise estática.
+2. Deploy automático do Blazor WASM no GitHub Pages ao fazer push em `main`.
+3. Deploy da API na Oracle Cloud VM via SSH (ou Railway/Render como alternativa).
+4. Configurar HTTPS com Let's Encrypt na VM.
+5. Garantir que nenhum segredo está no repositório; usar GitHub Secrets para credenciais de deploy.
+
+**Testes mínimos:** pipeline falha se qualquer teste falhar; deploy não ocorre com build quebrado.
+
+**Demo:** push em `main` → pipeline verde → Blazor atualizado no GitHub Pages → API deployada na VM automaticamente.
+
+---
+
+## Backlog posterior
+
+- Notificações de expiração de licença por e-mail.
+- Painel de métricas e observabilidade centralizada.
+- Rotação periódica automática de tokens de licença.
+- Suporte a iOS no MAUI (requer conta Apple Developer).
+- Paginação cursor-based para listagens de alto volume.
+- Migração dos jobs para Hangfire/Quartz com painel de monitoramento.

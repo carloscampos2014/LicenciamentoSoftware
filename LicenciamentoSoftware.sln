@@ -6,10 +6,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		README.md = README.md
+		.kiro\steering\engineering-standards.md = .kiro\steering\engineering-standards.md
+		.kiro\steering\project-standards.md = .kiro\steering\project-standards.md
+		.github\workflows\ci.yml = .github\workflows\ci.yml
+		.github\workflows\deploy-web.yml = .github\workflows\deploy-web.yml
+		.github\workflows\code-analysis.yml = .github\workflows\code-analysis.yml
+		scripts\install-git-hooks.ps1 = scripts\install-git-hooks.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{9E93BED2-C058-4160-9022-6DAAB0C0EDC8}"
 	ProjectSection(SolutionItems) = preProject
+		docs\ARCHITECTURE.md = docs\ARCHITECTURE.md
+		docs\DEVELOPMENT_PLAN.md = docs\DEVELOPMENT_PLAN.md
 		docs\diagrama-er.mermaid = docs\diagrama-er.mermaid
 		docs\PROJECT.md = docs\PROJECT.md
 		docs\schema.sql = docs\schema.sql

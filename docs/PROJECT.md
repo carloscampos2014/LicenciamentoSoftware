@@ -6,6 +6,8 @@ Sistema responsável pelo gerenciamento de licenciamento de softwares.
 
 O sistema permite que empresas cadastrem seus clientes, seus aplicativos e emitam licenças para utilização desses aplicativos. As aplicações licenciadas consultam uma **API de Validação de Licença** para verificar se o uso está autorizado.
 
+Os administradores acessam o sistema por três interfaces com paridade funcional: portal web (Blazor WASM), aplicativo desktop (MAUI Windows) e aplicativo mobile (MAUI Android). As três consomem a mesma API REST de gestão.
+
 ## Objetivo
 
 Fornecer uma plataforma centralizada para gerenciamento de:
@@ -17,6 +19,16 @@ Fornecer uma plataforma centralizada para gerenciamento de:
 - Tipos de Licença
 - Licenças
 - Log de Operações
+
+## Interfaces
+
+| Interface | Tecnologia | Distribuição |
+|---|---|---|
+| Portal Web | Blazor WebAssembly | GitHub Pages |
+| Desktop | .NET MAUI (Windows) | Instalador direto |
+| Mobile | .NET MAUI (Android) | Google Play Store |
+
+Todas as interfaces consomem a mesma API REST de gestão e têm paridade funcional completa.
 
 ## Funcionalidades
 
@@ -42,6 +54,8 @@ Fornecer uma plataforma centralizada para gerenciamento de:
 | IdCliente | Guid (FK) |
 | Nome | Varchar(200) |
 | Ativo | Bool |
+
+O primeiro usuário cadastrado para uma empresa recebe automaticamente o papel `AdministradorCliente`.
 
 ### Cadastro de Clientes Finais (Clientes dos Clientes)
 
@@ -76,7 +90,7 @@ Não pertence a um Cliente específico — é uma tabela de domínio, compartilh
 | Id | Guid (PK) |
 | Descricao | Varchar(200) |
 
-Dados fixos (seed) — os valores de `Id` abaixo são ilustrativos, mas fixos e conhecidos pelo sistema (não gerados dinamicamente):
+Dados fixos (seed):
 
 | Id (Guid) | Descricao |
 |-----------|-----------|
@@ -98,7 +112,9 @@ Tabela principal, comum a todos os tipos:
 | DataCadastro | Timestamp |
 | Ativo | Bool |
 
-> O tipo de licença **não** é armazenado diretamente na Licença — é derivado através de `IdAplicativo` → `Aplicacao.IdTipoLicenca`, evitando redundância e possível inconsistência entre os dois campos.
+> O tipo de licença **não** é armazenado diretamente na Licença — é derivado através de `IdAplicativo` → `Aplicacao.IdTipoLicenca`, evitando redundância e inconsistência.
+
+Na emissão da licença, um **token HMAC** é gerado e vinculado à licença. Esse token é usado pelo software licenciado para autenticar chamadas à API de validação. O token tem expiração automática e pode ser renovado manualmente pelo `AdministradorCliente`.
 
 #### Detalhamento por tipo de licença (tabelas específicas)
 
@@ -112,24 +128,20 @@ Tabela principal, comum a todos os tipos:
 | DataFim | Timestamp |
 | RenovacaoAutomatica | Bool |
 
-- Quando `RenovacaoAutomatica = true`, um **job/rotina agendada** (execução diária) renova a vigência (estende `DataFim`) antes que a licença expire.
-- Quando `RenovacaoAutomatica = false`, ao atingir `DataFim` a licença passa a ser considerada expirada e a API de validação nega o uso.
+- Quando `RenovacaoAutomatica = true`, um job diário renova a vigência (estende `DataFim`) antes da expiração.
+- Quando `RenovacaoAutomatica = false`, ao atingir `DataFim` a licença é considerada expirada e a API nega o uso.
 
 **LicencaUsuarios** (quando TipoLicenca = "Por Usuários")
-
-Controla o número de **usuários simultâneos** (distintos) logados na aplicação, e quantas sessões cada usuário pode manter ao mesmo tempo.
 
 | Campo | Tipo |
 |--------|------|
 | Id | Guid (PK) |
 | LicencaId | Guid (FK) |
 | QuantidadeMaxima | Int — máximo de usuários distintos logados simultaneamente |
-| MaxSessoesPorUsuario | Int — máximo de sessões simultâneas por usuário (configurável por licença) |
-| TempoLimiteSessaoHoras | Int — tempo máximo (em horas) sem heartbeat que uma sessão pode ficar antes de ser considerada inativa e encerrada automaticamente pelo job |
+| MaxSessoesPorUsuario | Int — máximo de sessões simultâneas por usuário |
+| TempoLimiteSessaoHoras | Int — tempo máximo sem heartbeat antes da sessão ser encerrada pelo job |
 
-Não há cadastro prévio de usuário final — o identificador (username/e-mail) é apenas uma string livre enviada pelo software a cada login.
-
-**LicencaSessao** (sessões ativas, usada para controle de "Por Usuários")
+**LicencaSessao** (sessões ativas — controle "Por Usuários")
 
 | Campo | Tipo |
 |--------|------|
@@ -140,14 +152,11 @@ Não há cadastro prévio de usuário final — o identificador (username/e-mail
 | DataUltimaAtividade | Timestamp — atualizada a cada heartbeat |
 | Ativo | Bool |
 
-- Cada login bem-sucedido gera um registro aqui. `Id` (SessaoId) é retornado ao software e usado depois na chamada de logout (ou heartbeat).
-- Encerramento **normal** de sessão é explícito: o software chama o endpoint de logout informando o `SessaoId`.
-- Enquanto a sessão estiver em uso, o software deve chamar periodicamente um endpoint de **heartbeat** (ex: a cada 5 minutos) informando o `SessaoId`, atualizando `DataUltimaAtividade`. Isso evita que uma sessão realmente ativa seja encerrada indevidamente pelo job de limpeza, e ao mesmo tempo garante que sessões abandonadas (sem logout) sejam liberadas com base em inatividade real — não em tempo total de login.
-- Além do logout explícito (pelo software) e do job de limpeza por inatividade, o **Cliente** também pode encerrar uma sessão **manualmente** através do sistema de gestão (ex: quando o software travou e nem heartbeat nem logout ocorreram, e o Cliente não quer esperar o `TempoLimiteSessaoHoras`). Essa ação marca o registro em `LicencaSessao` como `Ativo = false`, liberando a vaga imediatamente.
+- Cada login bem-sucedido gera um registro. O `SessaoId` é retornado ao software para uso em heartbeat e logout.
+- O software deve chamar `/heartbeat` periodicamente (ex: a cada 5 minutos) para manter a sessão ativa.
+- O `AdministradorCliente` pode encerrar sessões manualmente pelo portal (ex: quando o software travou).
 
 **LicencaInstalacao** (quando TipoLicenca = "Por Instalação")
-
-Controla o número de **máquinas distintas** autorizadas a executar a aplicação. Diferente da sessão de usuário, uma instalação não tem "logout" natural — ela permanece registrada até ser liberada manualmente.
 
 | Campo | Tipo |
 |--------|------|
@@ -155,23 +164,21 @@ Controla o número de **máquinas distintas** autorizadas a executar a aplicaç�
 | LicencaId | Guid (FK) |
 | QuantidadeMaxima | Int — máximo de máquinas distintas autorizadas |
 
-**LicencaInstalacaoRegistrada** (máquinas já autorizadas)
+**LicencaInstalacaoRegistrada** (máquinas autorizadas)
 
 | Campo | Tipo |
 |--------|------|
 | Id | Guid (PK) |
 | LicencaId | Guid (FK) |
-| IdentificadorMaquina | Varchar(300) — nome de máquina ou identificador equivalente enviado pelo software |
+| IdentificadorMaquina | Varchar(300) |
 | DataRegistro | Timestamp |
 | Ativo | Bool |
 
-- A liberação de uma vaga (ex: Cliente Final trocou de máquina) é feita **manualmente**, pelo Cliente ou administrador, através do sistema de gestão — desativando o registro antigo. Não existe expiração automática, já que não há como o job inferir se uma máquina "parou de ser usada".
+- Liberação de vaga é feita manualmente pelo `AdministradorCliente` pelo portal — sem expiração automática.
 
-**Permanente** — sem tabela de detalhamento; a licença nunca expira e não possui limites de uso.
+**Permanente** — sem tabela de detalhamento; a licença nunca expira.
 
 ### Log de Operações
-
-Tabela única e genérica, registrando operações realizadas em qualquer entidade do sistema:
 
 | Campo | Tipo |
 |--------|------|
@@ -183,71 +190,84 @@ Tabela única e genérica, registrando operações realizadas em qualquer entida
 | IdUsuario | Guid (FK) |
 | CamposAlterados | JSON/Text (nullable) |
 
-- `CamposAlterados` armazena apenas o diff (campo, valor anterior, valor novo), não o registro completo antes/depois — mais leve e suficiente para auditoria/histórico.
+`CamposAlterados` armazena apenas o diff (campo, valor anterior, valor novo) — mais leve e suficiente para auditoria.
 
 ### API de Validação de Licença
 
 Endpoints consumidos pelos softwares licenciados para verificar se o uso está autorizado.
 
-- **Identificação da licença:** feita pela combinação `IdCliente` + `IdClienteFinal` + `IdAplicativo` (sem chave/token separado).
+**Autenticação:** cada requisição deve ser assinada com HMAC-SHA256 usando o token da licença e um timestamp. O servidor rejeita requisições com timestamp fora de ±5 minutos (proteção anti-replay).
+
 - **Regras gerais:** a licença deve estar `Ativo = true` para qualquer validação.
 
-#### `POST /validar-login` (relevante para licença Por Usuários)
+#### `POST /validar-login` (Por Usuários)
 
 Recebe: `IdCliente`, `IdClienteFinal`, `IdAplicativo`, `IdentificadorUsuario`.
 
-Fluxo de verificação:
-1. Localiza a licença ativa correspondente e seu tipo (via `IdAplicativo` → `Aplicacao.IdTipoLicenca`); se não for do tipo "Por Usuários", aplica a regra do tipo correspondente (Permanente / Por Período / Por Instalação).
-2. Conta as sessões ativas (`LicencaSessao.Ativo = true`) desse `IdentificadorUsuario` para essa licença.
-   - Se a contagem já atingiu `MaxSessoesPorUsuario` → **nega**, retornando mensagem informando que o **limite de sessões** para aquele usuário foi atingido.
-3. Se for um `IdentificadorUsuario` novo (sem sessão ativa), conta quantos usuários **distintos** possuem sessão ativa na licença.
-   - Se esse número já atingiu `QuantidadeMaxima` → **nega**, retornando mensagem informando que o **limite de usuários** da licença foi atingido.
-4. Caso contrário, cria um novo registro em `LicencaSessao` (`Ativo = true`) e **libera** o acesso, retornando o `SessaoId` gerado.
+Fluxo:
+1. Localiza licença ativa e deriva tipo via `IdAplicativo → Aplicacao.IdTipoLicenca`.
+2. Conta sessões ativas do `IdentificadorUsuario` para essa licença.
+   - Se atingiu `MaxSessoesPorUsuario` → **nega** (limite de sessões do usuário atingido).
+3. Se usuário novo, conta usuários distintos com sessão ativa.
+   - Se atingiu `QuantidadeMaxima` → **nega** (limite de usuários da licença atingido).
+4. Cria registro em `LicencaSessao` e **libera**, retornando `SessaoId`.
 
 #### `POST /logout`
 
-Recebe: `SessaoId`.
-
-Marca o registro correspondente em `LicencaSessao` como `Ativo = false` (encerra a sessão), liberando a vaga de usuário/sessão.
+Recebe: `SessaoId`. Marca sessão como `Ativo = false`, liberando a vaga.
 
 #### `POST /heartbeat`
 
-Recebe: `SessaoId`.
+Recebe: `SessaoId`. Atualiza `DataUltimaAtividade` para o momento atual.
 
-Atualiza `DataUltimaAtividade` da sessão correspondente para o momento atual, confirmando que ela continua em uso real. O software deve chamar este endpoint periodicamente (ex: a cada 5 minutos) enquanto a sessão estiver ativa.
-
-#### `POST /validar-instalacao` (relevante para licença Por Instalação)
+#### `POST /validar-instalacao` (Por Instalação)
 
 Recebe: `IdCliente`, `IdClienteFinal`, `IdAplicativo`, `IdentificadorMaquina`.
 
-Fluxo de verificação:
-1. Localiza a licença ativa correspondente do tipo "Por Instalação".
-2. Se o `IdentificadorMaquina` já possui registro ativo em `LicencaInstalacaoRegistrada` → **libera** (máquina já autorizada).
-3. Se for uma máquina nova, conta quantas máquinas distintas já estão registradas e ativas.
-   - Se essa contagem já atingiu `QuantidadeMaxima` → **nega**, retornando mensagem informando que o **limite de instalações** da licença foi atingido.
-4. Caso contrário, cria um novo registro em `LicencaInstalacaoRegistrada` (`Ativo = true`) e **libera** o acesso.
+Fluxo:
+1. Localiza licença ativa do tipo "Por Instalação".
+2. Se máquina já registrada e ativa → **libera** (idempotente).
+3. Se máquina nova, conta máquinas registradas e ativas.
+   - Se atingiu `QuantidadeMaxima` → **nega** (limite de instalações atingido).
+4. Registra máquina e **libera**.
 
-#### Regras de validação por tipo
+#### Regras por tipo
 
-  - **Permanente:** sempre liberado (se ativa).
-  - **Por Período:** liberado se `DataFim` ainda não foi atingida.
-  - **Por Usuários:** liberado conforme fluxo de `/validar-login` acima.
-  - **Por Instalação:** liberado conforme fluxo de `/validar-instalacao` acima.
-
-Toda chamada à API (login, logout, validação) gera um registro no **Log de Operações** (ex: Entidade = "LicencaSessao").
+| Tipo | Regra de validação |
+|---|---|
+| Permanente | Sempre libera se licença ativa |
+| Por Período | Libera se `DataFim` não foi atingida |
+| Por Usuários | Fluxo de `/validar-login` |
+| Por Instalação | Fluxo de `/validar-instalacao` |
 
 ### Rotina Agendada (Job)
 
-Processo automático (ex: execução diária, ou com frequência maior para sessões) responsável por:
-- Verificar licenças `Por Período` com `RenovacaoAutomatica = true` próximas do vencimento e renovar (estender `DataFim`).
-- Marcar como expiradas/inativas as licenças `Por Período` com `RenovacaoAutomatica = false` que atingiram `DataFim`.
-- Encerrar automaticamente (`Ativo = false`) sessões em `LicencaSessao` cuja `DataUltimaAtividade` (heartbeat) esteja há mais tempo que o `TempoLimiteSessaoHoras` da licença correspondente — ou seja, sem heartbeat recente, indicando inatividade real (ex: software fechou/travou sem chamar `/logout`). Isso evita liberar indevidamente vagas de sessões que continuam genuinamente em uso.
+- Encerrar sessões sem heartbeat além de `TempoLimiteSessaoHoras`.
+- Expirar licenças Por Período vencidas com `RenovacaoAutomatica = false`.
+- Renovar `DataFim` de licenças Por Período com `RenovacaoAutomatica = true`.
+- Registrar log de tokens de licença próximos do vencimento.
+
+## Segurança
+
+### Portal de gestão (Web, Desktop, Mobile)
+
+- Autenticação JWT com refresh token rotacionável.
+- 2FA obrigatório via TOTP (Google Authenticator / Authy).
+- Papéis: `AdministradorPlataforma`, `AdministradorCliente`, `OperadorCliente`, `Leitor`.
+- Tenant sempre derivado da identidade autenticada — nunca do body da requisição.
+
+### API de validação
+
+- Token por licença com expiração automática, armazenado como hash.
+- Autenticação por assinatura HMAC-SHA256 com timestamp (proteção anti-replay).
+- Renovação manual pelo `AdministradorCliente`; token anterior invalidado imediatamente.
+- Rate limiting por IP e por token.
 
 ## Limitações e Premissas
 
-- O controle de licenciamento (login, heartbeat, logout, limites de uso) depende da **integração correta do software do Cliente** com a API de Validação. O sistema aplica as regras a partir do que o software informa a cada chamada — não há como impedir, a partir do backend de licenciamento, que um software mal implementado (ou deliberadamente alterado) deixe de chamar a API corretamente.
-- A responsabilidade por chamar a API de forma fiel (login a cada sessão, heartbeat periódico, logout ao encerrar) é do **Cliente** (dono do software), que é também o principal interessado em um controle rígido, já que é sua receita de licenciamento que está sendo protegida.
-- Mecanismos de proteção contra engenharia reversa, adulteração de binário ou interceptação de chamadas (ex: ofuscação, assinatura de requisições, DRM) estão **fora do escopo** deste sistema, que é uma plataforma de gestão e validação de licenças — não uma solução de proteção de software.
+- O controle de licenciamento depende da integração correta do software do Cliente com a API. O sistema aplica as regras a partir do que o software informa — não há como impedir um software mal implementado de não chamar a API corretamente.
+- A responsabilidade pela integração fiel (login, heartbeat, logout) é do Cliente, que é o principal interessado no controle rígido.
+- Mecanismos de proteção contra engenharia reversa, ofuscação ou DRM estão fora do escopo deste sistema.
 
 ## Regras de Negócio
 
@@ -256,7 +276,7 @@ Processo automático (ex: execução diária, ou com frequência maior para sess
 - Toda aplicação pertence a um cliente.
 - Toda aplicação possui um tipo de licença.
 - Uma licença vincula um cliente final a uma aplicação.
-- Tipos de licença são fixos e globais (não pertencem a um cliente específico).
-- Exclusão lógica através do campo Ativo.
-- Toda operação relevante do sistema deve gerar um registro no Log de Operações.
-- A validação de uso de uma aplicação licenciada é feita via API, identificando a licença pela combinação Cliente + Cliente Final + Aplicação.
+- Tipos de licença são fixos e globais.
+- Exclusão sempre lógica (`Ativo = false`).
+- Toda operação relevante gera registro no Log de Operações.
+- A validação é feita via API, identificando a licença pela combinação Cliente + Cliente Final + Aplicação, autenticada por HMAC.
