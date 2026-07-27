@@ -41,7 +41,6 @@ Todos os CRUDs usam exclusão lógica (`Ativo = false`), nunca `DELETE` físico 
 - Gravação automática no `LogOperacao` a cada operação de escrita (ex: via `SaveChangesAsync` override no DbContext, ou interceptor do EF Core) — hoje os CRUDs alteram dados mas não geram log ainda.
 - Autenticação/autorização da própria API de gestão (distinta da API de validação usada pelos softwares licenciados) — hoje qualquer chamada é aceita sem identidade.
 - Validações de negócio adicionais (ex: paginação nas listagens, validação de formato de e-mail/CPF-CNPJ, tratamento de erros mais granular).
-- Migrations do EF Core (`dotnet ef migrations add Inicial`) — não geradas aqui pois o ambiente não possui o SDK do .NET instalado para validar o build.
 - Testes automatizados (unitários e de integração).
 
 ## Como rodar (ambiente com .NET 8 SDK instalado)
@@ -49,11 +48,103 @@ Todos os CRUDs usam exclusão lógica (`Ativo = false`), nunca `DELETE` físico 
 ```bash
 cd src/LicenciamentoSoftware.Api
 dotnet restore
-dotnet ef migrations add Inicial --project ../LicenciamentoSoftware.Infrastructure
-dotnet ef database update
+# Caso precise gerar migrations localmente (já foi criada a migration inicial neste repositório):
+# dotnet ef migrations add Inicial --project ../LicenciamentoSoftware.Infrastructure
+# Aplicar migrations ao banco configurado em appsettings.json
+dotnet ef database update --project ../LicenciamentoSoftware.Infrastructure --startup-project .
 dotnet run
 ```
 
 Ajuste a connection string em `appsettings.json` (`ConnectionStrings:DefaultConnection`) para seu PostgreSQL local.
 
-> ⚠️ Este código não foi compilado/testado neste ambiente (sem SDK do .NET disponível). Revise ao rodar `dotnet build` pela primeira vez.
+## Docker (recomendado)
+
+Modo rápido para levantar um PostgreSQL via Docker e aplicar as migrations:
+
+1) Rodar container PostgreSQL (PowerShell):
+
+```powershell
+docker pull postgres:15
+docker run --name lic_pg \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=licenciamento \
+  -p 5432:5432 -d postgres:15
+```
+
+2) Aplicar migrations a partir da raiz do projeto (PowerShell):
+
+```powershell
+dotnet ef database update --project src\\LicenciamentoSoftware.Infrastructure --startup-project src\\LicenciamentoSoftware.Api
+```
+
+3) Alternativa: executar o script SQL já gerado (se preferir não usar dotnet-ef no host):
+
+```powershell
+docker cp .\\src\\Database\\create_schema.sql lic_pg:/tmp/create_schema.sql
+docker exec -it lic_pg psql -U postgres -d licenciamento -f /tmp/create_schema.sql
+```
+
+4) Parar/remover o container quando não precisar:
+
+```powershell
+docker stop lic_pg; docker rm lic_pg
+```
+
+## WSL2 / PostgreSQL no Linux (Ubuntu)
+
+Passos resumidos (execute dentro do WSL):
+
+```bash
+sudo apt update
+sudo apt install -y postgresql postgresql-contrib
+sudo service postgresql start
+# Ajuste a senha do usuário postgres (opcional)
+sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
+sudo -u postgres createdb licenciamento
+# Executar o script SQL gerado (caminho para o Windows: /mnt/c/...)
+sudo -u postgres psql -d licenciamento -f /mnt/c/Dev/LicenciamentoSoftware/src/Database/create_schema.sql
+```
+
+Ou aplique as migrations diretamente (no WSL ou no Windows se o SDK estiver instalado):
+
+```bash
+dotnet ef database update --project src/LicenciamentoSoftware.Infrastructure --startup-project src/LicenciamentoSoftware.Api
+```
+
+## dotnet-ef (ferramenta global)
+
+Instalar/atualizar a ferramenta para evitar mensagens de mismatch:
+
+```powershell
+dotnet tool install --global dotnet-ef --version 8.0.10
+# ou
+dotnet tool update --global dotnet-ef --version 8.0.10
+```
+
+## Arquivos importantes
+
+- Migrations: `src/LicenciamentoSoftware.Infrastructure/Migrations/InitialCreate*`
+- Script SQL gerado: `src/Database/create_schema.sql`
+- Connection string padrão: `src/LicenciamentoSoftware.Api/appsettings.json` (Host=localhost;Port=5432;Database=licenciamento;Username=postgres;Password=postgres)
+
+## Observações
+
+- Em produção, não use as credenciais padrão e configure backups e políticas de segurança.
+- Se alterar a connection string, atualize `appsettings.json` ou use variáveis de ambiente.
+
+---
+
+Foi adicionado um script PowerShell em `scripts/start-local.ps1` que automatiza a criação (ou reutilização) do container Docker PostgreSQL, aplica as migrations via EF Core e inicia a API.
+
+Uso (PowerShell, execute na raiz do repositório):
+
+```powershell
+# Criar/usar container, aplicar migrations e iniciar a API
+.\scripts\start-local.ps1
+
+# Forçar recriar o container PostgreSQL antes de aplicar migrations
+.\scripts\start-local.ps1 -RecreateContainer
+```
+
+Se desejar, posso também adicionar scripts para parar/remover o ambiente, executar a API em background ou parametrizar usuário/senha/porta via arquivo `.env`.
