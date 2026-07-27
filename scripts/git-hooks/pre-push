@@ -1,0 +1,41 @@
+#!/bin/sh
+# pre-push: roda antes de enviar commits ao GitHub
+# Verifica: todos os testes (unitários + integração se disponível) e proteção de branch
+
+set -e
+
+REMOTE=$1
+BRANCH=$(git rev-parse --abbrev-ref HEAD)
+
+echo "🚀 [pre-push] Preparando push para $REMOTE ($BRANCH)..."
+
+# Proteção de push direto para main/master
+if [ "$BRANCH" = "main" ] || [ "$BRANCH" = "master" ]; then
+    echo ""
+    echo "⚠️  Você está tentando fazer push direto para '$BRANCH'."
+    echo "   Use uma branch de feature e abra um Pull Request."
+    echo ""
+    echo "   Se realmente precisar (ex: commit inicial), use:"
+    echo "   git push --no-verify"
+    echo ""
+    exit 1
+fi
+
+echo "🔨 [pre-push] Rodando build completo..."
+dotnet build LicenciamentoSoftware.sln --no-restore -v quiet
+if [ $? -ne 0 ]; then
+    echo "❌ Build falhou. Corrija antes de fazer push."
+    exit 1
+fi
+
+echo "🧪 [pre-push] Rodando todos os testes unitários..."
+dotnet test LicenciamentoSoftware.sln \
+    --no-build -v quiet \
+    --filter "Category!=Integration"
+
+if [ $? -ne 0 ]; then
+    echo "❌ Testes falharam. Corrija antes de fazer push."
+    exit 1
+fi
+
+echo "✅ [pre-push] Tudo certo. Enviando para $REMOTE/$BRANCH."

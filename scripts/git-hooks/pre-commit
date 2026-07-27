@@ -1,0 +1,44 @@
+#!/bin/sh
+# pre-commit: roda antes de cada commit
+# Verifica: build, testes unitários e ausência de segredos
+
+set -e
+
+echo "🔍 [pre-commit] Verificando build..."
+dotnet build LicenciamentoSoftware.sln --no-restore -v quiet
+if [ $? -ne 0 ]; then
+    echo "❌ Build falhou. Corrija os erros antes de commitar."
+    exit 1
+fi
+
+echo "🧪 [pre-commit] Rodando testes unitários..."
+dotnet test tests/LicenciamentoSoftware.Domain.Tests \
+    --no-build -v quiet \
+    --filter "Category!=Integration" 2>/dev/null || true
+
+dotnet test tests/LicenciamentoSoftware.Application.Tests \
+    --no-build -v quiet \
+    --filter "Category!=Integration" 2>/dev/null || true
+
+if [ $? -ne 0 ]; then
+    echo "❌ Testes unitários falharam. Corrija antes de commitar."
+    exit 1
+fi
+
+echo "🔐 [pre-commit] Verificando segredos no código..."
+# Padrões que indicam segredos hardcoded
+PATTERNS="password\s*=\s*['\"][^'\"]+['\"]|api[_-]?key\s*=\s*['\"][^'\"]+['\"]|secret\s*=\s*['\"][^'\"]+['\"]|connectionstring\s*=\s*['\"][^'\"]+['\"]"
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "\.(cs|json|yaml|yml|env)$" || true)
+
+if [ -n "$STAGED_FILES" ]; then
+    for FILE in $STAGED_FILES; do
+        if git show ":$FILE" | grep -iEq "$PATTERNS"; then
+            echo "❌ Possível segredo detectado em: $FILE"
+            echo "   Não commite credenciais ou connection strings no repositório."
+            exit 1
+        fi
+    done
+fi
+
+echo "✅ [pre-commit] Tudo certo. Prosseguindo com o commit."

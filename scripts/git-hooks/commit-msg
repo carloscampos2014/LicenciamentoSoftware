@@ -1,0 +1,49 @@
+#!/bin/sh
+# commit-msg: valida o padrão de mensagem de commit (Conventional Commits)
+# Formato aceito: <tipo>(escopo opcional): <descrição>
+#
+# Tipos válidos:
+#   feat     - nova funcionalidade
+#   fix      - correção de bug
+#   docs     - documentação
+#   style    - formatação (sem mudança de lógica)
+#   refactor - refatoração (sem nova feature nem bug fix)
+#   test     - adição ou correção de testes
+#   chore    - build, ci, dependências, tarefas de manutenção
+#   perf     - melhoria de performance
+#
+# Exemplos válidos:
+#   feat(licencas): adicionar validação de licença por período
+#   fix(auth): corrigir expiração de token TOTP
+#   docs: atualizar ARCHITECTURE.md com MAUI
+#   test(domain): adicionar testes de invariantes de LicencaUsuarios
+
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Ignorar commits de merge e rebase
+if echo "$COMMIT_MSG" | grep -qE "^(Merge|Revert|fixup!|squash!)"; then
+    exit 0
+fi
+
+PATTERN="^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-zA-Z0-9_-]+\))?: .{1,100}$"
+
+if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+    echo ""
+    echo "❌ Mensagem de commit fora do padrão Conventional Commits."
+    echo ""
+    echo "   Formato esperado: <tipo>(escopo): <descrição>"
+    echo ""
+    echo "   Tipos válidos: feat, fix, docs, style, refactor, test, chore, perf"
+    echo ""
+    echo "   Exemplos:"
+    echo "     feat(licencas): adicionar validação por período"
+    echo "     fix(auth): corrigir expiração de refresh token"
+    echo "     test(domain): adicionar invariantes de LicencaUsuarios"
+    echo "     docs: atualizar plano de desenvolvimento"
+    echo ""
+    echo "   Sua mensagem: $COMMIT_MSG"
+    exit 1
+fi
+
+echo "✅ [commit-msg] Mensagem de commit válida."

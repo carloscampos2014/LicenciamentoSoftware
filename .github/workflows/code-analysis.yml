@@ -1,0 +1,108 @@
+name: Análise de Código
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  # Roda semanalmente para detectar novas vulnerabilidades em dependências
+  schedule:
+    - cron: "0 8 * * 1"
+
+jobs:
+  static-analysis:
+    name: Análise Estática (.NET)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore LicenciamentoSoftware.sln
+
+      - name: Build com analyzers
+        # Warnings como erros: o build falha se houver violações de analyzer
+        run: |
+          dotnet build LicenciamentoSoftware.sln \
+            --no-restore \
+            -c Release \
+            -p:TreatWarningsAsErrors=true \
+            -p:EnforceCodeStyleInBuild=true
+
+      - name: Verificar formatação (dotnet format)
+        run: |
+          dotnet format LicenciamentoSoftware.sln \
+            --verify-no-changes \
+            --severity warn
+
+  dependency-audit:
+    name: Auditoria de Dependências
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore LicenciamentoSoftware.sln
+
+      - name: Verificar vulnerabilidades em pacotes NuGet
+        run: |
+          dotnet list LicenciamentoSoftware.sln package --vulnerable --include-transitive 2>&1 | tee vuln-report.txt
+          if grep -q "has the following vulnerable packages" vuln-report.txt; then
+            echo "❌ Vulnerabilidades encontradas em dependências NuGet."
+            cat vuln-report.txt
+            exit 1
+          fi
+          echo "✅ Nenhuma vulnerabilidade conhecida encontrada."
+
+      - name: Upload relatório de vulnerabilidades
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: vulnerability-report
+          path: vuln-report.txt
+
+  codeql:
+    name: CodeQL (Segurança)
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inicializar CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+          queries: security-and-quality
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Build para CodeQL
+        run: |
+          dotnet restore LicenciamentoSoftware.sln
+          dotnet build LicenciamentoSoftware.sln --no-restore -c Release
+
+      - name: Análise CodeQL
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:csharp"

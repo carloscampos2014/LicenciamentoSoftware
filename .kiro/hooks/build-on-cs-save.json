@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Build ao salvar arquivo C#",
+      "trigger": "PostFileSave",
+      "description": "Roda dotnet build silencioso ao salvar qualquer arquivo .cs para detectar erros de compilação imediatamente",
+      "matcher": "\\.cs$",
+      "action": {
+        "type": "command",
+        "command": "cd \"$(dirname \"$0\")/../..\" && dotnet build LicenciamentoSoftware.sln --no-restore -v quiet 2>&1 | tail -5",
+        "timeout": 60
+      }
+    }
+  ]
+}

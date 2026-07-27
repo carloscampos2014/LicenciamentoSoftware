@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    name: Build e Testes
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: licenciamento_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Restore
+        run: dotnet restore LicenciamentoSoftware.sln
+
+      - name: Build
+        run: dotnet build LicenciamentoSoftware.sln --no-restore -c Release
+
+      - name: Testes unitários — Domain
+        run: |
+          dotnet test tests/LicenciamentoSoftware.Domain.Tests \
+            --no-build -c Release \
+            --filter "Category!=Integration" \
+            --logger "trx;LogFileName=domain-results.trx" \
+            --results-directory ./test-results
+
+      - name: Testes unitários — Application
+        run: |
+          dotnet test tests/LicenciamentoSoftware.Application.Tests \
+            --no-build -c Release \
+            --filter "Category!=Integration" \
+            --logger "trx;LogFileName=application-results.trx" \
+            --results-directory ./test-results
+
+      - name: Testes de integração
+        env:
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=licenciamento_test;Username=postgres;Password=postgres"
+        run: |
+          dotnet test tests/LicenciamentoSoftware.IntegrationTests \
+            --no-build -c Release \
+            --logger "trx;LogFileName=integration-results.trx" \
+            --results-directory ./test-results
+
+      - name: Publicar resultados dos testes
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: ./test-results/*.trx

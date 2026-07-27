@@ -1,0 +1,83 @@
+name: Deploy Web (Blazor WASM)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "src/LicenciamentoSoftware.Web/**"
+      - "src/LicenciamentoSoftware.Client/**"
+      - ".github/workflows/deploy-web.yml"
+
+  # Permite disparar manualmente pelo GitHub
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Garante que apenas um deploy ocorra por vez
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Blazor WASM
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Restore
+        run: dotnet restore src/LicenciamentoSoftware.Web
+
+      - name: Publish Blazor WASM
+        run: |
+          dotnet publish src/LicenciamentoSoftware.Web \
+            -c Release \
+            -o ./publish/web
+
+      # Blazor WASM no GitHub Pages precisa de 404.html = index.html
+      # para que rotas client-side funcionem após refresh
+      - name: Corrigir roteamento para GitHub Pages
+        run: |
+          cp ./publish/web/wwwroot/index.html ./publish/web/wwwroot/404.html
+
+      # GitHub Pages não serve arquivos com ponto no nome de pasta (ex: _framework)
+      # sem o arquivo .nojekyll
+      - name: Criar .nojekyll
+        run: touch ./publish/web/wwwroot/.nojekyll
+
+      - name: Upload artifact para Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./publish/web/wwwroot
+
+  deploy:
+    name: Deploy para GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy para GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

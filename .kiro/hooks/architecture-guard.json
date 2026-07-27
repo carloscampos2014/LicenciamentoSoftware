@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Guarda de arquitetura",
+      "trigger": "PostFileSave",
+      "description": "Verifica se arquivo salvo em Application referencia Infrastructure ou Api, violando a regra de dependência da Clean Architecture",
+      "matcher": "src\\\\LicenciamentoSoftware\\.(Application|Domain)\\\\.*\\.cs$",
+      "action": {
+        "type": "agent",
+        "prompt": "Um arquivo foi salvo em Domain ou Application. Leia o conteúdo do arquivo salvo e verifique se ele contém referências proibidas pela Clean Architecture:\n- Arquivos em Domain não podem referenciar: EntityFrameworkCore, Microsoft.AspNetCore, Npgsql, Infrastructure, Api\n- Arquivos em Application não podem referenciar: EntityFrameworkCore, Microsoft.AspNetCore, Npgsql, DbContext, Infrastructure, Api\n\nSe encontrar uma violação, alerte o usuário de forma objetiva informando: o arquivo, a referência proibida encontrada e qual regra de arquitetura foi violada. Não corrija automaticamente — apenas alerte."
+      },
+      "enabled": true
+    }
+  ]
+}
