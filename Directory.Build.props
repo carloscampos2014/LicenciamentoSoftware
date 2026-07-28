@@ -1,0 +1,52 @@
+<Project>
+
+  <!--
+    Propriedades aplicadas a todos os projetos da solução.
+    Projetos individuais podem sobrescrever qualquer propriedade definida aqui.
+  -->
+
+  <PropertyGroup>
+    <!-- Referência nula obrigatória em toda a solução -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Warnings como erros em todos os projetos,
+         exceto MAUI (múltiplos target frameworks geram warnings de plataforma fora do escopo deste projeto) -->
+    <TreatWarningsAsErrors Condition="!$(MSBuildProjectName.EndsWith('.Maui'))">true</TreatWarningsAsErrors>
+
+    <!-- Versão do .NET para todos os projetos classlib e webapi.
+         Projetos com TargetFramework(s) explícito no .csproj mantêm o próprio valor. -->
+    <LangVersion>latest</LangVersion>
+
+    <!-- Informações de assembly compartilhadas -->
+    <Company>LicenciamentoSoftware</Company>
+    <Product>LicenciamentoSoftware</Product>
+    <Copyright>Copyright © LicenciamentoSoftware</Copyright>
+  </PropertyGroup>
+
+  <!--
+    Analyzers: aplicados apenas aos projetos de código-fonte (não MAUI, não Blazor WASM).
+    Microsoft.CodeAnalysis.NetAnalyzers já vem habilitado por padrão no .NET 5+.
+    Habilitamos o nível mais estrito: análise de qualidade e regras de design.
+  -->
+  <PropertyGroup Condition="!$(MSBuildProjectName.EndsWith('.Maui')) AND !$(MSBuildProjectName.EndsWith('.Web'))">
+    <AnalysisMode>Recommended</AnalysisMode>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+  </PropertyGroup>
+
+  <!--
+    Suprime warnings específicos do MAUI que não são controlados pelo código da solução.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Maui'))">
+    <NoWarn>$(NoWarn);CS1591;NU1803</NoWarn>
+  </PropertyGroup>
+
+  <!--
+    Projetos de teste: desabilita alguns analyzers mais rígidos que conflitam com padrões xUnit.
+  -->
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+    <!-- CA1707: Identifiers should not contain underscores — padrão de nomes xUnit usa underscores -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+  </PropertyGroup>
+
+</Project>
