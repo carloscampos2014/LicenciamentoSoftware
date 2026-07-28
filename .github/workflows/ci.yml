@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     branches-ignore:
-      - main
+      - master
   pull_request:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-test:
@@ -15,10 +15,10 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16-alpine
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: licenciamento
+          POSTGRES_PASSWORD: ci_password
           POSTGRES_DB: licenciamento_test
         ports:
           - 5432:5432
@@ -32,10 +32,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Cache NuGet
         uses: actions/cache@v4
@@ -44,11 +44,32 @@ jobs:
           key: nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: nuget-
 
-      - name: Restore
-        run: dotnet restore LicenciamentoSoftware.sln
+      # Restaura e compila apenas os projetos que rodam em Linux.
+      # MAUI requer workloads de plataforma (android/ios/windows) não disponíveis
+      # no runner ubuntu-latest — é compilado e testado localmente.
+      - name: Restore (sem MAUI)
+        run: |
+          dotnet restore src/LicenciamentoSoftware.Domain/LicenciamentoSoftware.Domain.csproj
+          dotnet restore src/LicenciamentoSoftware.Application/LicenciamentoSoftware.Application.csproj
+          dotnet restore src/LicenciamentoSoftware.Infrastructure/LicenciamentoSoftware.Infrastructure.csproj
+          dotnet restore src/LicenciamentoSoftware.Api/LicenciamentoSoftware.Api.csproj
+          dotnet restore src/LicenciamentoSoftware.Client/LicenciamentoSoftware.Client.csproj
+          dotnet restore src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj
+          dotnet restore tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj
+          dotnet restore tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj
+          dotnet restore tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj
 
-      - name: Build
-        run: dotnet build LicenciamentoSoftware.sln --no-restore -c Release
+      - name: Build (sem MAUI)
+        run: |
+          dotnet build src/LicenciamentoSoftware.Domain/LicenciamentoSoftware.Domain.csproj --no-restore -c Release
+          dotnet build src/LicenciamentoSoftware.Application/LicenciamentoSoftware.Application.csproj --no-restore -c Release
+          dotnet build src/LicenciamentoSoftware.Infrastructure/LicenciamentoSoftware.Infrastructure.csproj --no-restore -c Release
+          dotnet build src/LicenciamentoSoftware.Api/LicenciamentoSoftware.Api.csproj --no-restore -c Release
+          dotnet build src/LicenciamentoSoftware.Client/LicenciamentoSoftware.Client.csproj --no-restore -c Release
+          dotnet build src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj --no-restore -c Release
+          dotnet build tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj --no-restore -c Release
+          dotnet build tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj --no-restore -c Release
+          dotnet build tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj --no-restore -c Release
 
       - name: Testes unitários — Domain
         run: |
@@ -58,7 +79,7 @@ jobs:
             --logger "trx;LogFileName=domain-results.trx" \
             --results-directory ./test-results
 
-      - name: Testes unitários — Application
+      - name: Testes unitários — Application (inclui testes de arquitetura)
         run: |
           dotnet test tests/LicenciamentoSoftware.Application.Tests \
             --no-build -c Release \
@@ -68,7 +89,7 @@ jobs:
 
       - name: Testes de integração
         env:
-          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=licenciamento_test;Username=postgres;Password=postgres"
+          ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=licenciamento_test;Username=licenciamento;Password=ci_password"
         run: |
           dotnet test tests/LicenciamentoSoftware.IntegrationTests \
             --no-build -c Release \
