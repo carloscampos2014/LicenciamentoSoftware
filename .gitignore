@@ -6,6 +6,10 @@
 # dotenv files
 .env
 
+# Arquivos de diagnóstico do VSTest
+diag.host.*.txt
+diag.*.txt
+
 # User-specific files
 *.rsuser
 *.suo
