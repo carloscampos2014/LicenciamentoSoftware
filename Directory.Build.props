@@ -44,7 +44,7 @@
   <!--
     Projetos de teste: desabilita alguns analyzers mais rígidos que conflitam com padrões xUnit.
   -->
-  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests'))">
+  <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Tests')) OR $(MSBuildProjectName.EndsWith('.IntegrationTests'))">
     <!-- CA1707: Identifiers should not contain underscores — padrão de nomes xUnit usa underscores -->
     <NoWarn>$(NoWarn);CA1707</NoWarn>
   </PropertyGroup>
