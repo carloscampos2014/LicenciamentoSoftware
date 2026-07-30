@@ -7,13 +7,14 @@ public sealed class Usuario
     public Guid Id { get; private set; }
     public Guid IdCliente { get; private set; }
     public string Nome { get; private set; } = string.Empty;
+    public string Email { get; private set; } = string.Empty;
     public string SenhaHash { get; private set; } = string.Empty;
     public string? TotpSecretHash { get; private set; }
     public bool Ativo { get; private set; }
 
     private Usuario() { }
 
-    public static Usuario Criar(Guid idCliente, string nome, string senhaHash)
+    public static Usuario Criar(Guid idCliente, string nome, string senhaHash, string email = "")
     {
         if (idCliente == Guid.Empty)
             throw new DomainException("IdCliente é obrigatório.");
@@ -32,6 +33,7 @@ public sealed class Usuario
             Id = Guid.NewGuid(),
             IdCliente = idCliente,
             Nome = nome.Trim(),
+            Email = email.Trim(),
             SenhaHash = senhaHash,
             TotpSecretHash = null,
             Ativo = true

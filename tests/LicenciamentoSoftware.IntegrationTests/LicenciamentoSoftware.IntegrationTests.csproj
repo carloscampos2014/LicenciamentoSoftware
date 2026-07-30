@@ -10,8 +10,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="FluentAssertions" Version="7.2.0" />
-    <!-- Microsoft.AspNetCore.Mvc.Testing será reativado na Fase 3 (testes de API com WebApplicationFactory) -->
-    <!-- <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" /> -->
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="Microsoft.OpenApi" Version="2.7.5" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
@@ -26,8 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\LicenciamentoSoftware.Application\LicenciamentoSoftware.Application.csproj" />
     <ProjectReference Include="..\..\src\LicenciamentoSoftware.Infrastructure\LicenciamentoSoftware.Infrastructure.csproj" />
-    <!-- Api será readicionada na Fase 3 junto com Microsoft.AspNetCore.Mvc.Testing -->
-    <!-- <ProjectReference Include="..\..\src\LicenciamentoSoftware.Api\LicenciamentoSoftware.Api.csproj" /> -->
+    <ProjectReference Include="..\..\src\LicenciamentoSoftware.Api\LicenciamentoSoftware.Api.csproj" />
   </ItemGroup>
 
 </Project>

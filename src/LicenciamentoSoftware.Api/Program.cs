@@ -26,6 +26,7 @@ try
     var app = builder.Build();
 
     // --- Pipeline HTTP ---
+    app.UseDatabaseMigrations();
     app.UseApiPipeline();
 
     app.Run();
