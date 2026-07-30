@@ -7,6 +7,7 @@ using LicenciamentoSoftware.Application.Cliente.Abstractions;
 using LicenciamentoSoftware.Application.Cliente.Handlers;
 using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
+using LicenciamentoSoftware.Application.Licenca.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.TipoLicenca.Abstractions;
 using LicenciamentoSoftware.Application.TipoLicenca.Handlers;
@@ -137,6 +138,10 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<IClienteFinalRepository, ClienteFinalRepository>();
         services.AddScoped<IAplicacaoRepository, AplicacaoRepository>();
         services.AddScoped<ITipoLicencaRepository, TipoLicencaRepository>();
+        // Fase 6 — repositórios de licença
+        services.AddScoped<ILicencaGestaoRepository, LicencaGestaoRepository>();
+        services.AddScoped<ILicencaSessaoRepository, LicencaSessaoRepository>();
+        services.AddScoped<ILicencaInstalacaoRepository, LicencaInstalacaoRepository>();
 
         // Auditoria
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
@@ -233,6 +238,15 @@ internal static class ServiceCollectionExtensions
         // TipoLicenca
         services.AddScoped<ListarTiposLicencaHandler>();
         services.AddScoped<BuscarTipoLicencaPorIdHandler>();
+
+        // Fase 6 — handlers de licença
+        services.AddScoped<EmitirLicencaHandler>();
+        services.AddScoped<BuscarLicencaPorIdHandler>();
+        services.AddScoped<ListarLicencasHandler>();
+        services.AddScoped<DesativarLicencaHandler>();
+        services.AddScoped<RenovarPeriodoHandler>();
+        services.AddScoped<EncerrarSessaoHandler>();
+        services.AddScoped<LiberarInstalacaoHandler>();
 
         return services;
     }
