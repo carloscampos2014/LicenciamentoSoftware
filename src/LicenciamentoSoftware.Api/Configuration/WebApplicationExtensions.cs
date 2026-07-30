@@ -1,6 +1,7 @@
+using LicenciamentoSoftware.Api.Middleware;
+using LicenciamentoSoftware.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using LicenciamentoSoftware.Infrastructure.Persistence;
 
 namespace LicenciamentoSoftware.Api.Configuration;
 
@@ -23,9 +24,17 @@ internal static class WebApplicationExtensions
 
         app.UseHttpsRedirection();
 
+        // Rate limiting — antes de Authentication para rejeitar cedo
+        app.UseRateLimiter();
+
         // Ordem obrigatória: Authentication antes de Authorization
         app.UseAuthentication();
         app.UseAuthorization();
+
+        // Anti-replay aplicado apenas nos endpoints de validação de licença
+        app.UseWhen(
+            ctx => ctx.Request.Path.StartsWithSegments("/api/validacao"),
+            branch => branch.UseMiddleware<AntiReplayMiddleware>());
 
         app.MapControllers();
 
