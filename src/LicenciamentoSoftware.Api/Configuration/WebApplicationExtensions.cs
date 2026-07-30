@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using LicenciamentoSoftware.Infrastructure.Persistence;
 
 namespace LicenciamentoSoftware.Api.Configuration;
 
@@ -21,7 +22,11 @@ internal static class WebApplicationExtensions
         }
 
         app.UseHttpsRedirection();
+
+        // Ordem obrigatória: Authentication antes de Authorization
+        app.UseAuthentication();
         app.UseAuthorization();
+
         app.MapControllers();
 
         // Health check acessível em /health
@@ -35,6 +40,17 @@ internal static class WebApplicationExtensions
             },
         });
 
+        return app;
+    }
+
+    /// <summary>
+    /// Aplica migrations pendentes do DbUp na inicialização da aplicação.
+    /// Idempotente — scripts já aplicados são ignorados.
+    /// </summary>
+    internal static WebApplication UseDatabaseMigrations(this WebApplication app)
+    {
+        var migrator = app.Services.GetRequiredService<DatabaseMigrator>();
+        migrator.MigrateUp();
         return app;
     }
 }
