@@ -1,14 +1,17 @@
 using LicenciamentoSoftware.Api.Middleware;
 using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Handlers;
+using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Infrastructure.Identity;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 using LicenciamentoSoftware.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 namespace LicenciamentoSoftware.Api.Configuration;
 
@@ -33,6 +36,8 @@ internal static class ServiceCollectionExtensions
         services.AddApiAuthentication(configuration);
         services.AddApiAuthorization();
         services.AddApiHealthChecks();
+        services.AddApiRateLimiting(configuration);
+        services.AddAntiReplayOptions(configuration);
         services.AddInfrastructureServices(configuration);
         services.AddApplicationHandlers();
 
@@ -112,6 +117,9 @@ internal static class ServiceCollectionExtensions
         // Repositórios
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+        services.AddScoped<ILicencaRepository, LicencaRepository>();
+        services.AddScoped<ILicencaTokenRepository, LicencaTokenRepository>();
+        services.AddScoped<INonceRepository, NonceRepository>();
 
         // Auditoria
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
@@ -120,6 +128,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<IPasswordHasher, PasswordHasher>();
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<ITotpService, TotpService>();
+        services.AddSingleton<IHmacLicencaTokenService, HmacLicencaTokenService>();
         services.AddSingleton<IClock, SystemClock>();
 
         // ICurrentUser — lê claims do HttpContext
@@ -146,6 +155,71 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<LogoutHandler>();
         services.AddScoped<RegistrarUsuarioHandler>();
         services.AddScoped<ConfigurarTotpHandler>();
+
+        // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration
+        services.AddScoped<EmitirTokenLicencaHandler>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var expiracaoMinutos = int.TryParse(
+                config["LicencaTokenSettings:DefaultExpiracaoMinutos"], out var min) ? min : 525600;
+            return new EmitirTokenLicencaHandler(
+                sp.GetRequiredService<ILicencaRepository>(),
+                sp.GetRequiredService<ILicencaTokenRepository>(),
+                sp.GetRequiredService<IHmacLicencaTokenService>(),
+                sp.GetRequiredService<IUnitOfWork>(),
+                expiracaoMinutos);
+        });
+
+        services.AddScoped<RenovarTokenLicencaHandler>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var expiracaoMinutos = int.TryParse(
+                config["LicencaTokenSettings:DefaultExpiracaoMinutos"], out var min) ? min : 525600;
+            return new RenovarTokenLicencaHandler(
+                sp.GetRequiredService<ILicencaRepository>(),
+                sp.GetRequiredService<ILicencaTokenRepository>(),
+                sp.GetRequiredService<IHmacLicencaTokenService>(),
+                sp.GetRequiredService<IUnitOfWork>(),
+                expiracaoMinutos);
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddApiRateLimiting(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var requisicoesPorMinuto = int.TryParse(
+            configuration["RateLimiting:ValidacaoRequisicoesPorMinuto"], out var rpm) ? rpm : 60;
+
+        services.AddRateLimiter(options =>
+        {
+            // Política para endpoints de validação — sliding window por IP
+            options.AddSlidingWindowLimiter("validacao", limiterOptions =>
+            {
+                limiterOptions.PermitLimit = requisicoesPorMinuto;
+                limiterOptions.Window = TimeSpan.FromMinutes(1);
+                limiterOptions.SegmentsPerWindow = 6; // janelas de 10 segundos
+                limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                limiterOptions.QueueLimit = 0;
+            });
+
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddAntiReplayOptions(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<AntiReplayOptions>(opts =>
+        {
+            opts.JanelaMinutos = int.TryParse(
+                configuration["LicencaTokenSettings:AntiReplayJanelaMinutos"], out var min) ? min : 5;
+        });
 
         return services;
     }
