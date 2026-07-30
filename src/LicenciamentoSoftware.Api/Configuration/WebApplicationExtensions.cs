@@ -2,6 +2,7 @@ using LicenciamentoSoftware.Api.Middleware;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Scalar.AspNetCore;
 
 namespace LicenciamentoSoftware.Api.Configuration;
 
@@ -19,7 +20,15 @@ internal static class WebApplicationExtensions
 
         if (app.Environment.IsDevelopment())
         {
+            // OpenAPI JSON: GET /openapi/v1.json
             app.MapOpenApi();
+
+            // Scalar UI: GET /scalar/v1
+            app.MapScalarApiReference(options =>
+            {
+                options.Title = "LicenciamentoSoftware API";
+                options.Theme = ScalarTheme.Purple;
+            });
         }
 
         app.UseHttpsRedirection();
