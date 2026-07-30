@@ -10,28 +10,35 @@ namespace LicenciamentoSoftware.Infrastructure.Security;
 
 /// <summary>
 /// Gera e valida tokens JWT + refresh tokens.
-/// Configuração lida de JwtSettings:Secret, JwtSettings:Emissor, JwtSettings:Audiencia.
+/// O secret é lido sob demanda para suportar injeção de config em testes
+/// sem lançar exceção na startup quando o appsettings base está vazio.
 /// </summary>
 public sealed class JwtTokenService : IJwtTokenService
 {
-    private readonly string _secret;
+    private readonly IConfiguration _configuration;
     private readonly string _emissor;
     private readonly string _audiencia;
     private readonly int _accessTokenMinutos;
 
     public JwtTokenService(IConfiguration configuration)
     {
-        _secret = configuration["JwtSettings:Secret"]
-            ?? throw new InvalidOperationException("JwtSettings:Secret não configurado.");
+        _configuration = configuration;
         _emissor = configuration["JwtSettings:Emissor"] ?? "LicenciamentoSoftware";
         _audiencia = configuration["JwtSettings:Audiencia"] ?? "LicenciamentoSoftware";
         _accessTokenMinutos = int.TryParse(
             configuration["JwtSettings:AccessTokenMinutos"], out var min) ? min : 60;
     }
 
+    private SymmetricSecurityKey GetChave()
+    {
+        var secret = _configuration["JwtSettings:Secret"]
+            ?? throw new InvalidOperationException("JwtSettings:Secret não configurado.");
+        return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+    }
+
     public TokenPar GerarTokenPar(Guid idUsuario, Guid idCliente, string nome, string papel)
     {
-        var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
+        var chave = GetChave();
         var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
         var expiracao = DateTime.UtcNow.AddMinutes(_accessTokenMinutos);
 
@@ -71,7 +78,7 @@ public sealed class JwtTokenService : IJwtTokenService
 
         try
         {
-            var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secret));
+            var chave = GetChave();
             var parametros = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
@@ -85,8 +92,7 @@ public sealed class JwtTokenService : IJwtTokenService
             };
 
             var handler = new JwtSecurityTokenHandler();
-            // Desabilita o mapeamento automático de claims do .NET
-            // para preservar os nomes originais do JWT (ex: "sub" em vez de "nameidentifier")
+            // Desabilita o mapeamento automático para preservar claim names originais do JWT
             handler.InboundClaimTypeMap.Clear();
             var principal = handler.ValidateToken(token, parametros, out _);
             var sub = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
@@ -99,9 +105,8 @@ public sealed class JwtTokenService : IJwtTokenService
 
             return false;
         }
-        catch (Exception ex)
+        catch
         {
-            System.Diagnostics.Debug.WriteLine($"ValidarAccessToken falhou: {ex.Message}");
             return false;
         }
     }

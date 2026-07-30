@@ -3,13 +3,17 @@ using LicenciamentoSoftware.Application.Abstractions;
 
 namespace LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 
+/// <summary>
+/// Todas as operações de refresh token usam DbConnectionFactory diretamente —
+/// não precisam de transação compartilhada com outros repositórios.
+/// </summary>
 public sealed class RefreshTokenRepository : IRefreshTokenRepository
 {
-    private readonly IUnitOfWork _uow;
+    private readonly DbConnectionFactory _factory;
 
-    public RefreshTokenRepository(IUnitOfWork uow)
+    public RefreshTokenRepository(DbConnectionFactory factory)
     {
-        _uow = uow;
+        _factory = factory;
     }
 
     public async Task SalvarAsync(
@@ -21,7 +25,8 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
             VALUES (@Id, @IdUsuario, @TokenHash, @Expiracao, FALSE, NOW())
             """;
 
-        await _uow.Connection.ExecuteAsync(
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
             new CommandDefinition(sql,
                 new
                 {
@@ -30,7 +35,6 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
                     TokenHash = tokenHash,
                     Expiracao = expiracao,
                 },
-                transaction: _uow.Transaction,
                 cancellationToken: cancellationToken));
     }
 
@@ -38,28 +42,30 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
         string tokenHash, CancellationToken cancellationToken = default)
     {
         const string sql = """
-            SELECT id, id_usuario, token_hash, expiracao, revogado
+            SELECT id,
+                   id_usuario   AS "IdUsuario",
+                   token_hash   AS "TokenHash",
+                   expiracao    AS "Expiracao",
+                   revogado     AS "Revogado"
             FROM refresh_token
             WHERE token_hash = @TokenHash
             LIMIT 1
             """;
 
-        return await _uow.Connection.QueryFirstOrDefaultAsync<RefreshTokenInfo>(
+        using var conn = _factory.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<RefreshTokenInfo>(
             new CommandDefinition(sql,
                 new { TokenHash = tokenHash },
-                transaction: _uow.Transaction,
                 cancellationToken: cancellationToken));
     }
 
     public async Task RevogarAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        const string sql = """
-            UPDATE refresh_token SET revogado = TRUE WHERE id = @Id
-            """;
+        const string sql = "UPDATE refresh_token SET revogado = TRUE WHERE id = @Id";
 
-        await _uow.Connection.ExecuteAsync(
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
             new CommandDefinition(sql, new { Id = id },
-                transaction: _uow.Transaction,
                 cancellationToken: cancellationToken));
     }
 
@@ -71,9 +77,9 @@ public sealed class RefreshTokenRepository : IRefreshTokenRepository
             WHERE id_usuario = @IdUsuario AND revogado = FALSE
             """;
 
-        await _uow.Connection.ExecuteAsync(
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
             new CommandDefinition(sql, new { IdUsuario = idUsuario },
-                transaction: _uow.Transaction,
                 cancellationToken: cancellationToken));
     }
 }

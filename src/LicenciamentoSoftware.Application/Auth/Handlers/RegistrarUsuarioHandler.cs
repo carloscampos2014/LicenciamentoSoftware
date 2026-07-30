@@ -43,7 +43,7 @@ public sealed class RegistrarUsuarioHandler
         var papel = temAdmin ? "OperadorCliente" : "AdministradorCliente";
 
         var senhaHash = _passwordHasher.Hash(command.Senha);
-        var usuario = Usuario.Criar(command.IdCliente, command.Nome, senhaHash);
+        var usuario = Usuario.Criar(command.IdCliente, command.Nome, senhaHash, command.Email);
 
         await _uow.BeginAsync(cancellationToken: cancellationToken);
 

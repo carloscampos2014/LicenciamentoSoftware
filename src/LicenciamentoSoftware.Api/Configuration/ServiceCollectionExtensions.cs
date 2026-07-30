@@ -43,12 +43,9 @@ internal static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var secret = configuration["JwtSettings:Secret"]
-            ?? throw new InvalidOperationException("JwtSettings:Secret não configurado.");
-
+        var secret = configuration["JwtSettings:Secret"] ?? string.Empty;
         var emissor = configuration["JwtSettings:Emissor"] ?? "LicenciamentoSoftware";
         var audiencia = configuration["JwtSettings:Audiencia"] ?? "LicenciamentoSoftware";
-        var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -56,7 +53,15 @@ internal static class ServiceCollectionExtensions
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = chave,
+                    // Lê o secret em tempo de validação via IssuerSigningKeyResolver
+                    // para evitar falha na startup quando secret está vazio no appsettings base
+                    IssuerSigningKeyResolver = (_, _, _, _) =>
+                    {
+                        var currentSecret = configuration["JwtSettings:Secret"] ?? string.Empty;
+                        if (string.IsNullOrWhiteSpace(currentSecret))
+                            return [];
+                        return [new SymmetricSecurityKey(Encoding.UTF8.GetBytes(currentSecret))];
+                    },
                     ValidateIssuer = true,
                     ValidIssuer = emissor,
                     ValidateAudience = true,
@@ -91,11 +96,15 @@ internal static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não configurado.");
-
-        // DbConnectionFactory singleton — cria conexões Npgsql
-        services.AddSingleton(new DbConnectionFactory(connectionString));
+        // DbConnectionFactory — usa IConfiguration para ler a connection string em tempo de uso
+        // Necessário para suportar injeção de config em testes sem registrar a string no startup
+        services.AddSingleton<DbConnectionFactory>(sp =>
+        {
+            var cs = sp.GetRequiredService<IConfiguration>()
+                .GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não configurado.");
+            return new DbConnectionFactory(cs);
+        });
 
         // UnitOfWork scoped — uma transação por request
         services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -116,8 +125,14 @@ internal static class ServiceCollectionExtensions
         // ICurrentUser — lê claims do HttpContext
         services.AddScoped<ICurrentUser, CurrentUser>();
 
-        // Aplica migrations na inicialização
-        services.AddSingleton(_ => new DatabaseMigrator(connectionString));
+        // DatabaseMigrator — também lazy via IConfiguration
+        services.AddSingleton<DatabaseMigrator>(sp =>
+        {
+            var cs = sp.GetRequiredService<IConfiguration>()
+                .GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não configurado.");
+            return new DatabaseMigrator(cs);
+        });
 
         return services;
     }
