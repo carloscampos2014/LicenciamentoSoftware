@@ -3,8 +3,8 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Handlers;
 using LicenciamentoSoftware.Application.Auth.Results;
-using LicenciamentoSoftware.Domain.Entities;
 using NSubstitute;
+using DomainUsuario = LicenciamentoSoftware.Domain.Entities.Usuario;
 
 namespace LicenciamentoSoftware.Application.Tests.Auth;
 
@@ -19,9 +19,9 @@ public class LoginHandlerTests
     private LoginHandler CriarHandler() =>
         new(_usuarioRepo, _hasher, _jwt, _refreshRepo, _clock);
 
-    private static Usuario CriarUsuario(bool comTotp = false)
+    private static DomainUsuario CriarUsuario(bool comTotp = false)
     {
-        var u = Usuario.Criar(Guid.NewGuid(), "Teste", "hash_bcrypt");
+        var u = DomainUsuario.Criar(Guid.NewGuid(), "Teste", "hash_bcrypt");
         if (comTotp) u.DefinirTotpSecret("SEGREDO_TOTP_BASE32");
         return u;
     }
@@ -29,7 +29,7 @@ public class LoginHandlerTests
     [Fact]
     public async Task Login_UsuarioNaoEncontrado_RetornaNegado()
     {
-        _usuarioRepo.BuscarPorEmailAsync(Arg.Any<string>()).Returns((Usuario?)null);
+        _usuarioRepo.BuscarPorEmailAsync(Arg.Any<string>()).Returns((DomainUsuario?)null);
 
         var resultado = await CriarHandler().HandleAsync(
             new LoginCommand("teste@email.com", "senha123"));

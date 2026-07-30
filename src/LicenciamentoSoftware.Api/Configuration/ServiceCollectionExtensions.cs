@@ -1,7 +1,17 @@
 using LicenciamentoSoftware.Api.Middleware;
 using LicenciamentoSoftware.Application.Abstractions;
+using LicenciamentoSoftware.Application.Aplicacao.Abstractions;
+using LicenciamentoSoftware.Application.Aplicacao.Handlers;
 using LicenciamentoSoftware.Application.Auth.Handlers;
+using LicenciamentoSoftware.Application.Cliente.Abstractions;
+using LicenciamentoSoftware.Application.Cliente.Handlers;
+using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
+using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
+using LicenciamentoSoftware.Application.TipoLicenca.Abstractions;
+using LicenciamentoSoftware.Application.TipoLicenca.Handlers;
+using LicenciamentoSoftware.Application.Usuario.Abstractions;
+using LicenciamentoSoftware.Application.Usuario.Handlers;
 using LicenciamentoSoftware.Infrastructure.Identity;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
@@ -40,6 +50,7 @@ internal static class ServiceCollectionExtensions
         services.AddAntiReplayOptions(configuration);
         services.AddInfrastructureServices(configuration);
         services.AddApplicationHandlers();
+        services.AddGestaoHandlers();
 
         return services;
     }
@@ -120,6 +131,12 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<ILicencaRepository, LicencaRepository>();
         services.AddScoped<ILicencaTokenRepository, LicencaTokenRepository>();
         services.AddScoped<INonceRepository, NonceRepository>();
+        // Fase 5 — repositórios de gestão
+        services.AddScoped<IClienteRepository, ClienteRepository>();
+        services.AddScoped<IUsuarioGestaoRepository, UsuarioGestaoRepository>();
+        services.AddScoped<IClienteFinalRepository, ClienteFinalRepository>();
+        services.AddScoped<IAplicacaoRepository, AplicacaoRepository>();
+        services.AddScoped<ITipoLicencaRepository, TipoLicencaRepository>();
 
         // Auditoria
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
@@ -182,6 +199,40 @@ internal static class ServiceCollectionExtensions
                 sp.GetRequiredService<IUnitOfWork>(),
                 expiracaoMinutos);
         });
+
+        return services;
+    }
+
+    private static IServiceCollection AddGestaoHandlers(
+        this IServiceCollection services)
+    {
+        // Cliente
+        services.AddScoped<CriarClienteHandler>();
+        services.AddScoped<AtualizarClienteHandler>();
+        services.AddScoped<DesativarClienteHandler>();
+        services.AddScoped<BuscarClientePorIdHandler>();
+        services.AddScoped<ListarClientesHandler>();
+        // Usuario
+        services.AddScoped<CriarUsuarioHandler>();
+        services.AddScoped<AtualizarUsuarioHandler>();
+        services.AddScoped<DesativarUsuarioHandler>();
+        services.AddScoped<BuscarUsuarioPorIdHandler>();
+        services.AddScoped<ListarUsuariosHandler>();
+        // ClienteFinal
+        services.AddScoped<CriarClienteFinalHandler>();
+        services.AddScoped<AtualizarClienteFinalHandler>();
+        services.AddScoped<DesativarClienteFinalHandler>();
+        services.AddScoped<BuscarClienteFinalPorIdHandler>();
+        services.AddScoped<ListarClientesFinaisHandler>();
+        // Aplicacao
+        services.AddScoped<CriarAplicacaoHandler>();
+        services.AddScoped<AtualizarAplicacaoHandler>();
+        services.AddScoped<DesativarAplicacaoHandler>();
+        services.AddScoped<BuscarAplicacaoPorIdHandler>();
+        services.AddScoped<ListarAplicacoesHandler>();
+        // TipoLicenca
+        services.AddScoped<ListarTiposLicencaHandler>();
+        services.AddScoped<BuscarTipoLicencaPorIdHandler>();
 
         return services;
     }
