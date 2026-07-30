@@ -1,8 +1,9 @@
 using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Results;
-using LicenciamentoSoftware.Domain.Entities;
 using LicenciamentoSoftware.Domain.Enums;
+using DomainUsuario = LicenciamentoSoftware.Domain.Entities.Usuario;
+using LicenciamentoSoftware.Domain.Entities;
 
 namespace LicenciamentoSoftware.Application.Auth.Handlers;
 
@@ -43,7 +44,7 @@ public sealed class RegistrarUsuarioHandler
         var papel = temAdmin ? "OperadorCliente" : "AdministradorCliente";
 
         var senhaHash = _passwordHasher.Hash(command.Senha);
-        var usuario = Usuario.Criar(command.IdCliente, command.Nome, senhaHash, command.Email);
+        var usuario = DomainUsuario.Criar(command.IdCliente, command.Nome, senhaHash, command.Email);
 
         await _uow.BeginAsync(cancellationToken: cancellationToken);
 

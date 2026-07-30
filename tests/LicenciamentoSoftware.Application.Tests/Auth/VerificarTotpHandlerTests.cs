@@ -3,8 +3,8 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Handlers;
 using LicenciamentoSoftware.Application.Auth.Results;
-using LicenciamentoSoftware.Domain.Entities;
 using NSubstitute;
+using DomainUsuario = LicenciamentoSoftware.Domain.Entities.Usuario;
 
 namespace LicenciamentoSoftware.Application.Tests.Auth;
 
@@ -38,7 +38,7 @@ public class VerificarTotpHandlerTests
         _jwt.ValidarAccessToken(Arg.Any<string>(), out Arg.Any<Guid>())
             .Returns(x => { x[1] = idUsuario; return true; });
 
-        var usuario = Usuario.Criar(idUsuario, "Teste", "hash");
+        var usuario = DomainUsuario.Criar(idUsuario, "Teste", "hash");
         usuario.DefinirTotpSecret("SEGREDO");
         _usuarioRepo.BuscarPorIdAsync(idUsuario).Returns(usuario);
         _totp.Validar(Arg.Any<string>(), Arg.Any<string>()).Returns(false);
@@ -56,7 +56,7 @@ public class VerificarTotpHandlerTests
         _jwt.ValidarAccessToken(Arg.Any<string>(), out Arg.Any<Guid>())
             .Returns(x => { x[1] = idUsuario; return true; });
 
-        var usuario = Usuario.Criar(idUsuario, "Teste", "hash");
+        var usuario = DomainUsuario.Criar(idUsuario, "Teste", "hash");
         usuario.DefinirTotpSecret("SEGREDO");
         _usuarioRepo.BuscarPorIdAsync(idUsuario).Returns(usuario);
         _totp.Validar(Arg.Any<string>(), Arg.Any<string>()).Returns(true);

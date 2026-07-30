@@ -3,8 +3,8 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Handlers;
 using LicenciamentoSoftware.Application.Auth.Results;
-using LicenciamentoSoftware.Domain.Entities;
 using NSubstitute;
+using DomainUsuario = LicenciamentoSoftware.Domain.Entities.Usuario;
 
 namespace LicenciamentoSoftware.Application.Tests.Auth;
 
@@ -74,7 +74,7 @@ public class RefreshTokenHandlerTests
 
         _refreshRepo.BuscarPorHashAsync(Arg.Any<string>()).Returns(info);
 
-        var usuario = Usuario.Criar(idUsuario, "Teste", "hash_senha");
+        var usuario = DomainUsuario.Criar(idUsuario, "Teste", "hash_senha");
         _usuarioRepo.BuscarPorIdAsync(idUsuario).Returns(usuario);
         _usuarioRepo.BuscarPapelAsync(idUsuario).Returns("AdministradorCliente");
 
