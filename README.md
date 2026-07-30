@@ -1,150 +1,164 @@
 # LicenciamentoSoftware
 
-Estrutura .NET 8 (Clean Architecture) para o Sistema de Licenciamento de Software, gerada a partir do `PROJECT.md` / `schema.sql`.
+Sistema de licenciamento de software construído com .NET 10, Clean Architecture, PostgreSQL, Dapper e DbUp.
 
-## Estrutura
+## Stack
+
+| Camada | Tecnologias |
+|---|---|
+| Runtime | .NET 10 (LTS) |
+| API | ASP.NET Core 10, JWT Bearer, Rate Limiting nativo |
+| Banco de dados | PostgreSQL (WSL2 em dev, Supabase/Oracle Cloud em prod) |
+| Migrations | DbUp (scripts SQL versionados embarcados no assembly) |
+| Queries | Dapper (sem EF Core) |
+| Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256 |
+| Testes | xUnit, FluentAssertions, NSubstitute, NetArchTest |
+
+## Estrutura de projetos
 
 ```
 src/
-  LicenciamentoSoftware.Domain/          Entidades de domínio (POCOs)
-  LicenciamentoSoftware.Infrastructure/  DbContext (EF Core) + mapeamento Fluent API
-  LicenciamentoSoftware.Api/             API (Controllers, DTOs, Services)
+  LicenciamentoSoftware.Domain/           Entidades, value objects, DomainException
+  LicenciamentoSoftware.Application/      Handlers, Commands, interfaces de porta
+  LicenciamentoSoftware.Infrastructure/   Repositórios Dapper, DbUp, serviços de segurança
+  LicenciamentoSoftware.Api/              Controllers, Middleware, configuração DI
+  LicenciamentoSoftware.Client/           Cliente HTTP compartilhado (Web + MAUI)
+  LicenciamentoSoftware.Web/              Blazor WASM (em desenvolvimento)
+  LicenciamentoSoftware.Maui/             App Desktop/Mobile MAUI (em desenvolvimento)
+
+tests/
+  LicenciamentoSoftware.Domain.Tests/     Testes unitários de domínio
+  LicenciamentoSoftware.Application.Tests/ Testes unitários de handlers e serviços
+  LicenciamentoSoftware.IntegrationTests/ Testes de integração (requer PostgreSQL)
 ```
 
-## O que já está implementado
+## Fases concluídas
 
-- Todas as entidades do modelo (Cliente, Usuario, ClienteFinal, Aplicacao, TipoLicenca,
-  Licenca, LicencaPeriodo, LicencaUsuarios, LicencaSessao, LicencaInstalacao,
-  LicencaInstalacaoRegistrada, LogOperacao).
-- `LicenciamentoDbContext` com o mapeamento completo (chaves, índices, unique constraints,
-  seed dos Tipos de Licença fixos).
-- API de Validação de Licença completa:
-  - `POST /api/validar-login` — licença Por Usuários (limite de usuários simultâneos + limite de sessões por usuário)
-  - `POST /api/heartbeat` — mantém sessão viva
-  - `POST /api/logout` — encerra sessão explicitamente
-  - `POST /api/validar-instalacao` — licença Por Instalação (limite de máquinas distintas)
+| Fase | O que foi implementado |
+|---|---|
+| 1 — Fundação | 7 projetos src + 3 tests, Directory.Build.props, Serilog, ProblemDetails, health check `/health`, docker-compose, testes de arquitetura NetArchTest |
+| 2 — Domínio e schema | 11 entidades + 3 value objects (Rich Domain, sem EF Core), DbUp + Dapper, V001_InitialSchema.sql |
+| 3 — Identidade e auditoria | JWT + 2FA TOTP, ICurrentUser (tenant do JWT), UnitOfWork Npgsql, AuditLogWriter, endpoints `/auth/*`, V002_UsuarioPapelRefreshToken.sql |
+| 4 — Segurança API de validação | Token HMAC-SHA256 por licença, middleware anti-replay (X-Timestamp ±5 min + X-Nonce), rate limiting, `POST /auth/licenca/renovar-token`, V003_LicencaToken.sql |
 
-## CRUDs implementados
+## Como rodar localmente
 
-- `ClientesController` — `GET /api/clientes`, `GET /{id}`, `POST`, `PUT /{id}`, `DELETE /{id}` (desativação lógica).
-- `UsuariosController` — idem, com filtro por `idCliente` e validação de que o Cliente existe/está ativo.
-- `ClientesFinaisController` — idem, valida vínculo com Cliente.
-- `AplicacoesController` — idem, valida Cliente e `IdTipoLicenca`.
-- `TiposLicencaController` — somente leitura (`GET`), já que é tabela fixa/seed.
-- `LicencasController` — o mais complexo: valida que Cliente Final e Aplicativo pertencem ao Cliente informado, valida que o bloco de detalhe enviado (`Periodo` / `Usuarios` / `Instalacao`) corresponde ao `IdTipoLicenca` da Aplicação, cria o registro de detalhe correto, e trata a violação da constraint de licença ativa única (retorna `409 Conflict`).
+### Pré-requisitos
 
-Todos os CRUDs usam exclusão lógica (`Ativo = false`), nunca `DELETE` físico — consistente com a regra de negócio documentada.
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- PostgreSQL acessível (WSL2, Docker ou Supabase)
 
-## O que ainda falta (próximos passos sugeridos)
+### 1. Configurar a connection string
 
-- Job agendado (`IHostedService` / Hangfire / Quartz) para: renovação automática de licenças Por Período, e liberação de sessões inativas (sem heartbeat dentro de `TempoLimiteSessaoHoras`).
-- Gravação automática no `LogOperacao` a cada operação de escrita (ex: via `SaveChangesAsync` override no DbContext, ou interceptor do EF Core) — hoje os CRUDs alteram dados mas não geram log ainda.
-- Autenticação/autorização da própria API de gestão (distinta da API de validação usada pelos softwares licenciados) — hoje qualquer chamada é aceita sem identidade.
-- Validações de negócio adicionais (ex: paginação nas listagens, validação de formato de e-mail/CPF-CNPJ, tratamento de erros mais granular).
-- Testes automatizados (unitários e de integração).
+Copie o arquivo de exemplo e preencha com seus dados:
 
-## Como rodar (ambiente com .NET 8 SDK instalado)
+```powershell
+Copy-Item .env.example .env
+```
 
-```bash
-cd src/LicenciamentoSoftware.Api
+Ou defina diretamente via variável de ambiente:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=licenciamento;Username=postgres;Password=postgres"
+$env:JwtSettings__Secret = "sua-chave-secreta-com-pelo-menos-32-caracteres"
+```
+
+### 2. Restaurar dependências e rodar
+
+```powershell
 dotnet restore
-# Caso precise gerar migrations localmente (já foi criada a migration inicial neste repositório):
-# dotnet ef migrations add Inicial --project ../LicenciamentoSoftware.Infrastructure
-# Aplicar migrations ao banco configurado em appsettings.json
-dotnet ef database update --project ../LicenciamentoSoftware.Infrastructure --startup-project .
-dotnet run
+dotnet run --project src/LicenciamentoSoftware.Api
 ```
 
-Ajuste a connection string em `appsettings.json` (`ConnectionStrings:DefaultConnection`) para seu PostgreSQL local.
+As migrations do DbUp são aplicadas automaticamente na inicialização — não é necessário nenhum comando extra.
 
-## Docker (recomendado)
+### 3. Verificar health check
 
-Modo rápido para levantar um PostgreSQL via Docker e aplicar as migrations:
+```
+GET http://localhost:5000/health
+```
 
-1) Rodar container PostgreSQL (PowerShell):
+## Docker (PostgreSQL local)
 
 ```powershell
-docker pull postgres:15
-docker run --name lic_pg \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=licenciamento \
-  -p 5432:5432 -d postgres:15
+# Subir PostgreSQL via docker-compose
+docker compose up -d
+
+# Rodar a API (as migrations são aplicadas automaticamente)
+dotnet run --project src/LicenciamentoSoftware.Api
 ```
 
-2) Aplicar migrations a partir da raiz do projeto (PowerShell):
-
-```powershell
-dotnet ef database update --project src\\LicenciamentoSoftware.Infrastructure --startup-project src\\LicenciamentoSoftware.Api
-```
-
-3) Alternativa: executar o script SQL já gerado (se preferir não usar dotnet-ef no host):
-
-```powershell
-docker cp .\\src\\Database\\create_schema.sql lic_pg:/tmp/create_schema.sql
-docker exec -it lic_pg psql -U postgres -d licenciamento -f /tmp/create_schema.sql
-```
-
-4) Parar/remover o container quando não precisar:
-
-```powershell
-docker stop lic_pg; docker rm lic_pg
-```
-
-## WSL2 / PostgreSQL no Linux (Ubuntu)
-
-Passos resumidos (execute dentro do WSL):
+## PostgreSQL no WSL2
 
 ```bash
-sudo apt update
-sudo apt install -y postgresql postgresql-contrib
+# Dentro do WSL
 sudo service postgresql start
-# Ajuste a senha do usuário postgres (opcional)
 sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
 sudo -u postgres createdb licenciamento
-# Executar o script SQL gerado (caminho para o Windows: /mnt/c/...)
-sudo -u postgres psql -d licenciamento -f /mnt/c/Dev/LicenciamentoSoftware/src/Database/create_schema.sql
 ```
 
-Ou aplique as migrations diretamente (no WSL ou no Windows se o SDK estiver instalado):
+Connection string para usar do Windows apontando para o WSL2:
 
-```bash
-dotnet ef database update --project src/LicenciamentoSoftware.Infrastructure --startup-project src/LicenciamentoSoftware.Api
+```
+Host=localhost;Port=5432;Database=licenciamento;Username=postgres;Password=postgres
 ```
 
-## dotnet-ef (ferramenta global)
-
-Instalar/atualizar a ferramenta para evitar mensagens de mismatch:
+## Rodar os testes
 
 ```powershell
-dotnet tool install --global dotnet-ef --version 8.0.10
-# ou
-dotnet tool update --global dotnet-ef --version 8.0.10
+# Testes unitários (sem banco)
+dotnet test tests/LicenciamentoSoftware.Domain.Tests
+dotnet test tests/LicenciamentoSoftware.Application.Tests
+
+# Testes de integração (requer PostgreSQL configurado)
+$env:ConnectionStrings__DefaultConnection = "..."
+dotnet test tests/LicenciamentoSoftware.IntegrationTests
 ```
 
-## Arquivos importantes
+## Endpoints disponíveis
 
-- Migrations: `src/LicenciamentoSoftware.Infrastructure/Migrations/InitialCreate*`
-- Script SQL gerado: `src/Database/create_schema.sql`
-- Connection string padrão: `src/LicenciamentoSoftware.Api/appsettings.json` (Host=localhost;Port=5432;Database=licenciamento;Username=postgres;Password=postgres)
+### Autenticação (`/auth`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/auth/register` | Registra novo usuário |
+| POST | `/auth/login` | Login com e-mail e senha |
+| POST | `/auth/verify-2fa` | Segunda etapa TOTP |
+| POST | `/auth/refresh` | Renova par de tokens JWT |
+| POST | `/auth/logout` | Revoga refresh token |
+| POST | `/auth/totp/setup` | Configura 2FA TOTP |
+
+### Tokens de licença (`/licencas`)
+
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/licencas/{id}/token` | Emite token HMAC para a licença |
+| POST | `/licencas/{id}/token/renovar` | Renova token HMAC (alias: `/auth/licenca/renovar-token`) |
+
+### Monitoramento
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/health` | Health check da API |
+
+## Autenticação HMAC para a API de validação
+
+Requisições aos endpoints de validação devem incluir os headers:
+
+```
+X-Timestamp: 2026-07-30T12:00:00Z   (ISO-8601 UTC, janela de ±5 min)
+X-Nonce: <uuid-ou-string-aleatória>  (máx 128 chars, único por requisição)
+```
+
+## Decisões de design
+
+- **Sem EF Core** — DbUp para migrations, Dapper para queries
+- **Rich Domain Model** — invariantes no domínio via `DomainException`
+- **Sem MediatR** — handlers concretos injetados diretamente nos controllers
+- **Tenant isolation** — `IdCliente` sempre do JWT, nunca do body
+- **Segredo HMAC** — exibido uma única vez na emissão; apenas o hash BCrypt persiste
 
 ## Observações
 
-- Em produção, não use as credenciais padrão e configure backups e políticas de segurança.
-- Se alterar a connection string, atualize `appsettings.json` ou use variáveis de ambiente.
-
----
-
-Foi adicionado um script PowerShell em `scripts/start-local.ps1` que automatiza a criação (ou reutilização) do container Docker PostgreSQL, aplica as migrations via EF Core e inicia a API.
-
-Uso (PowerShell, execute na raiz do repositório):
-
-```powershell
-# Criar/usar container, aplicar migrations e iniciar a API
-.\scripts\start-local.ps1
-
-# Forçar recriar o container PostgreSQL antes de aplicar migrations
-.\scripts\start-local.ps1 -RecreateContainer
-```
-
-Se desejar, posso também adicionar scripts para parar/remover o ambiente, executar a API em background ou parametrizar usuário/senha/porta via arquivo `.env`.
+- Em produção, use variáveis de ambiente ou secrets manager para `JwtSettings:Secret` e a connection string — nunca commite segredos no repositório.
+- O `appsettings.json` contém apenas valores padrão vazios para desenvolvimento.
