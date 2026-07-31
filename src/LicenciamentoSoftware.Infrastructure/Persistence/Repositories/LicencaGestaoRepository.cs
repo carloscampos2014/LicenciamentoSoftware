@@ -324,17 +324,9 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             new CommandDefinition(sql, new { Ids = ids.ToArray() }, cancellationToken: ct));
     }
 
-    public async Task RenovarDataFimLicencaAsync(
+    public Task RenovarDataFimLicencaAsync(
         Guid idLicenca, DateTime novaDataFim, CancellationToken ct = default)
-    {
-        const string sql = """
-            UPDATE licenca_periodo SET data_fim = @DataFim WHERE licenca_id = @IdLicenca
-            """;
-        using var conn = _factory.CreateConnection();
-        await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { IdLicenca = idLicenca, DataFim = novaDataFim },
-            cancellationToken: ct));
-    }
+        => AtualizarDataFimPeriodoAsync(idLicenca, novaDataFim, ct);
 
     public async Task<IReadOnlyList<Application.Jobs.LicencaPeriodoJobInfo>> BuscarLicencasProximasVencimentoAsync(
         DateTime agora, int diasAntecedencia, CancellationToken ct = default)
