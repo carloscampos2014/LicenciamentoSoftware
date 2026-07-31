@@ -1,0 +1,14 @@
+@page "/"
+@inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthProvider
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated == true)
+            Nav.NavigateTo("/clientes-finais", replace: true);
+        else
+            Nav.NavigateTo("/login", replace: true);
+    }
+}
