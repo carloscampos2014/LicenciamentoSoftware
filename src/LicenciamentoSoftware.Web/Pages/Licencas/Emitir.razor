@@ -1,109 +1,181 @@
 @page "/licencas/emitir"
-@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@attribute [Authorize]
 @inject LicencaApiService LicencaService
 @inject AplicacaoApiService AplicacaoService
 @inject ClienteFinalApiService ClienteFinalService
+@inject NavigationManager Nav
 
-<PageTitle>Emitir Licença</PageTitle>
+<PageTitle>Nova Licença — Licenciamento</PageTitle>
 
-<div class="col-12 col-md-8 col-lg-6">
-    <h3 class="mb-4">Emitir licença</h3>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Nova Licença</h1>
+        <p>Gerencie licenças e controle de acesso</p>
+    </div>
+    <a href="/licencas" class="btn btn-outline-secondary btn-sm">← Voltar</a>
+</div>
 
-    @if (_passo == 1)
-    {
-        <h5 class="mb-3">1. Selecione a aplicação e o cliente final</h5>
-        @if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
-        else
-        {
-            <div class="mb-3">
-                <label class="form-label">Aplicação *</label>
-                <select class="form-select" @bind="_idAplicacao">
-                    <option value="">— selecione —</option>
-                    @foreach (var a in _aplicacoes)
-                    {
-                        <option value="@a.Id">@a.Titulo (@a.TipoLicencaDescricao)</option>
-                    }
-                </select>
+@if (_passo == 3)
+{
+    <!-- Sucesso -->
+    <div class="item-card" style="max-width:560px">
+        <div class="item-card-header">
+            <div>
+                <p class="item-card-title">Licença emitida com sucesso!</p>
+                <span class="badge-pill badge-ativo">Ativa</span>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Cliente Final *</label>
-                <select class="form-select" @bind="_idClienteFinal">
-                    <option value="">— selecione —</option>
-                    @foreach (var c in _clientesFinais)
-                    {
-                        <option value="@c.Id">@c.RazaoSocial</option>
-                    }
-                </select>
+            <div class="item-card-icon" style="background:#d1fae5">
+                <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#065f46">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
             </div>
-            <ApiError Erro="@_erro" />
-            <button class="btn btn-primary" @onclick="AvancarPasso1"
-                    disabled="@(_idAplicacao == Guid.Empty || _idClienteFinal == Guid.Empty)">
-                Próximo
-            </button>
-        }
-    }
-    else if (_passo == 2)
-    {
-        <h5 class="mb-3">2. Configurar detalhes (@_tipoLicenca)</h5>
-        @if (_tipoLicenca == "Permanente")
-        {
-            <p class="text-muted">Licença permanente não requer configuração adicional.</p>
-        }
-        else if (_tipoLicenca == "Por Período")
-        {
-            <div class="row mb-3">
-                <div class="col"><label class="form-label">Data início *</label><InputDate class="form-control" @bind-Value="_dataInicio" /></div>
-                <div class="col"><label class="form-label">Data fim *</label><InputDate class="form-control" @bind-Value="_dataFim" /></div>
-            </div>
-            <div class="mb-3 form-check">
-                <InputCheckbox class="form-check-input" id="renovacao" @bind-Value="_renovacaoAutomatica" />
-                <label class="form-check-label" for="renovacao">Renovação automática</label>
-            </div>
-        }
-        else if (_tipoLicenca == "Por Usuários")
-        {
-            <div class="row mb-3">
-                <div class="col"><label class="form-label">Máx. usuários *</label><InputNumber class="form-control" @bind-Value="_qtdMaxUsuarios" /></div>
-                <div class="col"><label class="form-label">Máx. sessões/usuário</label><InputNumber class="form-control" @bind-Value="_maxSessoesPorUsuario" /></div>
-            </div>
-            <div class="mb-3"><label class="form-label">Limite sessão (horas)</label><InputNumber class="form-control" @bind-Value="_tempoLimiteSessaoHoras" /></div>
-        }
-        else if (_tipoLicenca == "Por Instalação")
-        {
-            <div class="mb-3"><label class="form-label">Máx. instalações *</label><InputNumber class="form-control" @bind-Value="_qtdMaxInstalacoes" /></div>
-        }
-        <div class="mb-3 form-check mt-3">
-            <InputCheckbox class="form-check-input" id="emitirToken" @bind-Value="_emitirToken" />
-            <label class="form-check-label" for="emitirToken">Gerar token HMAC junto com a licença</label>
         </div>
-        <ApiError Erro="@_erro" />
-        <div class="d-flex gap-2 mt-3">
-            <button class="btn btn-outline-secondary" @onclick="() => _passo = 1">Voltar</button>
-            <button class="btn btn-primary" @onclick="EmitirLicenca" disabled="@_salvando">
-                @if (_salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                Emitir licença
-            </button>
-        </div>
-    }
-    else if (_passo == 3)
-    {
-        <div class="alert alert-success">
-            <h5>Licença emitida com sucesso!</h5>
-            @if (_tokenEmitido is not null)
-            {
-                <p><strong>Token HMAC:</strong><br /><code class="user-select-all">@_tokenEmitido</code></p>
-                <p class="text-danger small"><strong>Atenção:</strong> Exibido uma única vez. Guarde com segurança.</p>
-            }
-        </div>
-        <div class="d-flex gap-2">
-            <a href="/licencas" class="btn btn-primary">Ver licenças</a>
+        @if (_tokenEmitido is not null)
+        {
+            <div class="alert alert-warning mt-2">
+                <strong>Token HMAC gerado — exibido uma única vez:</strong>
+                <div class="mt-1">
+                    <code class="user-select-all" style="word-break:break-all">@_tokenEmitido</code>
+                </div>
+                <small class="text-danger d-block mt-1">Copie e guarde com segurança antes de sair desta página.</small>
+            </div>
+        }
+        <div class="item-card-footer">
+            <a href="/licencas" class="btn btn-primary btn-sm">Ver licenças</a>
             @if (_idLicencaEmitida != Guid.Empty)
             {
-                <a href="/licencas/@_idLicencaEmitida" class="btn btn-outline-secondary">Ver detalhes</a>
+                <a href="/licencas/@_idLicencaEmitida" class="btn btn-outline-secondary btn-sm">Ver detalhes</a>
             }
         </div>
-    }
-</div>
+    </div>
+}
+else
+{
+    <div class="item-card" style="max-width:560px">
+        <!-- Indicador de passos -->
+        <div class="d-flex gap-2 mb-4">
+            <span class="badge-pill @(_passo >= 1 ? "badge-ativo" : "badge-inativo")" style="font-size:.75rem">1. Seleção</span>
+            <span class="text-muted">→</span>
+            <span class="badge-pill @(_passo >= 2 ? "badge-ativo" : "badge-inativo")" style="font-size:.75rem">2. Configuração</span>
+        </div>
+
+        @if (_passo == 1)
+        {
+            <h5 class="fw-600 mb-3">Selecione a aplicação e o cliente final</h5>
+
+            @if (_carregando)
+            {
+                <div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label class="form-label">Aplicação *</label>
+                    <select class="form-select" @bind="_idAplicacao">
+                        <option value="">— selecione —</option>
+                        @foreach (var a in _aplicacoes)
+                        {
+                            <option value="@a.Id">@a.Titulo (@a.TipoLicencaDescricao)</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Cliente Final *</label>
+                    <select class="form-select" @bind="_idClienteFinal">
+                        <option value="">— selecione —</option>
+                        @foreach (var c in _clientesFinais)
+                        {
+                            <option value="@c.Id">@c.RazaoSocial</option>
+                        }
+                    </select>
+                </div>
+
+                <ApiError Erro="@_erro" />
+
+                <div class="d-flex justify-content-end mt-3">
+                    <button class="btn btn-primary"
+                            @onclick="AvancarPasso1"
+                            disabled="@(_idAplicacao == Guid.Empty || _idClienteFinal == Guid.Empty)">
+                        Próximo →
+                    </button>
+                </div>
+            }
+        }
+        else if (_passo == 2)
+        {
+            <h5 class="fw-600 mb-1">Configurar detalhes</h5>
+            <p class="text-muted small mb-3">
+                Tipo: <span class="badge-pill @BadgeTipo(_tipoLicenca)">@_tipoLicenca</span>
+            </p>
+
+            @if (_tipoLicenca == "Permanente")
+            {
+                <div class="alert alert-light border">
+                    <small class="text-muted">Licença permanente não requer configuração adicional.</small>
+                </div>
+            }
+            else if (_tipoLicenca == "Por Período")
+            {
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Data início *</label>
+                        <InputDate class="form-control" @bind-Value="_dataInicio" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data fim *</label>
+                        <InputDate class="form-control" @bind-Value="_dataFim" />
+                    </div>
+                </div>
+                <div class="form-group form-check">
+                    <InputCheckbox class="form-check-input" id="renovacao" @bind-Value="_renovacaoAutomatica" />
+                    <label class="form-check-label" for="renovacao">Renovação automática</label>
+                </div>
+            }
+            else if (_tipoLicenca == "Por Usuários")
+            {
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Máx. usuários *</label>
+                        <InputNumber class="form-control" @bind-Value="_qtdMaxUsuarios" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Máx. sessões/usuário</label>
+                        <InputNumber class="form-control" @bind-Value="_maxSessoesPorUsuario" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Limite de sessão (horas)</label>
+                    <InputNumber class="form-control" @bind-Value="_tempoLimiteSessaoHoras" />
+                </div>
+            }
+            else if (_tipoLicenca == "Por Instalação")
+            {
+                <div class="form-group">
+                    <label class="form-label">Máx. instalações *</label>
+                    <InputNumber class="form-control" @bind-Value="_qtdMaxInstalacoes" />
+                </div>
+            }
+
+            <div class="form-group form-check mt-2">
+                <InputCheckbox class="form-check-input" id="emitirToken" @bind-Value="_emitirToken" />
+                <label class="form-check-label" for="emitirToken">
+                    Gerar token HMAC junto com a licença
+                </label>
+            </div>
+
+            <ApiError Erro="@_erro" />
+
+            <div class="d-flex justify-content-between mt-3">
+                <button class="btn btn-outline-secondary" @onclick="() => _passo = 1">← Voltar</button>
+                <button class="btn btn-primary" @onclick="EmitirLicenca" disabled="@_salvando">
+                    @if (_salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    Emitir licença
+                </button>
+            </div>
+        }
+    </div>
+}
 
 @code {
     private int _passo = 1;
@@ -156,8 +228,8 @@
         {
             var request = new EmitirLicencaRequest(
                 _idClienteFinal, _idAplicacao,
-                _tipoLicenca == "Por Período" ? new(_dataInicio, _dataFim, _renovacaoAutomatica) : null,
-                _tipoLicenca == "Por Usuários" ? new(_qtdMaxUsuarios, _maxSessoesPorUsuario, _tempoLimiteSessaoHoras) : null,
+                _tipoLicenca == "Por Período"    ? new(_dataInicio, _dataFim, _renovacaoAutomatica) : null,
+                _tipoLicenca == "Por Usuários"   ? new(_qtdMaxUsuarios, _maxSessoesPorUsuario, _tempoLimiteSessaoHoras) : null,
                 _tipoLicenca == "Por Instalação" ? new(_qtdMaxInstalacoes) : null,
                 _emitirToken);
 
@@ -174,4 +246,13 @@
         }
         finally { _salvando = false; }
     }
+
+    private static string BadgeTipo(string tipo) => tipo switch
+    {
+        "Permanente"     => "badge-permanente",
+        "Por Período"    => "badge-periodo",
+        "Por Usuários"   => "badge-usuarios",
+        "Por Instalação" => "badge-instalacao",
+        _                => "badge-inativo"
+    };
 }

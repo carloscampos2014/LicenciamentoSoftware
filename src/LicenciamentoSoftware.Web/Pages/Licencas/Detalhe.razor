@@ -1,73 +1,95 @@
 @page "/licencas/{Id:guid}"
-@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@attribute [Authorize]
 @inject LicencaApiService Service
 
-<PageTitle>Detalhe da Licença</PageTitle>
+<PageTitle>Detalhe da Licença — Licenciamento</PageTitle>
 
-@if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
-else if (_licenca is null) { <ApiError Erro="Licença não encontrada." /> }
+@if (_carregando)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+}
+else if (_licenca is null)
+{
+    <ApiError Erro="Licença não encontrada." />
+}
 else
 {
-    <div class="d-flex justify-content-between align-items-start mb-3">
-        <div>
-            <h3 class="mb-0">@_licenca.ClienteFinalRazaoSocial</h3>
-            <span class="text-muted small">@_licenca.AplicativoTitulo &mdash; @_licenca.TipoLicenca</span>
+    <div class="page-header-row">
+        <div class="page-header">
+            <h1>@_licenca.ClienteFinalRazaoSocial</h1>
+            <p>@_licenca.AplicativoTitulo</p>
         </div>
-        <span class="badge @(_licenca.Ativo ? "bg-success" : "bg-secondary") fs-6">
-            @(_licenca.Ativo ? "Ativa" : "Inativa")
-        </span>
+        <div class="d-flex gap-2 align-items-center">
+            <span class="badge-pill @(_licenca.Ativo ? "badge-ativo" : "badge-inativo")">
+                @(_licenca.Ativo ? "Ativa" : "Inativa")
+            </span>
+            <span class="badge-pill @BadgeTipo(_licenca.TipoLicenca)">@_licenca.TipoLicenca</span>
+            <a href="/licencas" class="btn btn-outline-secondary btn-sm ms-2">← Voltar</a>
+        </div>
     </div>
 
     <ApiError Erro="@_erro" />
 
+    <!-- Detalhes do período -->
     @if (_licenca.Periodo is { } p)
     {
-        <div class="card mb-4">
-            <div class="card-header">Período</div>
-            <div class="card-body row g-3">
-                <div class="col-sm-4"><strong>Início:</strong> @p.DataInicio.ToString("dd/MM/yyyy")</div>
-                <div class="col-sm-4"><strong>Fim:</strong> @p.DataFim.ToString("dd/MM/yyyy")</div>
-                <div class="col-sm-4"><strong>Renovação auto:</strong> @(p.RenovacaoAutomatica ? "Sim" : "Não")</div>
-                <div class="col-12">
-                    <AuthorizeView Roles="AdministradorCliente">
-                        <Authorized>
-                            <div class="d-flex gap-2 align-items-center">
-                                <label class="form-label mb-0">Nova data fim:</label>
-                                <input type="date" class="form-control form-control-sm" style="width:160px" @bind="_novaDataFim" />
-                                <button class="btn btn-outline-primary btn-sm" @onclick="RenovarPeriodo" disabled="@_salvando">Renovar período</button>
-                            </div>
-                        </Authorized>
-                    </AuthorizeView>
+        <div class="item-card mb-3">
+            <p class="fw-semibold mb-2">Período</p>
+            <div class="row g-2">
+                <div class="col-sm-4">
+                    <small class="text-muted d-block">Início</small>
+                    <span>@p.DataInicio.ToString("dd/MM/yyyy")</span>
                 </div>
+                <div class="col-sm-4">
+                    <small class="text-muted d-block">Fim</small>
+                    <span>@p.DataFim.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="col-sm-4">
+                    <small class="text-muted d-block">Renovação auto</small>
+                    <span>@(p.RenovacaoAutomatica ? "Sim" : "Não")</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 align-items-center mt-3">
+                <label class="form-label mb-0 small">Nova data fim:</label>
+                <input type="date" class="form-control form-control-sm" style="width:160px"
+                       @bind="_novaDataFim" />
+                <button class="btn btn-outline-primary btn-sm" @onclick="RenovarPeriodo" disabled="@_salvando">
+                    Renovar período
+                </button>
             </div>
         </div>
     }
 
-    @if (_licenca.Sessoes.Count > 0)
+    <!-- Sessões ativas -->
+    @if (_licenca.Sessoes.Any(s => s.Ativo))
     {
-        <div class="card mb-4">
-            <div class="card-header">Sessões ativas (@_licenca.Sessoes.Count(s => s.Ativo))</div>
-            <div class="card-body p-0">
-                <table class="table table-sm mb-0">
+        <div class="item-card mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <p class="fw-semibold mb-0">Sessões ativas</p>
+                <span class="badge-pill badge-usuarios">@_licenca.Sessoes.Count(s => s.Ativo) ativas</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
                     <thead class="table-light">
-                        <tr><th>Identificador</th><th>Login</th><th>Última atividade</th><th class="text-end">Ação</th></tr>
+                        <tr>
+                            <th>Identificador</th>
+                            <th>Login</th>
+                            <th>Última atividade</th>
+                            <th class="text-end"></th>
+                        </tr>
                     </thead>
                     <tbody>
                         @foreach (var s in _licenca.Sessoes.Where(s => s.Ativo))
                         {
                             <tr>
-                                <td><code>@s.IdentificadorUsuario</code></td>
-                                <td>@s.DataLogin.ToString("dd/MM HH:mm")</td>
-                                <td>@s.DataUltimaAtividade.ToString("dd/MM HH:mm")</td>
+                                <td><code style="font-size:.75rem">@s.IdentificadorUsuario</code></td>
+                                <td><small>@s.DataLogin.ToString("dd/MM HH:mm")</small></td>
+                                <td><small>@s.DataUltimaAtividade.ToString("dd/MM HH:mm")</small></td>
                                 <td class="text-end">
-                                    <AuthorizeView Roles="AdministradorCliente">
-                                        <Authorized>
-                                            <button class="btn btn-outline-danger btn-sm"
-                                                    @onclick="() => EncerrarSessao(s.Id)" disabled="@_salvando">
-                                                Encerrar
-                                            </button>
-                                        </Authorized>
-                                    </AuthorizeView>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            @onclick="() => EncerrarSessao(s.Id)" disabled="@_salvando">
+                                        Encerrar
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -77,33 +99,39 @@ else
         </div>
     }
 
-    @if (_licenca.InstalacoesRegistradas.Count > 0)
+    <!-- Instalações registradas -->
+    @if (_licenca.InstalacoesRegistradas.Any(i => i.Ativo))
     {
-        <div class="card mb-4">
-            <div class="card-header">
-                Instalações registradas (@_licenca.InstalacoesRegistradas.Count(i => i.Ativo))
-                @if (_licenca.Instalacao is not null) { <span class="text-muted small ms-2">/ máx. @_licenca.Instalacao.QuantidadeMaxima</span> }
+        <div class="item-card mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <p class="fw-semibold mb-0">Instalações registradas</p>
+                @if (_licenca.Instalacao is not null)
+                {
+                    <span class="badge-pill badge-instalacao">
+                        @_licenca.InstalacoesRegistradas.Count(i => i.Ativo) / @_licenca.Instalacao.QuantidadeMaxima
+                    </span>
+                }
             </div>
-            <div class="card-body p-0">
-                <table class="table table-sm mb-0">
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
                     <thead class="table-light">
-                        <tr><th>Identificador da máquina</th><th>Registrado em</th><th class="text-end">Ação</th></tr>
+                        <tr>
+                            <th>Identificador da máquina</th>
+                            <th>Registrado em</th>
+                            <th class="text-end"></th>
+                        </tr>
                     </thead>
                     <tbody>
                         @foreach (var ins in _licenca.InstalacoesRegistradas.Where(i => i.Ativo))
                         {
                             <tr>
-                                <td><code>@ins.IdentificadorMaquina</code></td>
-                                <td>@ins.DataRegistro.ToString("dd/MM/yyyy")</td>
+                                <td><code style="font-size:.75rem">@ins.IdentificadorMaquina</code></td>
+                                <td><small>@ins.DataRegistro.ToString("dd/MM/yyyy")</small></td>
                                 <td class="text-end">
-                                    <AuthorizeView Roles="AdministradorCliente">
-                                        <Authorized>
-                                            <button class="btn btn-outline-danger btn-sm"
-                                                    @onclick="() => LiberarInstalacao(ins.Id)" disabled="@_salvando">
-                                                Liberar
-                                            </button>
-                                        </Authorized>
-                                    </AuthorizeView>
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            @onclick="() => LiberarInstalacao(ins.Id)" disabled="@_salvando">
+                                        Liberar
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -112,8 +140,6 @@ else
             </div>
         </div>
     }
-
-    <a href="/licencas" class="btn btn-outline-secondary btn-sm">← Voltar</a>
 }
 
 <ConfirmDialog @ref="_confirmDialog" Titulo="Confirmar ação" TextoBotaoConfirmar="Confirmar" />
@@ -158,11 +184,20 @@ else
 
     private async Task LiberarInstalacao(Guid idInstalacao)
     {
-        _confirmDialog.Mensagem = "Liberar esta instalação? O slot será disponibilizado para nova máquina.";
+        _confirmDialog.Mensagem = "Liberar esta instalação?";
         if (!await _confirmDialog.MostrarAsync()) return;
         _salvando = true;
         var (sucesso, erro) = await Service.LiberarInstalacaoAsync(Id, idInstalacao);
         _erro = sucesso ? null : erro; _salvando = false;
         if (sucesso) await CarregarAsync();
     }
+
+    private static string BadgeTipo(string tipo) => tipo switch
+    {
+        "Permanente"     => "badge-permanente",
+        "Por Período"    => "badge-periodo",
+        "Por Usuários"   => "badge-usuarios",
+        "Por Instalação" => "badge-instalacao",
+        _                => "badge-inativo"
+    };
 }
