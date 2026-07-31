@@ -12,6 +12,8 @@ Sistema de licenciamento de software construído com .NET 10, Clean Architecture
 | Migrations | DbUp (scripts SQL versionados embarcados no assembly) |
 | Queries | Dapper (sem EF Core) |
 | Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256 |
+| Jobs | BackgroundService + PeriodicTimer (interface IScheduledJob) |
+| E-mail | MailKit (SMTP) com templates HTML embarcados |
 | Testes | xUnit, FluentAssertions, NSubstitute, NetArchTest |
 
 ## Estrutura de projetos
@@ -19,8 +21,8 @@ Sistema de licenciamento de software construído com .NET 10, Clean Architecture
 ```
 src/
   LicenciamentoSoftware.Domain/           Entidades, value objects, DomainException
-  LicenciamentoSoftware.Application/      Handlers, Commands, interfaces de porta
-  LicenciamentoSoftware.Infrastructure/   Repositórios Dapper, DbUp, serviços de segurança
+  LicenciamentoSoftware.Application/      Handlers, Commands, interfaces de porta, Jobs
+  LicenciamentoSoftware.Infrastructure/   Repositórios Dapper, DbUp, Email (MailKit), Jobs
   LicenciamentoSoftware.Api/              Controllers, Middleware, configuração DI
   LicenciamentoSoftware.Client/           Cliente HTTP compartilhado (Web + MAUI)
   LicenciamentoSoftware.Web/              Blazor WASM (em desenvolvimento)
@@ -28,18 +30,27 @@ src/
 
 tests/
   LicenciamentoSoftware.Domain.Tests/     Testes unitários de domínio
-  LicenciamentoSoftware.Application.Tests/ Testes unitários de handlers e serviços
+  LicenciamentoSoftware.Application.Tests/ Testes unitários de handlers, serviços e jobs
   LicenciamentoSoftware.IntegrationTests/ Testes de integração (requer PostgreSQL)
 ```
 
-## Fases concluídas
+## Status das fases
 
-| Fase | O que foi implementado |
-|---|---|
-| 1 — Fundação | 7 projetos src + 3 tests, Directory.Build.props, Serilog, ProblemDetails, health check `/health`, docker-compose, testes de arquitetura NetArchTest |
-| 2 — Domínio e schema | 11 entidades + 3 value objects (Rich Domain, sem EF Core), DbUp + Dapper, V001_InitialSchema.sql |
-| 3 — Identidade e auditoria | JWT + 2FA TOTP, ICurrentUser (tenant do JWT), UnitOfWork Npgsql, AuditLogWriter, endpoints `/auth/*`, V002_UsuarioPapelRefreshToken.sql |
-| 4 — Segurança API de validação | Token HMAC-SHA256 por licença, middleware anti-replay (X-Timestamp ±5 min + X-Nonce), rate limiting, `POST /auth/licenca/renovar-token`, V003_LicencaToken.sql |
+| Fase | Descrição | Status |
+|---|---|---|
+| 1 | Fundação — projetos, build, arquitetura, docker-compose | ✅ Concluída |
+| 2 | Domínio e schema — 11 entidades, DbUp, Dapper, V001 | ✅ Concluída |
+| 3 | Identidade — JWT, 2FA TOTP, auditoria, V002 | ✅ Concluída |
+| 4 | Segurança — token HMAC, anti-replay, rate limiting, V003 | ✅ Concluída |
+| 5 | CRUDs de gestão — Cliente, Usuario, ClienteFinal, Aplicacao, TipoLicenca | ✅ Concluída |
+| 6 | Emissão e gestão de licenças — emissão, operações manuais, histórico | ✅ Concluída |
+| 7 | API de validação — login, heartbeat, logout, instalação | ✅ Concluída |
+| 8 | Jobs agendados — sessões, expiração, renovação, rotação de tokens, e-mail | ✅ Concluída |
+| 9 | Frontend Web — Blazor WASM, GitHub Pages | 🔜 Próxima |
+| 10 | MAUI Desktop + Mobile — Windows e Android | 🔜 Planejada |
+| 11 | CI/CD e infraestrutura — pipeline completo, deploy VM | 🔜 Planejada |
+
+**Testes:** 207 aprovados, 0 falhas.
 
 ## Como rodar localmente
 
@@ -48,59 +59,44 @@ tests/
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 - PostgreSQL acessível (WSL2, Docker ou Supabase)
 
-### 1. Configurar a connection string
-
-Copie o arquivo de exemplo e preencha com seus dados:
-
-```powershell
-Copy-Item .env.example .env
-```
-
-Ou defina diretamente via variável de ambiente:
+### 1. Configurar variáveis de ambiente
 
 ```powershell
 $env:ConnectionStrings__DefaultConnection = "Host=localhost;Port=5432;Database=licenciamento;Username=postgres;Password=postgres"
 $env:JwtSettings__Secret = "sua-chave-secreta-com-pelo-menos-32-caracteres"
 ```
 
-### 2. Restaurar dependências e rodar
+### 2. Iniciar o PostgreSQL
 
 ```powershell
-dotnet restore
+# Via Docker
+.\scripts\start-docker.ps1
+
+# Via WSL2
+.\scripts\start-wsl2.ps1
+```
+
+### 3. Rodar a API
+
+```powershell
 dotnet run --project src/LicenciamentoSoftware.Api
 ```
 
-As migrations do DbUp são aplicadas automaticamente na inicialização — não é necessário nenhum comando extra.
+As migrations do DbUp são aplicadas automaticamente na inicialização.
+A API fica disponível em `http://localhost:5016`.
 
-### 3. Verificar health check
+### 4. Documentação interativa
 
-```
-GET http://localhost:5000/health
-```
-
-## Docker (PostgreSQL local)
-
-```powershell
-# Subir PostgreSQL via docker-compose
-docker compose up -d
-
-# Rodar a API (as migrations são aplicadas automaticamente)
-dotnet run --project src/LicenciamentoSoftware.Api
-```
-
-## PostgreSQL no WSL2
-
-```bash
-# Dentro do WSL
-sudo service postgresql start
-sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres';"
-sudo -u postgres createdb licenciamento
-```
-
-Connection string para usar do Windows apontando para o WSL2:
+Acesse o Scalar UI em modo Development:
 
 ```
-Host=localhost;Port=5432;Database=licenciamento;Username=postgres;Password=postgres
+http://localhost:5016/scalar/v1
+```
+
+### 5. Health check
+
+```
+GET http://localhost:5016/health
 ```
 
 ## Rodar os testes
@@ -128,26 +124,83 @@ dotnet test tests/LicenciamentoSoftware.IntegrationTests
 | POST | `/auth/logout` | Revoga refresh token |
 | POST | `/auth/totp/setup` | Configura 2FA TOTP |
 
-### Tokens de licença (`/licencas`)
+### Gestão (`/licencas`, `/clientes`, `/usuarios`, `/aplicacoes`, `/tipos-licenca`)
 
 | Método | Rota | Descrição |
 |---|---|---|
-| POST | `/licencas/{id}/token` | Emite token HMAC para a licença |
-| POST | `/licencas/{id}/token/renovar` | Renova token HMAC (alias: `/auth/licenca/renovar-token`) |
+| GET/POST | `/licencas` | Lista e emite licenças |
+| GET | `/licencas/{id}` | Detalhe de licença |
+| DELETE | `/licencas/{id}` | Desativa licença |
+| POST | `/licencas/{id}/token` | Emite token HMAC |
+| POST | `/licencas/{id}/token/renovar` | Renova token HMAC |
+| POST | `/licencas/{id}/renovar-periodo` | Renova período de licença |
+| DELETE | `/licencas/{id}/sessoes/{idSessao}` | Encerra sessão manualmente |
+| DELETE | `/licencas/{id}/instalacoes/{idInstalacao}` | Libera instalação manualmente |
+
+### API de validação (`/api/validacao`)
+
+> Autenticação via HMAC — headers `X-Token`, `X-Timestamp`, `X-Signature`, `X-Nonce`.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/api/validacao/login` | Valida acesso (Permanente, Por Período, Por Usuários) |
+| POST | `/api/validacao/heartbeat` | Keep-alive de sessão ativa |
+| POST | `/api/validacao/logout` | Encerra sessão explicitamente (idempotente) |
+| POST | `/api/validacao/instalacao` | Registra instalação em máquina (Por Instalação, idempotente) |
 
 ### Monitoramento
 
 | Método | Rota | Descrição |
 |---|---|---|
 | GET | `/health` | Health check da API |
+| GET | `/scalar/v1` | Documentação interativa (Development) |
 
 ## Autenticação HMAC para a API de validação
 
-Requisições aos endpoints de validação devem incluir os headers:
+O software cliente deve incluir os seguintes headers em cada requisição:
 
 ```
-X-Timestamp: 2026-07-30T12:00:00Z   (ISO-8601 UTC, janela de ±5 min)
-X-Nonce: <uuid-ou-string-aleatória>  (máx 128 chars, único por requisição)
+X-Token:     <segredo-em-texto-puro>       (obtido na emissão do token, exibido uma única vez)
+X-Timestamp: 2026-07-30T12:00:00Z         (ISO-8601 UTC, janela de ±5 min)
+X-Nonce:     <uuid-ou-string-aleatória>   (máx 128 chars, único por requisição)
+X-Signature: <hmac-sha256-hex>             (assinatura sobre idLicenca|X-Timestamp|body)
+```
+
+## Configuração de jobs e e-mail
+
+Seções do `appsettings.json` (valores padrão):
+
+```json
+"JobSettings": {
+  "DelayInicialSegundos": 30,
+  "SessoesInativasIntervaloMinutos": 5,
+  "SessoesInativasLimiteHoras": 24,
+  "ExpiracaoLicencasIntervaloMinutos": 60,
+  "RenovacaoAutomaticaIntervaloMinutos": 60,
+  "RotacaoTokensIntervaloMinutos": 720,
+  "NotificacaoIntervaloMinutos": 1440,
+  "DiasAntecedenciaNotificacao": 7
+},
+"EmailSettings": {
+  "Habilitado": false,
+  "Host": "",
+  "Porta": 587,
+  "UsarSsl": false,
+  "Usuario": "",
+  "Senha": "",
+  "EmailRemetente": "",
+  "NomeRemetente": "LicenciamentoSoftware"
+}
+```
+
+Para ativar o envio de e-mail, defina `Habilitado: true` e configure o SMTP via secrets ou variáveis de ambiente:
+
+```powershell
+$env:EmailSettings__Habilitado = "true"
+$env:EmailSettings__Host = "smtp.seuprovedor.com"
+$env:EmailSettings__Usuario = "seu@email.com"
+$env:EmailSettings__Senha = "sua-senha-smtp"
+$env:EmailSettings__EmailRemetente = "noreply@suaempresa.com"
 ```
 
 ## Decisões de design
@@ -157,8 +210,11 @@ X-Nonce: <uuid-ou-string-aleatória>  (máx 128 chars, único por requisição)
 - **Sem MediatR** — handlers concretos injetados diretamente nos controllers
 - **Tenant isolation** — `IdCliente` sempre do JWT, nunca do body
 - **Segredo HMAC** — exibido uma única vez na emissão; apenas o hash BCrypt persiste
+- **Jobs** — `IScheduledJob` + `BackgroundService`; migrável para Hangfire/Quartz sem impacto no domínio
+- **Templates de e-mail** — arquivos HTML embarcados no assembly como `EmbeddedResource`
 
-## Observações
+## Segurança em produção
 
-- Em produção, use variáveis de ambiente ou secrets manager para `JwtSettings:Secret` e a connection string — nunca commite segredos no repositório.
-- O `appsettings.json` contém apenas valores padrão vazios para desenvolvimento.
+- Use variáveis de ambiente ou secrets manager para `JwtSettings:Secret`, `ConnectionStrings__DefaultConnection`, `EmailSettings:Senha` e outros segredos
+- Nunca commite segredos no repositório
+- O `appsettings.json` contém apenas valores padrão vazios; o `appsettings.Development.json` é ignorado pelo `.gitignore`

@@ -107,9 +107,12 @@ Application/Clientes/
 
 ### Infrastructure
 
-- Implementa EF Core/PostgreSQL, repositórios, transações, JWT, TOTP, HMAC, persistência de auditoria e jobs.
+- Implementa PostgreSQL/Dapper, repositórios, transações, JWT, TOTP, HMAC, persistência de auditoria, jobs agendados e envio de e-mail.
 - Implementa controle de concorrência de licença dentro de transação serializável.
-- Não contém regra de negócio testável sem banco.
+- `SmtpEmailService` (MailKit): envia e-mails com corpo HTML gerado pelo `TemplateRenderer`.
+- `TemplateRenderer`: lê templates HTML embarcados como `EmbeddedResource` e substitui placeholders `{{Chave}}`.
+- `JobScheduler`: `BackgroundService` que executa cada `IScheduledJob` em escopo de DI independente.
+- Não contém regra de negócio testável sem banco ou servidor externo.
 
 ### Api
 
@@ -203,11 +206,15 @@ As operações abaixo têm endpoints próprios, confirmação na interface, audi
 
 As telas de manutenção mostram histórico de sessões, instalações e alterações; nunca apagam registros físicos.
 
-## Auditoria e jobs
+## Auditoria, jobs e e-mail
 
 - Auditoria é porta da aplicação, persistida de forma transacional junto da alteração.
-- O job roda como `BackgroundService` inicialmente, com interface `IScheduledJob` que permita migração futura para Hangfire/Quartz.
-- Jobs: encerrar sessões inativas, expirar períodos, executar renovação automática, notificar tokens próximos do vencimento.
+- Jobs rodam como `BackgroundService` com `PeriodicTimer` individual por job. A interface `IScheduledJob` permite migração futura para Hangfire/Quartz sem impacto no domínio.
+- **Jobs implementados:** `EncerrarSessoesInativasJob`, `ExpirarLicencasPeriodoJob`, `RenovarLicencasAutomaticasJob`, `RotacionarTokensLicencaJob`, `NotificarExpiracaoJob`.
+- `JobScheduler` (BackgroundService) orquestra todos os jobs via `PeriodicTimer` independente por job, com escopo de DI criado por execução.
+- Intervalos e limites configuráveis via seção `JobSettings` no `appsettings.json`.
+- Notificações por e-mail via MailKit (SMTP). Templates HTML embarcados no assembly como `EmbeddedResource`. `IEmailService` e `IEmailTemplateRenderer` são portas da Application; `SmtpEmailService` e `TemplateRenderer` são implementações da Infrastructure.
+- Envio de e-mail desabilitado por padrão (`EmailSettings:Habilitado = false`); ativado via secrets ou variáveis de ambiente.
 
 ## Estratégia de testes
 
