@@ -142,6 +142,8 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<ILicencaGestaoRepository, LicencaGestaoRepository>();
         services.AddScoped<ILicencaSessaoRepository, LicencaSessaoRepository>();
         services.AddScoped<ILicencaInstalacaoRepository, LicencaInstalacaoRepository>();
+        // Fase 7 — repositório de validação
+        services.AddScoped<IValidacaoLicencaRepository, ValidacaoLicencaRepository>();
 
         // Auditoria
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
@@ -247,6 +249,12 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<RenovarPeriodoHandler>();
         services.AddScoped<EncerrarSessaoHandler>();
         services.AddScoped<LiberarInstalacaoHandler>();
+
+        // Fase 7 — handlers de validação
+        services.AddScoped<ValidarLoginHandler>();
+        services.AddScoped<HeartbeatHandler>();
+        services.AddScoped<LogoutValidacaoHandler>();
+        services.AddScoped<ValidarInstalacaoHandler>();
 
         return services;
     }
