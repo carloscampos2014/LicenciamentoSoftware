@@ -1,7 +1,8 @@
 @page "/licencas"
 @attribute [Authorize]
 @inject LicencaApiService Service
-@inject NavigationManager Nav
+@inject AplicacaoApiService AplicacaoService
+@inject ClienteFinalApiService ClienteFinalService
 
 <PageTitle>Licenças — Licenciamento</PageTitle>
 
@@ -10,11 +11,11 @@
         <h1>Licenças</h1>
         <p>Gerencie licenças e controle de acesso</p>
     </div>
-    <a href="/licencas/emitir" class="btn btn-primary">+ Nova Licença</a>
+    <button class="btn btn-primary" @onclick="AbrirEmitir">+ Nova Licença</button>
 </div>
 
 <div class="mb-3">
-    <input class="search-bar" placeholder="Buscar por cliente, aplicativo ou chave..."
+    <input class="search-bar" placeholder="Buscar por cliente, aplicativo..."
            @bind="_filtro" @bind:event="oninput" @onkeyup="HandleFiltro" />
 </div>
 
@@ -61,24 +62,17 @@ else
                     @if (item.Periodo is not null)
                     {
                         <div class="item-card-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            Início: @item.Periodo.DataInicio.ToString("dd/MM/yyyy")
-                        </div>
-                        <div class="item-card-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            Próx. Renovação: @item.Periodo.DataFim.ToString("dd/MM/yyyy")
+                            @item.Periodo.DataInicio.ToString("dd/MM/yyyy") → @item.Periodo.DataFim.ToString("dd/MM/yyyy")
                         </div>
                     }
                     @if (item.Usuarios is not null)
                     {
                         <div class="item-card-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/>
                             </svg>
@@ -88,17 +82,15 @@ else
                     @if (item.Instalacao is not null)
                     {
                         <div class="item-card-row">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                       d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                             Instalações: @item.InstalacoesRegistradas.Count(i => i.Ativo)/@item.Instalacao.QuantidadeMaxima
                         </div>
                     }
-                    <div class="item-card-row mt-1">
-                        <small class="text-muted">Chave da Licença</small>
-                    </div>
-                    <div>
+                    <div class="mt-1">
+                        <small class="text-muted">Chave: </small>
                         <code style="font-size:.7rem;color:#6c757d">@item.Id.ToString()[..8].ToUpperInvariant()</code>
                     </div>
                 </div>
@@ -115,13 +107,165 @@ else
     <Paginacao PaginaAtual="_pagina" TotalPaginas="_totalPaginas" Total="_total" OnPaginaMudou="MudarPagina" />
 }
 
+<!-- ── Modal de emissão ─────────────────────────────── -->
+@if (_modalEmitir)
+{
+    <div class="modal-overlay">
+        <div class="modal-card" style="max-width:520px">
+            <div class="modal-card-header">
+                <h5>Nova Licença</h5>
+                <button class="btn-close-modal" @onclick="FecharEmitir">&times;</button>
+            </div>
+            <div class="modal-card-body">
+                @if (_emissaoSucesso)
+                {
+                    <div class="text-center py-2">
+                        <div style="width:48px;height:48px;background:#d1fae5;border-radius:50%;
+                                    display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
+                            <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#065f46">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </div>
+                        <p class="fw-semibold mb-1">Licença emitida com sucesso!</p>
+                        @if (_tokenEmitido is not null)
+                        {
+                            <div class="alert alert-warning text-start mt-2" style="font-size:.8rem">
+                                <strong>Token HMAC — exibido uma única vez:</strong>
+                                <div class="mt-1 user-select-all" style="word-break:break-all">
+                                    <code>@_tokenEmitido</code>
+                                </div>
+                                <small class="text-danger d-block mt-1">Copie e guarde com segurança.</small>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="form-group">
+                        <label class="form-label">Aplicação *</label>
+                        <select class="form-select" @bind="_emitirIdAplicacao" @bind:after="AtualizarTipo">
+                            <option value="">— selecione —</option>
+                            @foreach (var a in _aplicacoes)
+                            {
+                                <option value="@a.Id">@a.Titulo (@a.TipoLicencaDescricao)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Cliente Final *</label>
+                        <select class="form-select" @bind="_emitirIdClienteFinal">
+                            <option value="">— selecione —</option>
+                            @foreach (var c in _clientesFinais)
+                            {
+                                <option value="@c.Id">@c.RazaoSocial</option>
+                            }
+                        </select>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(_emitirTipo))
+                    {
+                        <div class="mb-3">
+                            <span class="badge-pill @BadgeTipo(_emitirTipo)">@_emitirTipo</span>
+                        </div>
+
+                        @if (_emitirTipo == "Por Período")
+                        {
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Data início *</label>
+                                    <InputDate class="form-control" @bind-Value="_emitirDataInicio" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Data fim *</label>
+                                    <InputDate class="form-control" @bind-Value="_emitirDataFim" />
+                                </div>
+                            </div>
+                            <div class="form-group form-check">
+                                <InputCheckbox class="form-check-input" id="renovacaoAuto" @bind-Value="_emitirRenovacao" />
+                                <label class="form-check-label" for="renovacaoAuto">Renovação automática</label>
+                            </div>
+                        }
+                        else if (_emitirTipo == "Por Usuários")
+                        {
+                            <div class="form-grid-2">
+                                <div class="form-group">
+                                    <label class="form-label">Máx. usuários *</label>
+                                    <InputNumber class="form-control" @bind-Value="_emitirQtdUsuarios" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Máx. sessões/usuário</label>
+                                    <InputNumber class="form-control" @bind-Value="_emitirMaxSessoes" />
+                                </div>
+                            </div>
+                        }
+                        else if (_emitirTipo == "Por Instalação")
+                        {
+                            <div class="form-group">
+                                <label class="form-label">Máx. instalações *</label>
+                                <InputNumber class="form-control" @bind-Value="_emitirQtdInstalacoes" />
+                            </div>
+                        }
+                    }
+
+                    <div class="form-group form-check">
+                        <InputCheckbox class="form-check-input" id="emitirToken" @bind-Value="_emitirToken" />
+                        <label class="form-check-label" for="emitirToken">Gerar token HMAC</label>
+                    </div>
+
+                    <ApiError Erro="@_erroEmitir" />
+                }
+            </div>
+            <div class="modal-card-footer">
+                @if (_emissaoSucesso)
+                {
+                    <button class="btn btn-primary btn-sm" @onclick="FecharEmitirERecarregar">Fechar</button>
+                }
+                else
+                {
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="FecharEmitir">Cancelar</button>
+                    <button class="btn btn-primary btn-sm" @onclick="Emitir"
+                            disabled="@(_salvandoEmitir || _emitirIdAplicacao == Guid.Empty || _emitirIdClienteFinal == Guid.Empty)">
+                        @if (_salvandoEmitir) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                        Emitir licença
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
 <ConfirmDialog @ref="_confirmDialog" Titulo="Desativar licença" TextoBotaoConfirmar="Desativar" />
 
 @code {
+    // ── Lista ──────────────────────────────────────────
     private List<LicencaResult> _itens = [];
     private bool _carregando; private string? _erro; private string? _filtro;
     private int _pagina = 1, _totalPaginas = 1, _total;
     private ConfirmDialog _confirmDialog = default!;
+
+    // ── Dados para o modal de emissão ──────────────────
+    private List<AplicacaoResult> _aplicacoes = [];
+    private List<ClienteFinalResult> _clientesFinais = [];
+    private bool _dadosCarregados;
+
+    // ── Estado do modal de emissão ─────────────────────
+    private bool _modalEmitir;
+    private bool _emissaoSucesso;
+    private bool _salvandoEmitir;
+    private string? _erroEmitir;
+    private string? _tokenEmitido;
+
+    private Guid _emitirIdAplicacao = Guid.Empty;
+    private Guid _emitirIdClienteFinal = Guid.Empty;
+    private string _emitirTipo = string.Empty;
+    private DateTime _emitirDataInicio = DateTime.Today;
+    private DateTime _emitirDataFim = DateTime.Today.AddYears(1);
+    private bool _emitirRenovacao;
+    private int _emitirQtdUsuarios = 10;
+    private int _emitirMaxSessoes = 5;
+    private int _emitirQtdInstalacoes = 5;
+    private bool _emitirToken;
 
     protected override async Task OnInitializedAsync() => await CarregarAsync();
 
@@ -141,6 +285,62 @@ else
     private async Task MudarPagina(int p) { _pagina = p; await CarregarAsync(); }
     private async Task HandleFiltro(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
     { if (e.Key == "Enter") { _pagina = 1; await CarregarAsync(); } }
+
+    private async Task AbrirEmitir()
+    {
+        // Carrega aplicações e clientes na primeira abertura
+        if (!_dadosCarregados)
+        {
+            var ap = await AplicacaoService.ListarAsync(ativo: true, tamanhoPagina: 100);
+            var cf = await ClienteFinalService.ListarAsync(ativo: true, tamanhoPagina: 100);
+            _aplicacoes = ap?.Itens.ToList() ?? [];
+            _clientesFinais = cf?.Itens.ToList() ?? [];
+            _dadosCarregados = true;
+        }
+        ResetarEmitir();
+        _modalEmitir = true;
+    }
+
+    private void ResetarEmitir()
+    {
+        _emitirIdAplicacao = Guid.Empty; _emitirIdClienteFinal = Guid.Empty;
+        _emitirTipo = string.Empty; _erroEmitir = null; _emissaoSucesso = false;
+        _tokenEmitido = null; _emitirToken = false; _emitirRenovacao = false;
+        _emitirDataInicio = DateTime.Today; _emitirDataFim = DateTime.Today.AddYears(1);
+        _emitirQtdUsuarios = 10; _emitirMaxSessoes = 5; _emitirQtdInstalacoes = 5;
+    }
+
+    private void FecharEmitir() { _modalEmitir = false; }
+    private async Task FecharEmitirERecarregar() { _modalEmitir = false; await CarregarAsync(); }
+
+    private void AtualizarTipo()
+    {
+        var app = _aplicacoes.FirstOrDefault(a => a.Id == _emitirIdAplicacao);
+        _emitirTipo = app?.TipoLicencaDescricao ?? string.Empty;
+    }
+
+    private async Task Emitir()
+    {
+        _salvandoEmitir = true; _erroEmitir = null;
+        try
+        {
+            var request = new EmitirLicencaRequest(
+                _emitirIdClienteFinal, _emitirIdAplicacao,
+                _emitirTipo == "Por Período"    ? new(_emitirDataInicio, _emitirDataFim, _emitirRenovacao) : null,
+                _emitirTipo == "Por Usuários"   ? new(_emitirQtdUsuarios, _emitirMaxSessoes, 24) : null,
+                _emitirTipo == "Por Instalação" ? new(_emitirQtdInstalacoes) : null,
+                _emitirToken);
+
+            var (sucesso, result, erro, erros) = await Service.EmitirAsync(request);
+            if (!sucesso) { _erroEmitir = erro ?? string.Join("; ", erros ?? []); return; }
+
+            if (result is System.Text.Json.JsonElement el)
+                _tokenEmitido = el.TryGetProperty("tokenTexto", out var tok) ? tok.GetString() : null;
+
+            _emissaoSucesso = true;
+        }
+        finally { _salvandoEmitir = false; }
+    }
 
     private async Task Desativar(Guid id)
     {
