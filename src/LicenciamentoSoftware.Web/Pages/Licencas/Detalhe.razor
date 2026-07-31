@@ -61,12 +61,12 @@ else
     }
 
     <!-- Sessões ativas -->
-    @if (_licenca.Sessoes.Any(s => s.Ativo))
+    @if (_licenca.Sessoes?.Any(s => s.Ativo) == true)
     {
         <div class="item-card mb-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <p class="fw-semibold mb-0">Sessões ativas</p>
-                <span class="badge-pill badge-usuarios">@_licenca.Sessoes.Count(s => s.Ativo) ativas</span>
+                <span class="badge-pill badge-usuarios">@(_licenca.Sessoes?.Count(s => s.Ativo) ?? 0) ativas</span>
             </div>
             <div class="table-responsive">
                 <table class="table table-sm align-middle mb-0">
@@ -79,7 +79,7 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var s in _licenca.Sessoes.Where(s => s.Ativo))
+                        @foreach (var s in (_licenca.Sessoes ?? []).Where(s => s.Ativo))
                         {
                             <tr>
                                 <td><code style="font-size:.75rem">@s.IdentificadorUsuario</code></td>
@@ -100,7 +100,7 @@ else
     }
 
     <!-- Instalações registradas -->
-    @if (_licenca.InstalacoesRegistradas.Any(i => i.Ativo))
+    @if (_licenca.InstalacoesRegistradas?.Any(i => i.Ativo) == true)
     {
         <div class="item-card mb-3">
             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -108,7 +108,7 @@ else
                 @if (_licenca.Instalacao is not null)
                 {
                     <span class="badge-pill badge-instalacao">
-                        @_licenca.InstalacoesRegistradas.Count(i => i.Ativo) / @_licenca.Instalacao.QuantidadeMaxima
+                        @(_licenca.InstalacoesRegistradas?.Count(i => i.Ativo) ?? 0) / @_licenca.Instalacao.QuantidadeMaxima
                     </span>
                 }
             </div>
@@ -122,7 +122,7 @@ else
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var ins in _licenca.InstalacoesRegistradas.Where(i => i.Ativo))
+                        @foreach (var ins in (_licenca.InstalacoesRegistradas ?? []).Where(i => i.Ativo))
                         {
                             <tr>
                                 <td><code style="font-size:.75rem">@ins.IdentificadorMaquina</code></td>

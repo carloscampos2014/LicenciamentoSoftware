@@ -5,11 +5,9 @@ using LicenciamentoSoftware.Application.Licenca.Results;
 
 namespace LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 
-public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
+public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILicencaGestaoRepository
 {
-    private readonly DbConnectionFactory _factory;
-
-    public LicencaGestaoRepository(DbConnectionFactory factory) => _factory = factory;
+    private readonly DbConnectionFactory _factory = factory;
 
     public async Task<LicencaResult?> BuscarPorIdAsync(Guid id, CancellationToken ct = default)
     {
@@ -175,7 +173,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = licenca.Id, IdCliente = licenca.IdCliente,
+            new { licenca.Id, IdCliente = licenca.IdCliente,
                   IdClienteFinal = licenca.IdClienteFinal, IdAplicativo = licenca.IdAplicativo,
                   DataCadastro = licenca.DataCadastro },
             cancellationToken: ct));
@@ -191,7 +189,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = periodo.Id, LicencaId = periodo.LicencaId,
+            new { periodo.Id, LicencaId = periodo.LicencaId,
                   DataInicio = periodo.DataInicio, DataFim = periodo.DataFim,
                   RenovacaoAutomatica = periodo.RenovacaoAutomatica },
             cancellationToken: ct));
@@ -208,7 +206,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = usuarios.Id, LicencaId = usuarios.LicencaId,
+            new { usuarios.Id, LicencaId = usuarios.LicencaId,
                   QuantidadeMaxima = usuarios.QuantidadeMaxima,
                   MaxSessoesPorUsuario = usuarios.MaxSessoesPorUsuario,
                   TempoLimiteSessaoHoras = usuarios.TempoLimiteSessaoHoras },
@@ -224,7 +222,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = instalacao.Id, LicencaId = instalacao.LicencaId,
+            new { instalacao.Id, LicencaId = instalacao.LicencaId,
                   QuantidadeMaxima = instalacao.QuantidadeMaxima },
             cancellationToken: ct));
     }
