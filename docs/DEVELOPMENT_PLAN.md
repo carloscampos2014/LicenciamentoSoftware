@@ -28,7 +28,7 @@ Cada etapa só avança quando compila, passa nos testes e não cria dependência
 
 ---
 
-## Fase 1 — Fundação da solução
+## Fase 1 — Fundação da solução ✅ Concluída
 
 **Objetivo:** estrutura de projetos, build centralizado e regras de dependência verificáveis por teste.
 
@@ -45,7 +45,7 @@ Cada etapa só avança quando compila, passa nos testes e não cria dependência
 
 ---
 
-## Fase 2 — Domínio e schema
+## Fase 2 — Domínio e schema ✅ Concluída
 
 **Objetivo:** modelar todas as entidades com invariantes testáveis e gerar o schema no banco.
 
@@ -61,7 +61,7 @@ Cada etapa só avança quando compila, passa nos testes e não cria dependência
 
 ---
 
-## Fase 3 — Identidade e auditoria
+## Fase 3 — Identidade e auditoria ✅ Concluída
 
 **Objetivo:** autenticação JWT com 2FA TOTP, isolamento por tenant e auditoria transacional.
 
@@ -80,7 +80,7 @@ Cada etapa só avança quando compila, passa nos testes e não cria dependência
 
 ---
 
-## Fase 4 — Segurança da API de validação
+## Fase 4 — Segurança da API de validação ✅ Concluída
 
 **Objetivo:** token por licença com expiração automática e assinatura HMAC anti-replay.
 
@@ -97,7 +97,7 @@ Cada etapa só avança quando compila, passa nos testes e não cria dependência
 
 ---
 
-## Fase 5 — CRUDs de gestão, um agregado por vez
+## Fase 5 — CRUDs de gestão, um agregado por vez ✅ Concluída
 
 **Objetivo:** casos de uso de gestão para todos os agregados base, seguindo Clean Architecture.
 
@@ -121,7 +121,7 @@ Requisitos transversais:
 
 ---
 
-## Fase 6 — Emissão e gestão de licenças
+## Fase 6 — Emissão e gestão de licenças ✅ Concluída
 
 **Objetivo:** emissão de licença com detalhes por tipo e operações manuais de manutenção.
 
@@ -137,36 +137,35 @@ Requisitos transversais:
 
 ---
 
-## Fase 7 — API de validação completa
+## Fase 7 — API de validação completa ✅ Concluída
 
 **Objetivo:** todos os endpoints de validação com regras de negócio, operações atômicas e testes de concorrência.
 
-1. Implementar `POST /validar-login`: Por Usuários (limite de simultâneos + por usuário), transação serializável.
-2. Implementar `POST /heartbeat`: atualiza `DataUltimaAtividade`.
-3. Implementar `POST /logout`: encerra sessão explicitamente.
-4. Implementar `POST /validar-instalacao`: Por Instalação, idempotente para máquina já registrada, transação serializável.
-5. Integrar validação Permanente e Por Período ao fluxo.
-6. Escrever testes de concorrência: múltiplas requisições simultâneas para o último slot.
+1. ✅ Implementar `POST /validar-login`: Por Usuários (limite de simultâneos + por usuário), transação serializável.
+2. ✅ Implementar `POST /heartbeat`: atualiza `DataUltimaAtividade`.
+3. ✅ Implementar `POST /logout`: encerra sessão explicitamente (idempotente).
+4. ✅ Implementar `POST /validar-instalacao`: Por Instalação, idempotente para máquina já registrada, transação serializável.
+5. ✅ Integrar validação Permanente e Por Período ao fluxo.
+6. ✅ Escrever testes de concorrência: múltiplas requisições simultâneas para o último slot.
 
-**Testes mínimos:** cada tipo de licença; expiração de período; bloqueio por entidade inativa; limites de usuários e instalações; concorrência no último slot; replay rejeitado pelo HMAC.
-
-**Demo:** dois clientes simultâneos tentando o último slot — um entra, o outro recebe negação com mensagem clara e código correto.
+**Resultado:** 33 novos testes. Autenticação HMAC em dois passos (BCrypt + HMAC-SHA256). Headers: `X-Token`, `X-Timestamp`, `X-Signature`, `X-Nonce`.
 
 ---
 
-## Fase 8 — Jobs agendados
+## Fase 8 — Jobs agendados ✅ Concluída
 
-**Objetivo:** rotinas automáticas de manutenção como `BackgroundService`.
+**Objetivo:** rotinas automáticas de manutenção como `BackgroundService`, rotação de tokens e notificações por e-mail.
 
-1. Implementar interface `IScheduledJob` (migrável futuramente para Hangfire/Quartz).
-2. Job de sessões inativas: encerra `LicencaSessao` sem heartbeat além de `TempoLimiteSessaoHoras`.
-3. Job de expiração: marca licenças Por Período vencidas sem renovação automática como inativas.
-4. Job de renovação automática: estende `DataFim` de licenças com `RenovacaoAutomatica = true`.
-5. Job de notificação: registra log de tokens de licença próximos do vencimento.
+1. ✅ Implementar interface `IScheduledJob` (migrável futuramente para Hangfire/Quartz).
+2. ✅ Job de sessões inativas: encerra `LicencaSessao` sem heartbeat além de `TempoLimiteSessaoHoras`.
+3. ✅ Job de expiração: marca licenças Por Período vencidas sem renovação automática como inativas.
+4. ✅ Job de renovação automática: estende `DataFim` de licenças com `RenovacaoAutomatica = true`.
+5. ✅ Job de rotação automática: renova tokens HMAC próximos do vencimento via `RenovarTokenLicencaHandler`.
+6. ✅ Job de notificação: envia e-mail HTML ao `AdministradorCliente` para licenças e tokens próximos de vencer.
+7. ✅ Templates HTML embarcados no assembly (`EmbeddedResource`): `LicencaExpirando`, `TokenExpirando`, `TokenRenovado`.
+8. ✅ `SmtpEmailService` via MailKit 4.17.0, configurável por `appsettings` + secrets, desabilitado por padrão.
 
-**Testes mínimos:** sessão sem heartbeat após limite é encerrada; licença vencida sem renovação automática expira; licença com renovação tem `DataFim` estendida. Usar mock de `IClock`.
-
-**Demo:** criar sessão, avançar relógio via `IClock` mock, rodar job manualmente — sessão encerrada e log gerado.
+**Resultado:** 15 novos testes. 207 testes no total. Todos os intervalos configuráveis via `JobSettings`. E-mail desabilitado por padrão (`Habilitado: false`).
 
 ---
 
@@ -223,9 +222,9 @@ Requisitos transversais:
 
 ## Backlog posterior
 
-- Notificações de expiração de licença por e-mail.
-- Painel de métricas e observabilidade centralizada.
-- Rotação periódica automática de tokens de licença.
-- Suporte a iOS no MAUI (requer conta Apple Developer).
-- Paginação cursor-based para listagens de alto volume.
-- Migração dos jobs para Hangfire/Quartz com painel de monitoramento.
+- **Painel de métricas e observabilidade centralizada** — Prometheus + Grafana ou Application Insights
+- **Migração dos jobs para Hangfire/Quartz** — painel de monitoramento, retry automático, histórico de execuções
+- **Suporte a iOS no MAUI** — requer conta Apple Developer
+- **Paginação cursor-based** para listagens de alto volume
+- **Fila de e-mails com retry automático** — para garantia de entrega em caso de falha SMTP
+- **Múltiplos provedores de e-mail** — SendGrid, Amazon SES, além de SMTP genérico
