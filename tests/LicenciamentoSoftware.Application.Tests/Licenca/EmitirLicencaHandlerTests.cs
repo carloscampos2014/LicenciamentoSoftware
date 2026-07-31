@@ -62,8 +62,9 @@ public class EmitirLicencaHandlerTests
 
         _licencaRepo.BuscarPorIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new LicencaResult(
-                Guid.NewGuid(), IdTenant, IdClienteFinal, IdAplicativo,
-                tipoId, "Permanente", DateTime.UtcNow, true, null, null, null));
+                Guid.NewGuid(), IdTenant, IdClienteFinal, "CF Teste",
+                IdAplicativo, "App Teste",
+                tipoId, "Permanente", DateTime.UtcNow, true, null, null, null, null, null));
     }
 
     private static EmitirLicencaCommand CommandPermanente() =>
@@ -201,10 +202,11 @@ public class EmitirLicencaHandlerTests
 
         _licencaRepo.BuscarPorIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new LicencaResult(
-                Guid.NewGuid(), IdTenant, IdClienteFinal, IdAplicativo,
+                Guid.NewGuid(), IdTenant, IdClienteFinal, "CF Teste",
+                IdAplicativo, "App Teste",
                 TipoPeriodo, "Por Período", DateTime.UtcNow, true,
                 new DetalhePeriodoResult(DateTime.UtcNow.Date, DateTime.UtcNow.AddYears(1), false),
-                null, null));
+                null, null, null, null));
 
         var resultado = await CriarHandler().HandleAsync(CommandPeriodo());
 

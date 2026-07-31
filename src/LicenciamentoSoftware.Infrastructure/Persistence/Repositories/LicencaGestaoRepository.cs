@@ -18,22 +18,22 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
                 l.id                        AS "Id",
                 l.id_cliente                AS "IdCliente",
                 l.id_cliente_final          AS "IdClienteFinal",
+                cf.razao_social             AS "ClienteFinalRazaoSocial",
                 l.id_aplicativo             AS "IdAplicativo",
+                a.titulo                    AS "AplicativoTitulo",
                 a.id_tipo_licenca           AS "IdTipoLicenca",
                 tl.descricao                AS "TipoLicencaDescricao",
                 l.data_cadastro             AS "DataCadastro",
                 l.ativo                     AS "Ativo",
-                -- Período
                 lp.data_inicio              AS "Periodo_DataInicio",
                 lp.data_fim                 AS "Periodo_DataFim",
                 lp.renovacao_automatica     AS "Periodo_RenovacaoAutomatica",
-                -- Usuários
                 lu.quantidade_maxima        AS "Usuarios_QuantidadeMaxima",
                 lu.max_sessoes_por_usuario  AS "Usuarios_MaxSessoesPorUsuario",
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
-                -- Instalação
                 li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima"
             FROM licenca l
+            JOIN cliente_final cf ON cf.id = l.id_cliente_final
             JOIN aplicacao a ON a.id = l.id_aplicativo
             JOIN tipo_licenca tl ON tl.id = a.id_tipo_licenca
             LEFT JOIN licenca_periodo lp ON lp.licenca_id = l.id
@@ -43,11 +43,41 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             LIMIT 1
             """;
 
+        const string sqlSessoes = """
+            SELECT id AS "Id",
+                   identificador_usuario   AS "IdentificadorUsuario",
+                   data_login              AS "DataLogin",
+                   data_ultima_atividade   AS "DataUltimaAtividade",
+                   ativo                   AS "Ativo"
+            FROM licenca_sessao
+            WHERE licenca_id = @Id
+            ORDER BY data_login DESC
+            """;
+
+        const string sqlInstalacoes = """
+            SELECT id                      AS "Id",
+                   identificador_maquina   AS "IdentificadorMaquina",
+                   data_registro           AS "DataRegistro",
+                   ativo                   AS "Ativo"
+            FROM licenca_instalacao_registrada
+            WHERE licenca_id = @Id
+            ORDER BY data_registro DESC
+            """;
+
         using var conn = _factory.CreateConnection();
         var rows = await conn.QueryAsync<dynamic>(
             new CommandDefinition(sql, new { Id = id }, cancellationToken: ct));
 
-        return rows.Select(MapRow).FirstOrDefault();
+        var licenca = rows.Select(MapRow).FirstOrDefault();
+        if (licenca is null) return null;
+
+        var sessoes = (await conn.QueryAsync<SessaoResult>(
+            new CommandDefinition(sqlSessoes, new { Id = id }, cancellationToken: ct))).AsList();
+
+        var instalacoes = (await conn.QueryAsync<InstalacaoRegistradaResult>(
+            new CommandDefinition(sqlInstalacoes, new { Id = id }, cancellationToken: ct))).AsList();
+
+        return licenca with { Sessoes = sessoes, InstalacoesRegistradas = instalacoes };
     }
 
     public async Task<bool> ExisteLicencaAtivaAsync(
@@ -88,7 +118,9 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
                 l.id                        AS "Id",
                 l.id_cliente                AS "IdCliente",
                 l.id_cliente_final          AS "IdClienteFinal",
+                cf.razao_social             AS "ClienteFinalRazaoSocial",
                 l.id_aplicativo             AS "IdAplicativo",
+                a.titulo                    AS "AplicativoTitulo",
                 a.id_tipo_licenca           AS "IdTipoLicenca",
                 tl.descricao                AS "TipoLicencaDescricao",
                 l.data_cadastro             AS "DataCadastro",
@@ -101,6 +133,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
                 li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima"
             FROM licenca l
+            JOIN cliente_final cf ON cf.id = l.id_cliente_final
             JOIN aplicacao a ON a.id = l.id_aplicativo
             JOIN tipo_licenca tl ON tl.id = a.id_tipo_licenca
             LEFT JOIN licenca_periodo lp ON lp.licenca_id = l.id
@@ -360,13 +393,17 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             (Guid)r.Id,
             (Guid)r.IdCliente,
             (Guid)r.IdClienteFinal,
+            (string)(r.ClienteFinalRazaoSocial ?? string.Empty),
             (Guid)r.IdAplicativo,
+            (string)(r.AplicativoTitulo ?? string.Empty),
             (Guid)r.IdTipoLicenca,
             (string)r.TipoLicencaDescricao,
             (DateTime)r.DataCadastro,
             (bool)r.Ativo,
             periodo,
             usuarios,
-            instalacao);
+            instalacao,
+            Sessoes: null,
+            InstalacoesRegistradas: null);
     }
 }

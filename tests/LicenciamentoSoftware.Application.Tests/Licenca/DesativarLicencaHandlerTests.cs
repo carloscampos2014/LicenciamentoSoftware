@@ -17,9 +17,10 @@ public class DesativarLicencaHandlerTests
     private static readonly Guid IdTenant = Guid.NewGuid();
 
     private static LicencaResult LicencaAtiva() => new(
-        Guid.NewGuid(), IdTenant, Guid.NewGuid(), Guid.NewGuid(),
+        Guid.NewGuid(), IdTenant, Guid.NewGuid(), "Cliente Teste",
+        Guid.NewGuid(), "App Teste",
         Guid.Parse("11111111-1111-1111-1111-111111111111"), "Permanente",
-        DateTime.UtcNow, true, null, null, null);
+        DateTime.UtcNow, true, null, null, null, null, null);
 
     [Fact]
     public async Task Handle_LicencaNaoEncontrada_RetornaNaoEncontrado()

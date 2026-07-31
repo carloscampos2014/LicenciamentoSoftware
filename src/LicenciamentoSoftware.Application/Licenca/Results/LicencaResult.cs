@@ -5,14 +5,18 @@ public sealed record LicencaResult(
     Guid Id,
     Guid IdCliente,
     Guid IdClienteFinal,
+    string ClienteFinalRazaoSocial,
     Guid IdAplicativo,
+    string AplicativoTitulo,
     Guid IdTipoLicenca,
     string TipoLicencaDescricao,
     DateTime DataCadastro,
     bool Ativo,
     DetalhePeriodoResult? Periodo,
     DetalheUsuariosResult? Usuarios,
-    DetalheInstalacaoResult? Instalacao);
+    DetalheInstalacaoResult? Instalacao,
+    IReadOnlyList<SessaoResult>? Sessoes,
+    IReadOnlyList<InstalacaoRegistradaResult>? InstalacoesRegistradas);
 
 public sealed record DetalhePeriodoResult(
     DateTime DataInicio,

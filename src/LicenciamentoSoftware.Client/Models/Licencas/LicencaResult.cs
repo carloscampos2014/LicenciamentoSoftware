@@ -7,14 +7,19 @@ public sealed record LicencaResult(
     string ClienteFinalRazaoSocial,
     Guid IdAplicativo,
     string AplicativoTitulo,
-    string TipoLicenca,
+    Guid IdTipoLicenca,
+    string TipoLicencaDescricao,
     DateTime DataCadastro,
     bool Ativo,
     DetalhePeriodoResult? Periodo,
     DetalheUsuariosResult? Usuarios,
     DetalheInstalacaoResult? Instalacao,
-    IReadOnlyList<SessaoResult> Sessoes,
-    IReadOnlyList<InstalacaoRegistradaResult> InstalacoesRegistradas);
+    IReadOnlyList<SessaoResult>? Sessoes,
+    IReadOnlyList<InstalacaoRegistradaResult>? InstalacoesRegistradas)
+{
+    // Alias para compatibilidade com as páginas que usam TipoLicenca
+    public string TipoLicenca => TipoLicencaDescricao;
+}
 
 public sealed record DetalhePeriodoResult(
     DateTime DataInicio,
