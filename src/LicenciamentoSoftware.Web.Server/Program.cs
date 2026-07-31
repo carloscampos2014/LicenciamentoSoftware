@@ -43,7 +43,8 @@ app.UseAuthorization();
 app.MapRazorPages();
 app.MapControllers();
 
-// YARP — repassa chamadas da API (tudo exceto /bff/* e arquivos estáticos)
+// YARP — repassa chamadas da API para localhost:7075
+// O header Authorization (Bearer token) é propagado automaticamente
 app.MapReverseProxy();
 
 // Fallback para o index.html do Blazor WASM (SPA routing)
