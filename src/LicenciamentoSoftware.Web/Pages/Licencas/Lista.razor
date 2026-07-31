@@ -1,44 +1,116 @@
 @page "/licencas"
-@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@attribute [Authorize]
 @inject LicencaApiService Service
+@inject NavigationManager Nav
 
-<PageTitle>Licenças</PageTitle>
+<PageTitle>Licenças — Licenciamento</PageTitle>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3 class="mb-0">Licenças</h3>
-    <a href="/licencas/emitir" class="btn btn-primary btn-sm">+ Emitir</a>
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Licenças</h1>
+        <p>Gerencie licenças e controle de acesso</p>
+    </div>
+    <a href="/licencas/emitir" class="btn btn-primary">+ Nova Licença</a>
 </div>
 
-@if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+<div class="mb-3">
+    <input class="search-bar" placeholder="Buscar por cliente, aplicativo ou chave..."
+           @bind="_filtro" @bind:event="oninput" @onkeyup="HandleFiltro" />
+</div>
+
+@if (_carregando)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+}
 else if (_erro is not null) { <ApiError Erro="@_erro" /> }
-else if (_itens.Count == 0) { <p class="text-muted">Nenhuma licença encontrada.</p> }
+else if (_itens.Count == 0)
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+        <p>Nenhuma licença encontrada.</p>
+    </div>
+}
 else
 {
-    <div class="table-responsive">
-        <table class="table table-hover table-sm align-middle">
-            <thead class="table-light">
-                <tr><th>Cliente Final</th><th>Aplicação</th><th>Tipo</th><th>Cadastro</th><th>Situação</th><th class="text-end">Ações</th></tr>
-            </thead>
-            <tbody>
-                @foreach (var item in _itens)
-                {
-                    <tr>
-                        <td>@item.ClienteFinalRazaoSocial</td>
-                        <td>@item.AplicativoTitulo</td>
-                        <td><span class="badge bg-primary">@item.TipoLicenca</span></td>
-                        <td>@item.DataCadastro.ToString("dd/MM/yyyy")</td>
-                        <td><span class="badge @(item.Ativo ? "bg-success" : "bg-secondary")">@(item.Ativo ? "Ativa" : "Inativa")</span></td>
-                        <td class="text-end">
-                            <a href="/licencas/@item.Id" class="btn btn-outline-secondary btn-sm me-1">Detalhes</a>
-                            @if (item.Ativo)
-                            {
-                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Desativar(item.Id)">Desativar</button>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <div class="cards-grid">
+        @foreach (var item in _itens)
+        {
+            <div class="item-card">
+                <div class="item-card-header">
+                    <div>
+                        <p class="item-card-title">@item.ClienteFinalRazaoSocial</p>
+                        <p class="item-card-subtitle">@item.AplicativoTitulo</p>
+                    </div>
+                    <div class="item-card-icon" style="background:#f0eeff">
+                        <svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#6c63ff">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="d-flex gap-1 mb-2">
+                    <span class="badge-pill @(item.Ativo ? "badge-ativo" : "badge-inativo")">
+                        @(item.Ativo ? "Ativa" : "Inativa")
+                    </span>
+                    <span class="badge-pill @BadgeTipo(item.TipoLicenca)">@item.TipoLicenca</span>
+                </div>
+                <div class="item-card-body">
+                    @if (item.Periodo is not null)
+                    {
+                        <div class="item-card-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Início: @item.Periodo.DataInicio.ToString("dd/MM/yyyy")
+                        </div>
+                        <div class="item-card-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Próx. Renovação: @item.Periodo.DataFim.ToString("dd/MM/yyyy")
+                        </div>
+                    }
+                    @if (item.Usuarios is not null)
+                    {
+                        <div class="item-card-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/>
+                            </svg>
+                            Usuários: @item.Sessoes.Count(s => s.Ativo)/@item.Usuarios.QuantidadeMaxima
+                        </div>
+                    }
+                    @if (item.Instalacao is not null)
+                    {
+                        <div class="item-card-row">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            Instalações: @item.InstalacoesRegistradas.Count(i => i.Ativo)/@item.Instalacao.QuantidadeMaxima
+                        </div>
+                    }
+                    <div class="item-card-row mt-1">
+                        <small class="text-muted">Chave da Licença</small>
+                    </div>
+                    <div>
+                        <code style="font-size:.7rem;color:#6c757d">@item.Id.ToString()[..8].ToUpperInvariant()</code>
+                    </div>
+                </div>
+                <div class="item-card-footer">
+                    <a href="/licencas/@item.Id" class="btn btn-outline-secondary btn-sm">Detalhes</a>
+                    @if (item.Ativo)
+                    {
+                        <button class="btn btn-outline-danger btn-sm" @onclick="() => Desativar(item.Id)">Desativar</button>
+                    }
+                </div>
+            </div>
+        }
     </div>
     <Paginacao PaginaAtual="_pagina" TotalPaginas="_totalPaginas" Total="_total" OnPaginaMudou="MudarPagina" />
 }
@@ -47,8 +119,7 @@ else
 
 @code {
     private List<LicencaResult> _itens = [];
-    private bool _carregando;
-    private string? _erro;
+    private bool _carregando; private string? _erro; private string? _filtro;
     private int _pagina = 1, _totalPaginas = 1, _total;
     private ConfirmDialog _confirmDialog = default!;
 
@@ -68,6 +139,8 @@ else
     }
 
     private async Task MudarPagina(int p) { _pagina = p; await CarregarAsync(); }
+    private async Task HandleFiltro(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    { if (e.Key == "Enter") { _pagina = 1; await CarregarAsync(); } }
 
     private async Task Desativar(Guid id)
     {
@@ -77,4 +150,13 @@ else
         if (sucesso) await CarregarAsync();
         else _erro = erro;
     }
+
+    private static string BadgeTipo(string tipo) => tipo switch
+    {
+        "Permanente"     => "badge-permanente",
+        "Por Período"    => "badge-periodo",
+        "Por Usuários"   => "badge-usuarios",
+        "Por Instalação" => "badge-instalacao",
+        _                => "badge-inativo"
+    };
 }

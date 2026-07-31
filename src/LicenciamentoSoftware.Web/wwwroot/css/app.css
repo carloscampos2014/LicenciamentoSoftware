@@ -1,32 +1,369 @@
-/* Estilos globais da aplicação */
+/* =====================================================
+   Licenciamento Software — estilos globais
+   ===================================================== */
 
 html, body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background-color: #f8f9fa;
+    height: 100%;
 }
 
-/* Sidebar escura */
+/* ── Layout shell ─────────────────────────────────── */
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ── Sidebar ──────────────────────────────────────── */
+.sidebar {
+    width: 220px;
+    min-height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+}
+
+.sidebar-brand {
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    text-decoration: none;
+}
+
+.sidebar-brand-icon {
+    width: 36px; height: 36px;
+    background: #6c63ff;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: .9rem;
+    flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+    line-height: 1.2;
+}
+
+.sidebar-brand-name {
+    font-weight: 700;
+    font-size: .9rem;
+    color: #212529;
+}
+
+.sidebar-brand-sub {
+    font-size: .7rem;
+    color: #6c757d;
+}
+
+.sidebar-nav {
+    flex: 1;
+    padding: 1rem 0;
+}
+
+.sidebar-nav-label {
+    font-size: .65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #adb5bd;
+    padding: 0 1rem;
+    margin-bottom: .5rem;
+}
+
+.sidebar-nav .nav-item { list-style: none; }
+
 .sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
     padding: .5rem 1rem;
-    border-radius: .375rem;
-    transition: background-color .15s;
+    color: #495057;
+    text-decoration: none;
+    font-size: .875rem;
+    border-radius: 0;
+    transition: background .15s, color .15s;
 }
 
-.sidebar-nav .nav-link:hover,
+.sidebar-nav .nav-link:hover {
+    background: #f1f3f5;
+    color: #6c63ff;
+}
+
 .sidebar-nav .nav-link.active {
-    background-color: rgba(255,255,255,.1);
+    background: #f0eeff;
+    color: #6c63ff;
+    font-weight: 600;
+    border-right: 3px solid #6c63ff;
+}
+
+.sidebar-nav .nav-link svg {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    opacity: .7;
+}
+
+.sidebar-nav .nav-link.active svg,
+.sidebar-nav .nav-link:hover svg {
+    opacity: 1;
+}
+
+.sidebar-footer {
+    padding: 1rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.sidebar-footer-avatar {
+    width: 32px; height: 32px;
+    background: #6c63ff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: .75rem; font-weight: 600;
+    flex-shrink: 0;
+}
+
+.sidebar-footer-info { flex: 1; overflow: hidden; }
+
+.sidebar-footer-name {
+    font-size: .8rem;
+    font-weight: 600;
+    color: #212529;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-footer-action {
+    font-size: .7rem;
+    color: #dc3545;
+    text-decoration: none;
+}
+
+.sidebar-footer-action:hover { text-decoration: underline; }
+
+/* ── Conteúdo principal ───────────────────────────── */
+.main-content {
+    margin-left: 220px;
+    flex: 1;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: .25rem;
+}
+
+.page-header p {
+    font-size: .875rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.page-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── Cards de item (grid) ─────────────────────────── */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.item-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: box-shadow .15s;
+}
+
+.item-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+
+.item-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: .75rem;
+}
+
+.item-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0 0 .15rem;
+}
+
+.item-card-subtitle {
+    font-size: .8rem;
+    color: #6c757d;
+    margin: 0;
+}
+
+.item-card-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+
+.item-card-body { font-size: .8rem; color: #495057; }
+
+.item-card-row {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: .3rem;
+}
+
+.item-card-row svg { width: 14px; height: 14px; color: #adb5bd; flex-shrink: 0; }
+
+.item-card-footer {
+    margin-top: 1rem;
+    padding-top: .75rem;
+    border-top: 1px solid #f1f3f5;
+    display: flex;
+    gap: .5rem;
+    justify-content: flex-end;
+}
+
+/* ── Badges ───────────────────────────────────────── */
+.badge-ativo    { background: #d1fae5; color: #065f46; }
+.badge-inativo  { background: #f3f4f6; color: #6b7280; }
+.badge-permanente { background: #dbeafe; color: #1e40af; }
+.badge-periodo    { background: #fef3c7; color: #92400e; }
+.badge-usuarios   { background: #ede9fe; color: #5b21b6; }
+.badge-instalacao { background: #fce7f3; color: #9d174d; }
+
+.badge-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: .2rem .6rem;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 600;
+    gap: .25rem;
+}
+
+/* ── Botão primário roxo ──────────────────────────── */
+.btn-primary {
+    background: #6c63ff !important;
+    border-color: #6c63ff !important;
     color: white !important;
 }
 
-/* Código inline */
-code {
-    font-size: .85em;
-    color: #d63384;
+.btn-primary:hover {
+    background: #5a52e0 !important;
+    border-color: #5a52e0 !important;
 }
 
-/* Blazor error UI */
-#blazor-error-ui {
-    position: fixed;
-    bottom: 0;
+/* ── Toolbar de busca ─────────────────────────────── */
+.search-bar {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: .5rem .875rem;
+    font-size: .875rem;
     width: 100%;
-    z-index: 1000;
+    max-width: 360px;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.search-bar:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 3px rgba(108,99,255,.1);
+}
+
+/* ── Modal ────────────────────────────────────────── */
+.modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.4);
+    z-index: 1050;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+}
+
+.modal-card {
+    background: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+}
+
+.modal-card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.modal-card-header h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+.modal-card-body { padding: 1.25rem 1.5rem; }
+
+.modal-card-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+
+.btn-close-modal {
+    background: none; border: none;
+    color: #6c757d; cursor: pointer;
+    font-size: 1.2rem; line-height: 1;
+    padding: .2rem;
+}
+
+.btn-close-modal:hover { color: #212529; }
+
+/* ── Form controls ────────────────────────────────── */
+.form-group { margin-bottom: 1rem; }
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+/* ── Empty state ──────────────────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #adb5bd;
+}
+
+.empty-state svg { width: 48px; height: 48px; margin-bottom: 1rem; opacity: .4; }
+.empty-state p { font-size: .9rem; }
+
+/* ── Blazor error UI ──────────────────────────────── */
+#blazor-error-ui {
+    position: fixed; bottom: 0; width: 100%; z-index: 2000;
+    display: none;
 }

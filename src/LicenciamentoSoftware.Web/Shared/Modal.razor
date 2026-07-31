@@ -1,0 +1,31 @@
+@if (Visivel)
+{
+    <div class="modal-overlay" @onclick="FecharSeClicarFora">
+        <div class="modal-card" @onclick:stopPropagation="true">
+            <div class="modal-card-header">
+                <h5>@Titulo</h5>
+                <button class="btn-close-modal" @onclick="Fechar">&times;</button>
+            </div>
+            <div class="modal-card-body">
+                @ChildContent
+            </div>
+            @if (Footer is not null)
+            {
+                <div class="modal-card-footer">
+                    @Footer
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visivel { get; set; }
+    [Parameter] public EventCallback OnFechar { get; set; }
+    [Parameter] public string Titulo { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    private async Task Fechar() => await OnFechar.InvokeAsync();
+    private async Task FecharSeClicarFora() => await OnFechar.InvokeAsync();
+}
