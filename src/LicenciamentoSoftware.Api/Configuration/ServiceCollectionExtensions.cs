@@ -100,12 +100,16 @@ internal static class ServiceCollectionExtensions
     {
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("AdministradorCliente",
-                p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente"));
-            options.AddPolicy("OperadorCliente",
-                p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente", "OperadorCliente"));
-            options.AddPolicy("Leitor",
-                p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente", "OperadorCliente", "Leitor"));
+            // Por enquanto todos os usuários autenticados têm acesso total ao seu tenant.
+            // A separação por papel (AdministradorCliente vs UsuarioFinal) será implementada
+            // como feature separada quando o portal do cliente final for desenvolvido.
+            var policyAutenticado = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            options.AddPolicy("AdministradorCliente",  policyAutenticado);
+            options.AddPolicy("OperadorCliente",       policyAutenticado);
+            options.AddPolicy("Leitor",                policyAutenticado);
         });
 
         return services;
