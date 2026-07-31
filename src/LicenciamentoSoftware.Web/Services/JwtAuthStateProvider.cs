@@ -17,8 +17,16 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
 
     private string? _accessToken;
     private ClaimsPrincipal _usuario = new(new ClaimsIdentity());
+    private ApiHttpClientFactory? _apiFactory;
 
     public string? AccessToken => _accessToken;
+
+    /// <summary>
+    /// Injeta a fábrica de clients após a criação para evitar dependência circular.
+    /// Chamado pelo Program.cs após registrar os serviços.
+    /// </summary>
+    public void SetApiFactory(ApiHttpClientFactory factory)
+        => _apiFactory = factory;
 
     /// <summary>
     /// Retorna o estado atual. Chamado automaticamente pelo Blazor em cada render
@@ -47,6 +55,10 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
             authenticationType: "jwt");
 
         _usuario = new ClaimsPrincipal(identity);
+
+        // Atualiza o token em todos os HttpClients autenticados
+        _apiFactory?.SetToken(accessToken);
+
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
     }
 
@@ -59,6 +71,10 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
     {
         _accessToken = null;
         _usuario = new ClaimsPrincipal(new ClaimsIdentity());
+
+        // Remove o token de todos os HttpClients
+        _apiFactory?.ClearToken();
+
         NotifyAuthenticationStateChanged(Task.FromResult(Anonimo));
     }
 
