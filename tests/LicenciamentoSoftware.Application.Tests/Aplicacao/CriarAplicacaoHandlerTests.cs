@@ -46,6 +46,11 @@ public class CriarAplicacaoHandlerTests
         _repo.ExisteTipoLicencaAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(true);
         _repo.InserirAsync(Arg.Any<Domain.Entities.Aplicacao>(), Arg.Any<CancellationToken>())
              .Returns(x => ((Domain.Entities.Aplicacao)x[0]).Id);
+        // BuscarPorIdAsync é chamado após o insert para obter TipoLicencaDescricao
+        _repo.BuscarPorIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+             .Returns(x => new AplicacaoResult(
+                 (Guid)x[0], Guid.NewGuid(), "Meu Software", "Descrição opcional",
+                 IdTipoLicenca, "Permanente", true));
 
         var resultado = await CriarHandler().HandleAsync(CommandValido());
 
@@ -53,6 +58,7 @@ public class CriarAplicacaoHandlerTests
         var sucesso = (CriarAplicacaoResult.Sucesso)resultado;
         sucesso.Aplicacao.Titulo.Should().Be("Meu Software");
         sucesso.Aplicacao.IdTipoLicenca.Should().Be(IdTipoLicenca);
+        sucesso.Aplicacao.TipoLicencaDescricao.Should().Be("Permanente");
     }
 
     [Fact]
