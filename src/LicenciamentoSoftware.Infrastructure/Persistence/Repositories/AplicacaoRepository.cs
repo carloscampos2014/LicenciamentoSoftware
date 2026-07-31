@@ -15,14 +15,16 @@ public sealed class AplicacaoRepository : IAplicacaoRepository
     public async Task<AplicacaoResult?> BuscarPorIdAsync(Guid id, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT id               AS "Id",
-                   id_cliente       AS "IdCliente",
-                   titulo           AS "Titulo",
-                   descricao        AS "Descricao",
-                   id_tipo_licenca  AS "IdTipoLicenca",
-                   ativo            AS "Ativo"
-            FROM aplicacao
-            WHERE id = @Id
+            SELECT a.id               AS "Id",
+                   a.id_cliente       AS "IdCliente",
+                   a.titulo           AS "Titulo",
+                   a.descricao        AS "Descricao",
+                   a.id_tipo_licenca  AS "IdTipoLicenca",
+                   tl.descricao       AS "TipoLicencaDescricao",
+                   a.ativo            AS "Ativo"
+            FROM aplicacao a
+            JOIN tipo_licenca tl ON tl.id = a.id_tipo_licenca
+            WHERE a.id = @Id
             LIMIT 1
             """;
         using var conn = _factory.CreateConnection();
@@ -43,23 +45,25 @@ public sealed class AplicacaoRepository : IAplicacaoRepository
         int pagina, int tamanhoPagina, CancellationToken ct = default)
     {
         const string sqlCount = """
-            SELECT COUNT(*) FROM aplicacao
-            WHERE (@IdCliente IS NULL OR id_cliente = @IdCliente)
-              AND (@Titulo IS NULL OR titulo ILIKE '%' || @Titulo || '%')
-              AND (@Ativo IS NULL OR ativo = @Ativo)
+            SELECT COUNT(*) FROM aplicacao a
+            WHERE (@IdCliente IS NULL OR a.id_cliente = @IdCliente)
+              AND (@Titulo IS NULL OR a.titulo ILIKE '%' || @Titulo || '%')
+              AND (@Ativo IS NULL OR a.ativo = @Ativo)
             """;
         const string sqlItens = """
-            SELECT id               AS "Id",
-                   id_cliente       AS "IdCliente",
-                   titulo           AS "Titulo",
-                   descricao        AS "Descricao",
-                   id_tipo_licenca  AS "IdTipoLicenca",
-                   ativo            AS "Ativo"
-            FROM aplicacao
-            WHERE (@IdCliente IS NULL OR id_cliente = @IdCliente)
-              AND (@Titulo IS NULL OR titulo ILIKE '%' || @Titulo || '%')
-              AND (@Ativo IS NULL OR ativo = @Ativo)
-            ORDER BY titulo
+            SELECT a.id               AS "Id",
+                   a.id_cliente       AS "IdCliente",
+                   a.titulo           AS "Titulo",
+                   a.descricao        AS "Descricao",
+                   a.id_tipo_licenca  AS "IdTipoLicenca",
+                   tl.descricao       AS "TipoLicencaDescricao",
+                   a.ativo            AS "Ativo"
+            FROM aplicacao a
+            JOIN tipo_licenca tl ON tl.id = a.id_tipo_licenca
+            WHERE (@IdCliente IS NULL OR a.id_cliente = @IdCliente)
+              AND (@Titulo IS NULL OR a.titulo ILIKE '%' || @Titulo || '%')
+              AND (@Ativo IS NULL OR a.ativo = @Ativo)
+            ORDER BY a.titulo
             LIMIT @Limite OFFSET @Offset
             """;
         var param = new { IdCliente = idCliente, Titulo = titulo, Ativo = ativo,

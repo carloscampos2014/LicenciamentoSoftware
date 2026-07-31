@@ -6,4 +6,5 @@ public sealed record AplicacaoResult(
     string Titulo,
     string? Descricao,
     Guid IdTipoLicenca,
+    string TipoLicencaDescricao,
     bool Ativo);

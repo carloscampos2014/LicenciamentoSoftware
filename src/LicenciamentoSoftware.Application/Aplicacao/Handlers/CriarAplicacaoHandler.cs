@@ -46,9 +46,9 @@ public sealed class CriarAplicacaoHandler
         await _repo.InserirAsync(aplicacao, ct);
         await _uow.CommitAsync(ct);
 
-        return new CriarAplicacaoResult.Sucesso(new AplicacaoResult(
-            aplicacao.Id, aplicacao.IdCliente, aplicacao.Titulo,
-            aplicacao.Descricao, aplicacao.IdTipoLicenca, aplicacao.Ativo));
+        // Busca novamente para obter TipoLicencaDescricao via JOIN
+        var resultado = await _repo.BuscarPorIdAsync(aplicacao.Id, ct);
+        return new CriarAplicacaoResult.Sucesso(resultado!);
     }
 }
 
