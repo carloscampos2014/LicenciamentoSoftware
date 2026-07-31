@@ -9,9 +9,15 @@ builder.Services.AddRazorPages();
 // Cookie policy para o BFF — HttpOnly, Secure, SameSite=Strict
 builder.Services.AddBffCookiePolicy();
 
-// Serviços HTTP do Client (proxy para a API)
+// Serviços HTTP do Client (proxy para a API — usado pelo BffController)
 builder.Services.AddApiClientServices();
 builder.Services.ConfigureApiHttpClients(builder.Configuration);
+
+// YARP — proxy reverso transparente para todos os endpoints da API
+// O WASM chama /clientes-finais, /licencas, etc. no Web.Server,
+// que repassa para a API com o Bearer token no header
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
@@ -36,6 +42,9 @@ app.UseAuthorization();
 
 app.MapRazorPages();
 app.MapControllers();
+
+// YARP — repassa chamadas da API (tudo exceto /bff/* e arquivos estáticos)
+app.MapReverseProxy();
 
 // Fallback para o index.html do Blazor WASM (SPA routing)
 app.MapFallbackToFile("index.html");
