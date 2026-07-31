@@ -33,6 +33,9 @@ internal static class WebApplicationExtensions
 
         app.UseHttpsRedirection();
 
+        // CORS — antes de Authentication para que preflight OPTIONS seja respondido corretamente
+        app.UseCors("BffPolicy");
+
         // Rate limiting — antes de Authentication para rejeitar cedo
         app.UseRateLimiter();
 

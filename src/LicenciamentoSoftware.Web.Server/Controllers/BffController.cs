@@ -100,7 +100,6 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
 
         if (resultado is null || resultado.AccessToken is null)
         {
-            // Refresh inválido — apaga o cookie e força novo login
             Response.Cookies.Delete(RefreshTokenCookie);
             return Unauthorized(new { Erro = "Sessão expirada. Faça login novamente." });
         }
@@ -136,6 +135,32 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
     }
 
     // =========================================================================
+    // Cadastro público — proxy para a API (sem token, sem cookie)
+    // =========================================================================
+
+    /// <summary>
+    /// Proxy para POST /auth/cadastrar da API.
+    /// O Blazor WASM chama este endpoint do BFF em vez da API diretamente,
+    /// evitando necessidade de CORS entre origens diferentes.
+    /// </summary>
+    [HttpPost("cadastrar")]
+    public async Task<IActionResult> Cadastrar(
+        [FromBody] AutoCadastroRequest request,
+        CancellationToken ct)
+    {
+        var (sucesso, erro, erros) = await authService.CadastrarAsync(request, ct);
+
+        if (sucesso)
+            return Ok(new { Mensagem = "Cadastro realizado com sucesso. Faça login para continuar." });
+
+        if (erros is { Count: > 0 })
+            return UnprocessableEntity(new { Erros = erros });
+
+        // CPF/CNPJ ou e-mail duplicado
+        return Conflict(new { Erro = erro });
+    }
+
+    // =========================================================================
     // Auxiliar
     // =========================================================================
 
@@ -149,7 +174,7 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
             Expires = expiracao.HasValue
                 ? new DateTimeOffset(expiracao.Value)
                 : DateTimeOffset.UtcNow.AddDays(7),
-            Path = "/bff", // cookie só enviado para endpoints BFF
+            Path = "/bff",
         });
     }
 }

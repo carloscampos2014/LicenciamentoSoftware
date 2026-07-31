@@ -48,6 +48,7 @@ internal static class ServiceCollectionExtensions
 
         services.AddApiAuthentication(configuration);
         services.AddApiAuthorization();
+        services.AddApiCors(configuration);
         services.AddApiHealthChecks();
         services.AddApiRateLimiting(configuration);
         services.AddAntiReplayOptions(configuration);
@@ -257,6 +258,33 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<HeartbeatHandler>();
         services.AddScoped<LogoutValidacaoHandler>();
         services.AddScoped<ValidarInstalacaoHandler>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddApiCors(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var origensPermitidas = configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? [];
+
+        services.AddCors(options =>
+        {
+            // Política para o BFF (Web.Server) — permite cookies e JWT
+            options.AddPolicy("BffPolicy", policy =>
+            {
+                if (origensPermitidas.Length > 0)
+                    policy.WithOrigins(origensPermitidas);
+                else
+                    policy.SetIsOriginAllowed(_ => true); // fallback dev sem config
+
+                policy.AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials(); // necessário para cookies HttpOnly via BFF
+            });
+        });
 
         return services;
     }
