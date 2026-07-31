@@ -114,4 +114,38 @@ public sealed class LicencaTokenRepository : ILicencaTokenRepository
                 },
                 cancellationToken: cancellationToken));
     }
+
+    // -------------------------------------------------------------------------
+    // Fase 8 — jobs de rotação e notificação
+    // -------------------------------------------------------------------------
+
+    public async Task<IReadOnlyList<Application.Jobs.LicencaTokenJobInfo>> BuscarTokensProximosVencimentoAsync(
+        int diasAntecedencia,
+        CancellationToken cancellationToken = default)
+    {
+        // Um token expira em criado_em + expiracao_minutos.
+        // Considera "próximo" se vencer dentro de diasAntecedencia dias a partir de agora.
+        const string sql = """
+            SELECT lt.id                AS "IdToken",
+                   lt.id_licenca        AS "IdLicenca",
+                   l.id_cliente         AS "IdCliente",
+                   a.nome               AS "NomeAplicacao",
+                   lt.expiracao_minutos AS "ExpiracaoMinutos",
+                   lt.criado_em         AS "CriadoEm",
+                   lt.ativo             AS "Ativo"
+            FROM licenca_token lt
+            JOIN licenca l   ON l.id = lt.id_licenca
+            JOIN aplicacao a ON a.id = l.id_aplicativo
+            WHERE lt.ativo = TRUE
+              AND (lt.criado_em + (lt.expiracao_minutos * INTERVAL '1 minute'))
+                  <= (NOW() + (@Dias * INTERVAL '1 day'))
+            ORDER BY lt.criado_em
+            """;
+
+        using var conn = _factory.CreateConnection();
+        var rows = await conn.QueryAsync<Application.Jobs.LicencaTokenJobInfo>(
+            new CommandDefinition(sql, new { Dias = diasAntecedencia },
+                cancellationToken: cancellationToken));
+        return rows.AsList();
+    }
 }

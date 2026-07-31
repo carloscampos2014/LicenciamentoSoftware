@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Licença próxima do vencimento</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; color: #333; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background-color: #1a56db; padding: 32px 40px; text-align: center; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .header p { margin: 8px 0 0; color: #c7d9ff; font-size: 13px; }
+    .body { padding: 40px; }
+    .body p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #444; }
+    .alert-box { background-color: #fff8e1; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 16px 20px; margin: 24px 0; }
+    .alert-box p { margin: 0; font-size: 15px; color: #92400e; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .details-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .details-table td:first-child { color: #888; width: 40%; }
+    .details-table td:last-child { font-weight: 600; color: #222; }
+    .cta { text-align: center; margin: 32px 0 8px; }
+    .cta a { display: inline-block; background-color: #1a56db; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-size: 15px; font-weight: 600; }
+    .footer { background-color: #f8f9fb; padding: 24px 40px; text-align: center; border-top: 1px solid #eee; }
+    .footer p { margin: 0; font-size: 12px; color: #aaa; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>⚠️ Licença próxima do vencimento</h1>
+      <p>LicenciamentoSoftware — Aviso automático</p>
+    </div>
+    <div class="body">
+      <p>Olá, <strong>{{NomeAdmin}}</strong>.</p>
+      <p>Uma das licenças gerenciadas por você está próxima do vencimento. Renove-a para garantir a continuidade do acesso ao software.</p>
+
+      <div class="alert-box">
+        <p>⏳ Esta licença vence em <strong>{{DiasRestantes}} dia(s)</strong> — em <strong>{{DataVencimento}}</strong>.</p>
+      </div>
+
+      <table class="details-table">
+        <tr>
+          <td>Aplicação</td>
+          <td>{{NomeAplicacao}}</td>
+        </tr>
+        <tr>
+          <td>Data de vencimento</td>
+          <td>{{DataVencimento}}</td>
+        </tr>
+        <tr>
+          <td>Dias restantes</td>
+          <td>{{DiasRestantes}}</td>
+        </tr>
+      </table>
+
+      <p>Para renovar a licença, acesse o portal de gerenciamento:</p>
+
+      <div class="cta">
+        <a href="#">Acessar Portal de Licenças</a>
+      </div>
+
+      <p style="font-size:13px; color:#888;">Se a renovação automática estiver habilitada para esta licença, nenhuma ação é necessária.</p>
+    </div>
+    <div class="footer">
+      <p>Este é um e-mail automático. Não responda a esta mensagem.<br/>LicenciamentoSoftware &copy; {{AnoAtual}}</p>
+    </div>
+  </div>
+</body>
+</html>

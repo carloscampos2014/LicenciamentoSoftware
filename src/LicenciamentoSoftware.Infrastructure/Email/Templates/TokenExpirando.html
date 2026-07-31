@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Token de licença próximo do vencimento</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; color: #333; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background-color: #d97706; padding: 32px 40px; text-align: center; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .header p { margin: 8px 0 0; color: #fde8b8; font-size: 13px; }
+    .body { padding: 40px; }
+    .body p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #444; }
+    .alert-box { background-color: #fff3cd; border-left: 4px solid #d97706; border-radius: 4px; padding: 16px 20px; margin: 24px 0; }
+    .alert-box p { margin: 0; font-size: 15px; color: #7c4d00; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .details-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .details-table td:first-child { color: #888; width: 40%; }
+    .details-table td:last-child { font-weight: 600; color: #222; }
+    .info-box { background-color: #f0f9ff; border-left: 4px solid #0ea5e9; border-radius: 4px; padding: 16px 20px; margin: 24px 0; }
+    .info-box p { margin: 0; font-size: 14px; color: #0369a1; }
+    .cta { text-align: center; margin: 32px 0 8px; }
+    .cta a { display: inline-block; background-color: #d97706; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-size: 15px; font-weight: 600; }
+    .footer { background-color: #f8f9fb; padding: 24px 40px; text-align: center; border-top: 1px solid #eee; }
+    .footer p { margin: 0; font-size: 12px; color: #aaa; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>🔑 Token de licença expirando</h1>
+      <p>LicenciamentoSoftware — Aviso automático</p>
+    </div>
+    <div class="body">
+      <p>Olá, <strong>{{NomeAdmin}}</strong>.</p>
+      <p>O token HMAC de autenticação de uma das suas licenças está próximo do vencimento. Após o vencimento, o software cliente não conseguirá se autenticar.</p>
+
+      <div class="alert-box">
+        <p>🔐 O token vence em <strong>{{DiasRestantes}} dia(s)</strong> — em <strong>{{DataVencimento}}</strong>.</p>
+      </div>
+
+      <table class="details-table">
+        <tr>
+          <td>Aplicação</td>
+          <td>{{NomeAplicacao}}</td>
+        </tr>
+        <tr>
+          <td>Vencimento do token</td>
+          <td>{{DataVencimento}}</td>
+        </tr>
+        <tr>
+          <td>Dias restantes</td>
+          <td>{{DiasRestantes}}</td>
+        </tr>
+      </table>
+
+      <div class="info-box">
+        <p>ℹ️ Se a rotação automática de tokens estiver habilitada, o token será renovado automaticamente antes do vencimento e o novo segredo deverá ser configurado no software cliente.</p>
+      </div>
+
+      <p>Para renovar o token manualmente, acesse o portal:</p>
+
+      <div class="cta">
+        <a href="#">Renovar Token de Licença</a>
+      </div>
+    </div>
+    <div class="footer">
+      <p>Este é um e-mail automático. Não responda a esta mensagem.<br/>LicenciamentoSoftware &copy; {{AnoAtual}}</p>
+    </div>
+  </div>
+</body>
+</html>

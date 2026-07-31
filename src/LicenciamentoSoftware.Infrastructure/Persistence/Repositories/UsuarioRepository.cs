@@ -190,4 +190,30 @@ public sealed class UsuarioRepository : IUsuarioRepository
             System.Reflection.BindingFlags.Instance);
         prop?.SetValue(obj, valor);
     }
+
+    // -------------------------------------------------------------------------
+    // Fase 8 — jobs de notificação
+    // -------------------------------------------------------------------------
+
+    public async Task<Application.Jobs.AdminClienteInfo?> BuscarEmailAdminPorClienteAsync(
+        Guid idCliente, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT u.id_cliente AS "IdCliente",
+                   u.email      AS "Email",
+                   u.nome       AS "Nome"
+            FROM usuario u
+            INNER JOIN usuario_papel up ON up.id_usuario = u.id
+            WHERE u.id_cliente = @IdCliente
+              AND up.papel     = 'AdministradorCliente'
+              AND u.ativo      = TRUE
+            ORDER BY u.nome
+            LIMIT 1
+            """;
+
+        using var conn = _factory.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<Application.Jobs.AdminClienteInfo>(
+            new CommandDefinition(sql, new { IdCliente = idCliente },
+                cancellationToken: cancellationToken));
+    }
 }

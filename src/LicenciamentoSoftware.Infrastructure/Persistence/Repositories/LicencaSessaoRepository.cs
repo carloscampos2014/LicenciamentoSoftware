@@ -134,4 +134,23 @@ public sealed class LicencaSessaoRepository : ILicencaSessaoRepository
         await conn.ExecuteAsync(
             new CommandDefinition(sql, new { Id = id }, cancellationToken: ct));
     }
+
+    // -------------------------------------------------------------------------
+    // Fase 8 — job de sessões inativas
+    // -------------------------------------------------------------------------
+
+    public async Task<int> EncerrarSessoesInativasAsync(
+        DateTime limiteAtividade, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE licenca_sessao
+            SET ativo = FALSE
+            WHERE ativo = TRUE
+              AND data_ultima_atividade < @LimiteAtividade
+            """;
+        using var conn = _factory.CreateConnection();
+        return await conn.ExecuteAsync(
+            new CommandDefinition(sql, new { LimiteAtividade = limiteAtividade },
+                cancellationToken: ct));
+    }
 }

@@ -7,13 +7,16 @@ using LicenciamentoSoftware.Application.Cliente.Abstractions;
 using LicenciamentoSoftware.Application.Cliente.Handlers;
 using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
+using LicenciamentoSoftware.Application.Jobs;
 using LicenciamentoSoftware.Application.Licenca.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.TipoLicenca.Abstractions;
 using LicenciamentoSoftware.Application.TipoLicenca.Handlers;
 using LicenciamentoSoftware.Application.Usuario.Abstractions;
 using LicenciamentoSoftware.Application.Usuario.Handlers;
+using LicenciamentoSoftware.Infrastructure.Email;
 using LicenciamentoSoftware.Infrastructure.Identity;
+using LicenciamentoSoftware.Infrastructure.Jobs;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 using LicenciamentoSoftware.Infrastructure.Security;
@@ -52,6 +55,7 @@ internal static class ServiceCollectionExtensions
         services.AddInfrastructureServices(configuration);
         services.AddApplicationHandlers();
         services.AddGestaoHandlers();
+        services.AddJobServices(configuration);
 
         return services;
     }
@@ -302,6 +306,65 @@ internal static class ServiceCollectionExtensions
     {
         services.AddHealthChecks()
             .AddCheck("self", () => HealthCheckResult.Healthy("API operacional"));
+
+        return services;
+    }
+
+    private static IServiceCollection AddJobServices(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        // Configurações de jobs e e-mail
+        services.Configure<JobSettings>(configuration.GetSection("JobSettings"));
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+        // Serviços de e-mail
+        services.AddSingleton<IEmailTemplateRenderer, TemplateRenderer>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
+
+        // Jobs — scoped para que repositórios sejam resolvidos por escopo de execução
+        var jobSettings = configuration.GetSection("JobSettings").Get<JobSettings>() ?? new JobSettings();
+
+        services.AddScoped<EncerrarSessoesInativasJob>(sp =>
+            new EncerrarSessoesInativasJob(
+                sp.GetRequiredService<ILicencaSessaoRepository>(),
+                sp.GetRequiredService<IClock>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<EncerrarSessoesInativasJob>>(),
+                jobSettings.SessoesInativasLimiteHoras));
+
+        services.AddScoped<ExpirarLicencasPeriodoJob>(sp =>
+            new ExpirarLicencasPeriodoJob(
+                sp.GetRequiredService<ILicencaGestaoRepository>(),
+                sp.GetRequiredService<IClock>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<ExpirarLicencasPeriodoJob>>()));
+
+        services.AddScoped<RenovarLicencasAutomaticasJob>(sp =>
+            new RenovarLicencasAutomaticasJob(
+                sp.GetRequiredService<ILicencaGestaoRepository>(),
+                sp.GetRequiredService<IClock>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RenovarLicencasAutomaticasJob>>(),
+                jobSettings.DiasAntecedenciaNotificacao));
+
+        services.AddScoped<RotacionarTokensLicencaJob>(sp =>
+            new RotacionarTokensLicencaJob(
+                sp.GetRequiredService<ILicencaTokenRepository>(),
+                sp.GetRequiredService<RenovarTokenLicencaHandler>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RotacionarTokensLicencaJob>>(),
+                jobSettings.DiasAntecedenciaNotificacao));
+
+        services.AddScoped<NotificarExpiracaoJob>(sp =>
+            new NotificarExpiracaoJob(
+                sp.GetRequiredService<ILicencaGestaoRepository>(),
+                sp.GetRequiredService<ILicencaTokenRepository>(),
+                sp.GetRequiredService<IUsuarioRepository>(),
+                sp.GetRequiredService<IEmailService>(),
+                sp.GetRequiredService<IEmailTemplateRenderer>(),
+                sp.GetRequiredService<IClock>(),
+                sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<NotificarExpiracaoJob>>(),
+                jobSettings.DiasAntecedenciaNotificacao));
+
+        // BackgroundService orquestrador
+        services.AddHostedService<JobScheduler>();
 
         return services;
     }

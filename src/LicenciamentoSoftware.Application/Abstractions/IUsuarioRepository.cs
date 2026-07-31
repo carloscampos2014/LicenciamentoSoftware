@@ -10,4 +10,15 @@ public interface IUsuarioRepository
     Task<bool> ExisteAdminParaClienteAsync(Guid idCliente, CancellationToken cancellationToken = default);
     Task SalvarAsync(Domain.Entities.Usuario usuario, string papel, CancellationToken cancellationToken = default);
     Task AtualizarTotpSecretAsync(Guid idUsuario, string? totpSecret, CancellationToken cancellationToken = default);
+
+    // -------------------------------------------------------------------------
+    // Fase 8 — jobs de notificação
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Busca o e-mail e nome do primeiro AdministradorCliente ativo de um tenant.
+    /// Usado para envio de notificações automáticas.
+    /// </summary>
+    Task<Jobs.AdminClienteInfo?> BuscarEmailAdminPorClienteAsync(
+        Guid idCliente, CancellationToken cancellationToken = default);
 }

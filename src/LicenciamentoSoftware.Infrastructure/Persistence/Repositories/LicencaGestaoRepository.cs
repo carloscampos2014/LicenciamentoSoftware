@@ -230,6 +230,103 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
     }
 
     // -------------------------------------------------------------------------
+    // Fase 8 — jobs de expiração, renovação automática e notificação
+    // -------------------------------------------------------------------------
+
+    public async Task<IReadOnlyList<Application.Jobs.LicencaPeriodoJobInfo>> BuscarLicencasPeriodoVencidasAsync(
+        DateTime agora, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT l.id                  AS "IdLicenca",
+                   l.id_cliente          AS "IdCliente",
+                   a.nome               AS "NomeAplicacao",
+                   lp.data_inicio       AS "DataInicio",
+                   lp.data_fim          AS "DataFim",
+                   lp.renovacao_automatica AS "RenovacaoAutomatica"
+            FROM licenca l
+            JOIN aplicacao a       ON a.id = l.id_aplicativo
+            JOIN licenca_periodo lp ON lp.licenca_id = l.id
+            WHERE l.ativo                  = TRUE
+              AND lp.renovacao_automatica  = FALSE
+              AND lp.data_fim              < @Agora
+            """;
+        using var conn = _factory.CreateConnection();
+        var rows = await conn.QueryAsync<Application.Jobs.LicencaPeriodoJobInfo>(
+            new CommandDefinition(sql, new { Agora = agora }, cancellationToken: ct));
+        return rows.AsList();
+    }
+
+    public async Task<IReadOnlyList<Application.Jobs.LicencaPeriodoJobInfo>> BuscarLicencasRenovacaoAutomaticaAsync(
+        DateTime agora, int diasAntecedencia, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT l.id                  AS "IdLicenca",
+                   l.id_cliente          AS "IdCliente",
+                   a.nome               AS "NomeAplicacao",
+                   lp.data_inicio       AS "DataInicio",
+                   lp.data_fim          AS "DataFim",
+                   lp.renovacao_automatica AS "RenovacaoAutomatica"
+            FROM licenca l
+            JOIN aplicacao a       ON a.id = l.id_aplicativo
+            JOIN licenca_periodo lp ON lp.licenca_id = l.id
+            WHERE l.ativo                 = TRUE
+              AND lp.renovacao_automatica = TRUE
+              AND lp.data_fim             <= (@Agora + (@Dias * INTERVAL '1 day'))
+            """;
+        using var conn = _factory.CreateConnection();
+        var rows = await conn.QueryAsync<Application.Jobs.LicencaPeriodoJobInfo>(
+            new CommandDefinition(sql, new { Agora = agora, Dias = diasAntecedencia },
+                cancellationToken: ct));
+        return rows.AsList();
+    }
+
+    public async Task DesativarLicencasPeriodoVencidasAsync(
+        IReadOnlyList<Guid> ids, CancellationToken ct = default)
+    {
+        const string sql = "UPDATE licenca SET ativo = FALSE WHERE id = ANY(@Ids)";
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
+            new CommandDefinition(sql, new { Ids = ids.ToArray() }, cancellationToken: ct));
+    }
+
+    public async Task RenovarDataFimLicencaAsync(
+        Guid idLicenca, DateTime novaDataFim, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE licenca_periodo SET data_fim = @DataFim WHERE licenca_id = @IdLicenca
+            """;
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(new CommandDefinition(sql,
+            new { IdLicenca = idLicenca, DataFim = novaDataFim },
+            cancellationToken: ct));
+    }
+
+    public async Task<IReadOnlyList<Application.Jobs.LicencaPeriodoJobInfo>> BuscarLicencasProximasVencimentoAsync(
+        DateTime agora, int diasAntecedencia, CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT l.id                  AS "IdLicenca",
+                   l.id_cliente          AS "IdCliente",
+                   a.nome               AS "NomeAplicacao",
+                   lp.data_inicio       AS "DataInicio",
+                   lp.data_fim          AS "DataFim",
+                   lp.renovacao_automatica AS "RenovacaoAutomatica"
+            FROM licenca l
+            JOIN aplicacao a       ON a.id = l.id_aplicativo
+            JOIN licenca_periodo lp ON lp.licenca_id = l.id
+            WHERE l.ativo    = TRUE
+              AND lp.data_fim > @Agora
+              AND lp.data_fim <= (@Agora + (@Dias * INTERVAL '1 day'))
+            ORDER BY lp.data_fim
+            """;
+        using var conn = _factory.CreateConnection();
+        var rows = await conn.QueryAsync<Application.Jobs.LicencaPeriodoJobInfo>(
+            new CommandDefinition(sql, new { Agora = agora, Dias = diasAntecedencia },
+                cancellationToken: ct));
+        return rows.AsList();
+    }
+
+    // -------------------------------------------------------------------------
     // Mapeamento de linha dinâmica para LicencaResult
     // -------------------------------------------------------------------------
     private static LicencaResult MapRow(dynamic r)
