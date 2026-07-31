@@ -24,4 +24,16 @@ public interface ILicencaTokenRepository
 
     Task AtualizarAsync(Guid id, string novoSegredoHash, int expiracaoMinutos,
         DateTime criadoEm, CancellationToken cancellationToken = default);
+
+    // -------------------------------------------------------------------------
+    // Fase 8 — jobs de rotação e notificação
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Busca tokens ativos cuja expiração está próxima, para notificação ou rotação automática.
+    /// Um token expira em <c>CriadoEm + ExpiracaoMinutos</c>.
+    /// </summary>
+    /// <param name="diasAntecedencia">Quantos dias antes do vencimento considerar "próximo".</param>
+    Task<IReadOnlyList<Jobs.LicencaTokenJobInfo>> BuscarTokensProximosVencimentoAsync(
+        int diasAntecedencia, CancellationToken cancellationToken = default);
 }

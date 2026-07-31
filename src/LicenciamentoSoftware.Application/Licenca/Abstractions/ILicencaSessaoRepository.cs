@@ -43,4 +43,16 @@ public interface ILicencaSessaoRepository
     /// Atualiza <c>data_ultima_atividade</c> da sessão para o instante atual (heartbeat).
     /// </summary>
     Task AtualizarAtividadeAsync(Guid id, CancellationToken ct = default);
+
+    // -------------------------------------------------------------------------
+    // Fase 8 — job de sessões inativas
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Encerra em lote todas as sessões ativas cuja <c>data_ultima_atividade</c>
+    /// é anterior ao <paramref name="limiteAtividade"/> informado.
+    /// Retorna o número de sessões encerradas.
+    /// </summary>
+    Task<int> EncerrarSessoesInativasAsync(
+        DateTime limiteAtividade, CancellationToken ct = default);
 }
