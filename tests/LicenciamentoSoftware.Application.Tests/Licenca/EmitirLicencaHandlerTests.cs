@@ -52,7 +52,7 @@ public class EmitirLicencaHandlerTests
 
         _appRepo.BuscarPorIdAsync(IdAplicativo, Arg.Any<CancellationToken>())
             .Returns(new AplicacaoResult(IdAplicativo, IdTenant,
-                "App Teste", null, tipoId, true));
+                "App Teste", null, tipoId, "Permanente", true));
 
         _licencaRepo.ExisteLicencaAtivaAsync(IdTenant, IdClienteFinal, IdAplicativo, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -126,7 +126,7 @@ public class EmitirLicencaHandlerTests
                 "CF", 2, "11222333000181", "cf@x.com", null, true));
         _appRepo.BuscarPorIdAsync(IdAplicativo, Arg.Any<CancellationToken>())
             .Returns(new AplicacaoResult(IdAplicativo, Guid.NewGuid(),
-                "App", null, TipoPermanente, true));
+                "App", null, TipoPermanente, "Permanente", true));
 
         var resultado = await CriarHandler().HandleAsync(CommandPermanente());
 
