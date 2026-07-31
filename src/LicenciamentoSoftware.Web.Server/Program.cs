@@ -1,5 +1,6 @@
 using LicenciamentoSoftware.Client.Extensions;
 using LicenciamentoSoftware.Web.Server.Configuration;
+using Yarp.ReverseProxy.Transforms;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,21 @@ builder.Services.ConfigureApiHttpClients(builder.Configuration);
 // O WASM chama /clientes-finais, /licencas, etc. no Web.Server,
 // que repassa para a API com o Bearer token no header
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddTransforms(context =>
+    {
+        // Garante que o header Authorization do WASM é propagado para a API
+        context.AddRequestTransform(async transformContext =>
+        {
+            var authHeader = transformContext.HttpContext.Request.Headers.Authorization.ToString();
+            if (!string.IsNullOrEmpty(authHeader))
+            {
+                transformContext.ProxyRequest.Headers.TryAddWithoutValidation(
+                    "Authorization", authHeader);
+            }
+            await Task.CompletedTask;
+        });
+    });
 
 var app = builder.Build();
 
