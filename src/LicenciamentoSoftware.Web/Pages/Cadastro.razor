@@ -1,0 +1,203 @@
+@page "/cadastro"
+@layout Layout.PublicLayout
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Cadastro — Licenciamento</PageTitle>
+
+<div class="row justify-content-center mt-4 mb-5">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="card-title mb-1 text-center">Criar conta</h4>
+                <p class="text-muted text-center small mb-4">Preencha os dados da sua empresa e do responsável pela conta.</p>
+
+                @if (_sucesso)
+                {
+                    <div class="alert alert-success text-center">
+                        <strong>Cadastro realizado com sucesso!</strong><br />
+                        <a href="/login">Clique aqui para fazer login.</a>
+                    </div>
+                }
+                else
+                {
+                    <EditForm Model="_model" OnValidSubmit="HandleCadastro">
+                        <DataAnnotationsValidator />
+
+                        <h6 class="text-uppercase text-muted small mb-3">Dados da empresa</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">Razão Social *</label>
+                            <InputText class="form-control" @bind-Value="_model.RazaoSocial" />
+                            <ValidationMessage For="@(() => _model.RazaoSocial)" />
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-4">
+                                <label class="form-label">Tipo *</label>
+                                <InputSelect class="form-select" @bind-Value="_model.TipoInscricao">
+                                    <option value="1">CPF</option>
+                                    <option value="2">CNPJ</option>
+                                </InputSelect>
+                            </div>
+                            <div class="col-8">
+                                <label class="form-label">CPF / CNPJ *</label>
+                                <InputText class="form-control" @bind-Value="_model.NumeroInscricao"
+                                           placeholder="@(_model.TipoInscricao == 1 ? "000.000.000-00" : "00.000.000/0001-00")" />
+                                <ValidationMessage For="@(() => _model.NumeroInscricao)" />
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">E-mail da empresa *</label>
+                            <InputText class="form-control" @bind-Value="_model.EmailCliente"
+                                       type="email" placeholder="contato@empresa.com" />
+                            <ValidationMessage For="@(() => _model.EmailCliente)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Telefone</label>
+                            <InputText class="form-control" @bind-Value="_model.Telefone"
+                                       placeholder="(00) 00000-0000" />
+                        </div>
+
+                        <hr />
+                        <h6 class="text-uppercase text-muted small mb-3">Responsável pela conta</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nome completo *</label>
+                            <InputText class="form-control" @bind-Value="_model.NomeResponsavel" />
+                            <ValidationMessage For="@(() => _model.NomeResponsavel)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">E-mail de acesso *</label>
+                            <InputText class="form-control" @bind-Value="_model.EmailResponsavel"
+                                       type="email" placeholder="responsavel@empresa.com" />
+                            <ValidationMessage For="@(() => _model.EmailResponsavel)" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Senha *</label>
+                            <InputText type="password" class="form-control"
+                                       @bind-Value="_model.Senha" autocomplete="new-password" />
+                            <ValidationMessage For="@(() => _model.Senha)" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">Confirmar senha *</label>
+                            <InputText type="password" class="form-control"
+                                       @bind-Value="_model.ConfirmarSenha" autocomplete="new-password" />
+                            <ValidationMessage For="@(() => _model.ConfirmarSenha)" />
+                        </div>
+
+                        <ApiError Erro="@_erro" Erros="@_erros" />
+
+                        <button type="submit" class="btn btn-primary w-100" disabled="@_carregando">
+                            @if (_carregando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                            Criar conta
+                        </button>
+                    </EditForm>
+
+                    <p class="text-center small mt-3 mb-0">
+                        Já tem conta? <a href="/login">Entrar</a>
+                    </p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly CadastroModel _model = new();
+    private string? _erro;
+    private IReadOnlyList<string>? _erros;
+    private bool _carregando;
+    private bool _sucesso;
+
+    private async Task HandleCadastro()
+    {
+        _carregando = true;
+        _erro = null;
+        _erros = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/auth/cadastrar", new
+            {
+                _model.RazaoSocial,
+                _model.TipoInscricao,
+                _model.NumeroInscricao,
+                EmailCliente = _model.EmailCliente,
+                _model.Telefone,
+                _model.NomeResponsavel,
+                EmailResponsavel = _model.EmailResponsavel,
+                _model.Senha,
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                _sucesso = true;
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                var body = await response.Content.ReadFromJsonAsync<ErroResponse>();
+                _erro = body?.Erro ?? "CPF/CNPJ ou e-mail já cadastrado.";
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
+            {
+                var body = await response.Content.ReadFromJsonAsync<ErrosResponse>();
+                _erros = body?.Erros;
+                return;
+            }
+
+            _erro = "Erro inesperado. Tente novamente.";
+        }
+        catch
+        {
+            _erro = "Não foi possível conectar ao servidor. Tente novamente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private sealed record ErroResponse(string Erro);
+    private sealed record ErrosResponse(IReadOnlyList<string> Erros);
+
+    private sealed class CadastroModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Razão Social é obrigatória.")]
+        public string RazaoSocial { get; set; } = string.Empty;
+
+        public int TipoInscricao { get; set; } = 2;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "CPF/CNPJ é obrigatório.")]
+        public string NumeroInscricao { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-mail da empresa é obrigatório.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "E-mail inválido.")]
+        public string EmailCliente { get; set; } = string.Empty;
+
+        public string? Telefone { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Nome do responsável é obrigatório.")]
+        public string NomeResponsavel { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-mail de acesso é obrigatório.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "E-mail inválido.")]
+        public string EmailResponsavel { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Senha é obrigatória.")]
+        [System.ComponentModel.DataAnnotations.MinLength(8, ErrorMessage = "Senha deve ter no mínimo 8 caracteres.")]
+        public string Senha { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Compare(nameof(Senha), ErrorMessage = "As senhas não conferem.")]
+        public string ConfirmarSenha { get; set; } = string.Empty;
+    }
+}

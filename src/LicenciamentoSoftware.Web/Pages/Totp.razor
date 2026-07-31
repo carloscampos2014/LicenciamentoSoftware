@@ -1,0 +1,109 @@
+@page "/totp"
+@layout Layout.PublicLayout
+@inject HttpClient Http
+@inject JwtAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<PageTitle>Verificação 2FA — Licenciamento</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-12 col-md-5 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="card-title mb-2 text-center">Verificação em dois fatores</h4>
+                <p class="text-muted text-center small mb-4">
+                    Digite o código de 6 dígitos do seu aplicativo autenticador.
+                </p>
+
+                <EditForm Model="_model" OnValidSubmit="HandleTotp">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">Código TOTP</label>
+                        <InputText class="form-control text-center fs-4 letter-spacing-wide"
+                                   @bind-Value="_model.Codigo"
+                                   maxlength="6"
+                                   autocomplete="one-time-code"
+                                   placeholder="000000" />
+                        <ValidationMessage For="@(() => _model.Codigo)" />
+                    </div>
+
+                    <ApiError Erro="@_erro" />
+
+                    <button type="submit" class="btn btn-primary w-100" disabled="@_carregando">
+                        @if (_carregando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                        Verificar
+                    </button>
+                </EditForm>
+
+                <p class="text-center small mt-3 mb-0">
+                    <a href="/login">Voltar ao login</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly TotpModel _model = new();
+    private string? _erro;
+    private bool _carregando;
+
+    [SupplyParameterFromQuery(Name = "token")] private string? TokenTemporario { get; set; }
+
+    private async Task HandleTotp()
+    {
+        if (string.IsNullOrEmpty(TokenTemporario))
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        _carregando = true;
+        _erro = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/bff/login/2fa",
+                new { TokenTemporario, Codigo = _model.Codigo });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _erro = "Código inválido ou expirado. Tente novamente.";
+                return;
+            }
+
+            var body = await response.Content.ReadFromJsonAsync<BffLoginResponse>();
+            if (body?.AccessToken is null) { _erro = "Resposta inválida do servidor."; return; }
+
+            AuthProvider.MarcarAutenticado(
+                body.AccessToken,
+                body.Nome ?? string.Empty,
+                body.Papel ?? string.Empty);
+
+            Nav.NavigateTo("/");
+        }
+        catch
+        {
+            _erro = "Não foi possível conectar ao servidor. Tente novamente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private sealed record BffLoginResponse(
+        string AccessToken,
+        DateTime? Expiracao,
+        string? Nome,
+        string? Papel);
+
+    private sealed class TotpModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Código é obrigatório.")]
+        [System.ComponentModel.DataAnnotations.StringLength(6, MinimumLength = 6,
+            ErrorMessage = "O código deve ter 6 dígitos.")]
+        public string Codigo { get; set; } = string.Empty;
+    }
+}

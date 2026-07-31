@@ -1,0 +1,80 @@
+@page "/licencas"
+@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@inject LicencaApiService Service
+
+<PageTitle>Licenças</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Licenças</h3>
+    <a href="/licencas/emitir" class="btn btn-primary btn-sm">+ Emitir</a>
+</div>
+
+@if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+else if (_erro is not null) { <ApiError Erro="@_erro" /> }
+else if (_itens.Count == 0) { <p class="text-muted">Nenhuma licença encontrada.</p> }
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover table-sm align-middle">
+            <thead class="table-light">
+                <tr><th>Cliente Final</th><th>Aplicação</th><th>Tipo</th><th>Cadastro</th><th>Situação</th><th class="text-end">Ações</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _itens)
+                {
+                    <tr>
+                        <td>@item.ClienteFinalRazaoSocial</td>
+                        <td>@item.AplicativoTitulo</td>
+                        <td><span class="badge bg-primary">@item.TipoLicenca</span></td>
+                        <td>@item.DataCadastro.ToString("dd/MM/yyyy")</td>
+                        <td><span class="badge @(item.Ativo ? "bg-success" : "bg-secondary")">@(item.Ativo ? "Ativa" : "Inativa")</span></td>
+                        <td class="text-end">
+                            <a href="/licencas/@item.Id" class="btn btn-outline-secondary btn-sm me-1">Detalhes</a>
+                            @if (item.Ativo)
+                            {
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Desativar(item.Id)">Desativar</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Paginacao PaginaAtual="_pagina" TotalPaginas="_totalPaginas" Total="_total" OnPaginaMudou="MudarPagina" />
+}
+
+<ConfirmDialog @ref="_confirmDialog" Titulo="Desativar licença" TextoBotaoConfirmar="Desativar" />
+
+@code {
+    private List<LicencaResult> _itens = [];
+    private bool _carregando;
+    private string? _erro;
+    private int _pagina = 1, _totalPaginas = 1, _total;
+    private ConfirmDialog _confirmDialog = default!;
+
+    protected override async Task OnInitializedAsync() => await CarregarAsync();
+
+    private async Task CarregarAsync()
+    {
+        _carregando = true; _erro = null;
+        try
+        {
+            var r = await Service.ListarAsync(pagina: _pagina);
+            if (r is null) { _erro = "Erro ao carregar."; return; }
+            _itens = r.Itens.ToList(); _total = r.Total; _totalPaginas = r.TotalPaginas;
+        }
+        catch { _erro = "Erro ao conectar com o servidor."; }
+        finally { _carregando = false; }
+    }
+
+    private async Task MudarPagina(int p) { _pagina = p; await CarregarAsync(); }
+
+    private async Task Desativar(Guid id)
+    {
+        _confirmDialog.Mensagem = "Desativar esta licença? Isso encerrará o acesso do cliente final.";
+        if (!await _confirmDialog.MostrarAsync()) return;
+        var (sucesso, erro) = await Service.DesativarAsync(id);
+        if (sucesso) await CarregarAsync();
+        else _erro = erro;
+    }
+}

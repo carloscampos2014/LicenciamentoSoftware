@@ -1,0 +1,168 @@
+@page "/licencas/{Id:guid}"
+@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@inject LicencaApiService Service
+
+<PageTitle>Detalhe da Licença</PageTitle>
+
+@if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+else if (_licenca is null) { <ApiError Erro="Licença não encontrada." /> }
+else
+{
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h3 class="mb-0">@_licenca.ClienteFinalRazaoSocial</h3>
+            <span class="text-muted small">@_licenca.AplicativoTitulo &mdash; @_licenca.TipoLicenca</span>
+        </div>
+        <span class="badge @(_licenca.Ativo ? "bg-success" : "bg-secondary") fs-6">
+            @(_licenca.Ativo ? "Ativa" : "Inativa")
+        </span>
+    </div>
+
+    <ApiError Erro="@_erro" />
+
+    @if (_licenca.Periodo is { } p)
+    {
+        <div class="card mb-4">
+            <div class="card-header">Período</div>
+            <div class="card-body row g-3">
+                <div class="col-sm-4"><strong>Início:</strong> @p.DataInicio.ToString("dd/MM/yyyy")</div>
+                <div class="col-sm-4"><strong>Fim:</strong> @p.DataFim.ToString("dd/MM/yyyy")</div>
+                <div class="col-sm-4"><strong>Renovação auto:</strong> @(p.RenovacaoAutomatica ? "Sim" : "Não")</div>
+                <div class="col-12">
+                    <AuthorizeView Roles="AdministradorCliente">
+                        <Authorized>
+                            <div class="d-flex gap-2 align-items-center">
+                                <label class="form-label mb-0">Nova data fim:</label>
+                                <input type="date" class="form-control form-control-sm" style="width:160px" @bind="_novaDataFim" />
+                                <button class="btn btn-outline-primary btn-sm" @onclick="RenovarPeriodo" disabled="@_salvando">Renovar período</button>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (_licenca.Sessoes.Count > 0)
+    {
+        <div class="card mb-4">
+            <div class="card-header">Sessões ativas (@_licenca.Sessoes.Count(s => s.Ativo))</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>Identificador</th><th>Login</th><th>Última atividade</th><th class="text-end">Ação</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in _licenca.Sessoes.Where(s => s.Ativo))
+                        {
+                            <tr>
+                                <td><code>@s.IdentificadorUsuario</code></td>
+                                <td>@s.DataLogin.ToString("dd/MM HH:mm")</td>
+                                <td>@s.DataUltimaAtividade.ToString("dd/MM HH:mm")</td>
+                                <td class="text-end">
+                                    <AuthorizeView Roles="AdministradorCliente">
+                                        <Authorized>
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                    @onclick="() => EncerrarSessao(s.Id)" disabled="@_salvando">
+                                                Encerrar
+                                            </button>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    @if (_licenca.InstalacoesRegistradas.Count > 0)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                Instalações registradas (@_licenca.InstalacoesRegistradas.Count(i => i.Ativo))
+                @if (_licenca.Instalacao is not null) { <span class="text-muted small ms-2">/ máx. @_licenca.Instalacao.QuantidadeMaxima</span> }
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>Identificador da máquina</th><th>Registrado em</th><th class="text-end">Ação</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ins in _licenca.InstalacoesRegistradas.Where(i => i.Ativo))
+                        {
+                            <tr>
+                                <td><code>@ins.IdentificadorMaquina</code></td>
+                                <td>@ins.DataRegistro.ToString("dd/MM/yyyy")</td>
+                                <td class="text-end">
+                                    <AuthorizeView Roles="AdministradorCliente">
+                                        <Authorized>
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                    @onclick="() => LiberarInstalacao(ins.Id)" disabled="@_salvando">
+                                                Liberar
+                                            </button>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    <a href="/licencas" class="btn btn-outline-secondary btn-sm">← Voltar</a>
+}
+
+<ConfirmDialog @ref="_confirmDialog" Titulo="Confirmar ação" TextoBotaoConfirmar="Confirmar" />
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private LicencaResult? _licenca;
+    private bool _carregando, _salvando;
+    private string? _erro;
+    private DateTime _novaDataFim = DateTime.Today.AddMonths(1);
+    private ConfirmDialog _confirmDialog = default!;
+
+    protected override async Task OnInitializedAsync() => await CarregarAsync();
+
+    private async Task CarregarAsync()
+    {
+        _carregando = true; _erro = null;
+        _licenca = await Service.BuscarPorIdAsync(Id);
+        _carregando = false;
+    }
+
+    private async Task RenovarPeriodo()
+    {
+        _confirmDialog.Mensagem = $"Renovar o período até {_novaDataFim:dd/MM/yyyy}?";
+        if (!await _confirmDialog.MostrarAsync()) return;
+        _salvando = true;
+        var (sucesso, _, erro) = await Service.RenovarPeriodoAsync(Id, new(_novaDataFim));
+        _erro = sucesso ? null : erro; _salvando = false;
+        if (sucesso) await CarregarAsync();
+    }
+
+    private async Task EncerrarSessao(Guid idSessao)
+    {
+        _confirmDialog.Mensagem = "Encerrar esta sessão?";
+        if (!await _confirmDialog.MostrarAsync()) return;
+        _salvando = true;
+        var (sucesso, erro) = await Service.EncerrarSessaoAsync(Id, idSessao);
+        _erro = sucesso ? null : erro; _salvando = false;
+        if (sucesso) await CarregarAsync();
+    }
+
+    private async Task LiberarInstalacao(Guid idInstalacao)
+    {
+        _confirmDialog.Mensagem = "Liberar esta instalação? O slot será disponibilizado para nova máquina.";
+        if (!await _confirmDialog.MostrarAsync()) return;
+        _salvando = true;
+        var (sucesso, erro) = await Service.LiberarInstalacaoAsync(Id, idInstalacao);
+        _erro = sucesso ? null : erro; _salvando = false;
+        if (sucesso) await CarregarAsync();
+    }
+}

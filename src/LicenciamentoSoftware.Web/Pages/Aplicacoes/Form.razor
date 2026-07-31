@@ -1,0 +1,106 @@
+@page "/aplicacoes/novo"
+@page "/aplicacoes/{Id:guid}/editar"
+@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@inject AplicacaoApiService Service
+@inject TipoLicencaApiService TiposService
+@inject NavigationManager Nav
+
+<PageTitle>@(_id.HasValue ? "Editar" : "Nova") Aplicação</PageTitle>
+
+<div class="col-12 col-md-6 col-lg-5">
+    <h3 class="mb-4">@(_id.HasValue ? "Editar" : "Nova") aplicação</h3>
+
+    @if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+    else
+    {
+        <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label class="form-label">Título *</label>
+                <InputText class="form-control" @bind-Value="_model.Titulo" />
+                <ValidationMessage For="@(() => _model.Titulo)" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Descrição</label>
+                <InputTextArea class="form-control" rows="3" @bind-Value="_model.Descricao" />
+            </div>
+            @if (!_id.HasValue)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Licença *</label>
+                    <InputSelect class="form-select" @bind-Value="_model.IdTipoLicenca">
+                        @foreach (var tipo in _tiposLicenca)
+                        {
+                            <option value="@tipo.Id">@tipo.Descricao</option>
+                        }
+                    </InputSelect>
+                </div>
+            }
+
+            <ApiError Erro="@_erro" Erros="@_erros" />
+
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" class="btn btn-primary" disabled="@_salvando">
+                    @if (_salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                    Salvar
+                </button>
+                <a href="/aplicacoes" class="btn btn-outline-secondary">Cancelar</a>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+    private Guid? _id;
+    private readonly FormModel _model = new();
+    private string? _erro;
+    private IReadOnlyList<string>? _erros;
+    private bool _carregando, _salvando;
+    private IReadOnlyList<TipoLicencaResult> _tiposLicenca = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _id = Id;
+        _carregando = true;
+        if (!_id.HasValue)
+        {
+            _tiposLicenca = await TiposService.ListarAsync() ?? [];
+            if (_tiposLicenca.Count > 0) _model.IdTipoLicenca = _tiposLicenca[0].Id;
+        }
+        else
+        {
+            var item = await Service.BuscarPorIdAsync(_id.Value);
+            if (item is null) { Nav.NavigateTo("/aplicacoes"); return; }
+            _model.Titulo = item.Titulo; _model.Descricao = item.Descricao;
+        }
+        _carregando = false;
+    }
+
+    private async Task HandleSubmit()
+    {
+        _salvando = true; _erro = null; _erros = null;
+        bool sucesso;
+        if (_id.HasValue)
+        {
+            var (s, _, e, erros) = await Service.AtualizarAsync(_id.Value, new(_model.Titulo, _model.Descricao));
+            sucesso = s; _erro = e; _erros = erros;
+        }
+        else
+        {
+            var (s, _, e, erros) = await Service.CriarAsync(new(_model.Titulo, _model.Descricao, _model.IdTipoLicenca));
+            sucesso = s; _erro = e; _erros = erros;
+        }
+        _salvando = false;
+        if (sucesso) Nav.NavigateTo("/aplicacoes");
+    }
+
+    private sealed class FormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Título é obrigatório.")]
+        public string Titulo { get; set; } = string.Empty;
+        public string? Descricao { get; set; }
+        public Guid IdTipoLicenca { get; set; }
+    }
+}

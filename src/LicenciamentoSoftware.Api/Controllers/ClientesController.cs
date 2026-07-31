@@ -11,7 +11,7 @@ namespace LicenciamentoSoftware.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("clientes")]
-[Authorize(Policy = "AdministradorPlataforma")]
+[Authorize(Policy = "AdministradorCliente")]
 public sealed class ClientesController : ControllerBase
 {
     private readonly CriarClienteHandler _criarHandler;

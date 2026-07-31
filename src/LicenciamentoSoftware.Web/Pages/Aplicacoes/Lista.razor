@@ -1,0 +1,92 @@
+@page "/aplicacoes"
+@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@inject AplicacaoApiService Service
+
+<PageTitle>Aplicações</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">Aplicações</h3>
+    <a href="/aplicacoes/novo" class="btn btn-primary btn-sm">+ Nova</a>
+</div>
+
+<div class="row g-2 mb-3">
+    <div class="col-md-4">
+        <input class="form-control form-control-sm" placeholder="Filtrar por título..."
+               @bind="_filtroTitulo" @bind:event="oninput" @onkeyup="HandleFiltro" />
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-outline-secondary btn-sm" @onclick="CarregarAsync">Buscar</button>
+    </div>
+</div>
+
+@if (_carregando) { <p class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+else if (_erro is not null) { <ApiError Erro="@_erro" /> }
+else if (_itens.Count == 0) { <p class="text-muted">Nenhuma aplicação encontrada.</p> }
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover table-sm align-middle">
+            <thead class="table-light">
+                <tr><th>Título</th><th>Tipo de Licença</th><th>Situação</th><th class="text-end">Ações</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in _itens)
+                {
+                    <tr>
+                        <td>@item.Titulo</td>
+                        <td>@item.TipoLicencaDescricao</td>
+                        <td><span class="badge @(item.Ativo ? "bg-success" : "bg-secondary")">@(item.Ativo ? "Ativa" : "Inativa")</span></td>
+                        <td class="text-end">
+                            <a href="/aplicacoes/@item.Id/editar" class="btn btn-outline-secondary btn-sm me-1">Editar</a>
+                            @if (item.Ativo)
+                            {
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => Desativar(item.Id, item.Titulo)">Desativar</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Paginacao PaginaAtual="_pagina" TotalPaginas="_totalPaginas" Total="_total" OnPaginaMudou="MudarPagina" />
+}
+
+<ConfirmDialog @ref="_confirmDialog" Titulo="Desativar aplicação" TextoBotaoConfirmar="Desativar" />
+
+@code {
+    private List<AplicacaoResult> _itens = [];
+    private bool _carregando;
+    private string? _erro;
+    private string? _filtroTitulo;
+    private int _pagina = 1, _totalPaginas = 1, _total;
+    private ConfirmDialog _confirmDialog = default!;
+
+    protected override async Task OnInitializedAsync() => await CarregarAsync();
+
+    private async Task CarregarAsync()
+    {
+        _carregando = true; _erro = null;
+        try
+        {
+            var r = await Service.ListarAsync(_filtroTitulo, pagina: _pagina);
+            if (r is null) { _erro = "Erro ao carregar."; return; }
+            _itens = r.Itens.ToList(); _total = r.Total; _totalPaginas = r.TotalPaginas;
+        }
+        catch { _erro = "Erro ao conectar com o servidor."; }
+        finally { _carregando = false; }
+    }
+
+    private async Task MudarPagina(int p) { _pagina = p; await CarregarAsync(); }
+    private async Task HandleFiltro(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") { _pagina = 1; await CarregarAsync(); }
+    }
+    private async Task Desativar(Guid id, string titulo)
+    {
+        _confirmDialog.Mensagem = $"Desativar a aplicação \"{titulo}\"?";
+        if (!await _confirmDialog.MostrarAsync()) return;
+        var (sucesso, erro) = await Service.DesativarAsync(id);
+        if (sucesso) await CarregarAsync();
+        else _erro = erro;
+    }
+}

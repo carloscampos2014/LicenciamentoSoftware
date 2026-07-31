@@ -1,0 +1,127 @@
+@page "/clientes-finais/novo"
+@page "/clientes-finais/{Id:guid}/editar"
+@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@inject ClienteFinalApiService Service
+@inject NavigationManager Nav
+
+<PageTitle>@(_id.HasValue ? "Editar" : "Novo") Cliente Final</PageTitle>
+
+<div class="row">
+    <div class="col-12 col-md-7 col-lg-6">
+        <h3 class="mb-4">@(_id.HasValue ? "Editar" : "Novo") cliente final</h3>
+
+        @if (_carregando) { <p class="text-muted"><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+        else
+        {
+            <EditForm Model="_model" OnValidSubmit="HandleSubmit">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label class="form-label">Razão Social *</label>
+                    <InputText class="form-control" @bind-Value="_model.RazaoSocial" />
+                    <ValidationMessage For="@(() => _model.RazaoSocial)" />
+                </div>
+
+                @if (!_id.HasValue)
+                {
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <label class="form-label">Tipo *</label>
+                            <InputSelect class="form-select" @bind-Value="_model.TipoInscricao">
+                                <option value="1">CPF</option>
+                                <option value="2">CNPJ</option>
+                            </InputSelect>
+                        </div>
+                        <div class="col-8">
+                            <label class="form-label">CPF / CNPJ *</label>
+                            <InputText class="form-control" @bind-Value="_model.NumeroInscricao" />
+                            <ValidationMessage For="@(() => _model.NumeroInscricao)" />
+                        </div>
+                    </div>
+                }
+
+                <div class="mb-3">
+                    <label class="form-label">E-mail *</label>
+                    <InputText class="form-control" @bind-Value="_model.Email" type="email" />
+                    <ValidationMessage For="@(() => _model.Email)" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Telefone</label>
+                    <InputText class="form-control" @bind-Value="_model.Telefone" />
+                </div>
+
+                <ApiError Erro="@_erro" Erros="@_erros" />
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary" disabled="@_salvando">
+                        @if (_salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                        Salvar
+                    </button>
+                    <a href="/clientes-finais" class="btn btn-outline-secondary">Cancelar</a>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+    private Guid? _id;
+    private readonly FormModel _model = new();
+    private string? _erro;
+    private IReadOnlyList<string>? _erros;
+    private bool _carregando;
+    private bool _salvando;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _id = Id;
+
+        if (_id.HasValue)
+        {
+            _carregando = true;
+            var item = await Service.BuscarPorIdAsync(_id.Value);
+            if (item is null) { Nav.NavigateTo("/clientes-finais"); return; }
+            _model.RazaoSocial = item.RazaoSocial;
+            _model.Email = item.Email;
+            _model.Telefone = item.Telefone;
+            _carregando = false;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        _salvando = true; _erro = null; _erros = null;
+
+        bool sucesso;
+        if (_id.HasValue)
+        {
+            var (s, _, e, erros) = await Service.AtualizarAsync(_id.Value,
+                new(_model.RazaoSocial, _model.Email, _model.Telefone));
+            sucesso = s; _erro = e; _erros = erros;
+        }
+        else
+        {
+            var (s, _, e, erros) = await Service.CriarAsync(
+                new(_model.RazaoSocial, _model.TipoInscricao, _model.NumeroInscricao,
+                    _model.Email, _model.Telefone));
+            sucesso = s; _erro = e; _erros = erros;
+        }
+
+        _salvando = false;
+        if (sucesso) Nav.NavigateTo("/clientes-finais");
+    }
+
+    private sealed class FormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Razão Social é obrigatória.")]
+        public string RazaoSocial { get; set; } = string.Empty;
+        public int TipoInscricao { get; set; } = 2;
+        public string NumeroInscricao { get; set; } = string.Empty;
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-mail é obrigatório.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "E-mail inválido.")]
+        public string Email { get; set; } = string.Empty;
+        public string? Telefone { get; set; }
+    }
+}

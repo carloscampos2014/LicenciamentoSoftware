@@ -1,39 +1,38 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">LicenciamentoSoftware.Web</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+﻿@inject NavigationManager Nav
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+<nav class="d-flex flex-column bg-dark text-white p-3" style="width:240px;min-height:100vh">
+    <a class="navbar-brand text-white fw-bold mb-4" href="/">Licenciamento</a>
+
+    <ul class="nav flex-column gap-1">
+        <li class="nav-item">
+            <NavLink class="nav-link text-white-50" href="/clientes-finais" Match="NavLinkMatch.Prefix">
+                Clientes Finais
             </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-    </nav>
-</div>
+        </li>
 
-@code {
-    private bool collapseNavMenu = true;
+        <AuthorizeView Roles="AdministradorCliente,OperadorCliente">
+            <Authorized>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white-50" href="/aplicacoes" Match="NavLinkMatch.Prefix">
+                        Aplicações
+                    </NavLink>
+                </li>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white-50" href="/licencas" Match="NavLinkMatch.Prefix">
+                        Licenças
+                    </NavLink>
+                </li>
+            </Authorized>
+        </AuthorizeView>
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
-}
+        <AuthorizeView Roles="AdministradorCliente">
+            <Authorized>
+                <li class="nav-item">
+                    <NavLink class="nav-link text-white-50" href="/usuarios" Match="NavLinkMatch.Prefix">
+                        Usuários
+                    </NavLink>
+                </li>
+            </Authorized>
+        </AuthorizeView>
+    </ul>
+</nav>

@@ -3,8 +3,7 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Aplicacao.Abstractions;
 using LicenciamentoSoftware.Application.Aplicacao.Handlers;
 using LicenciamentoSoftware.Application.Auth.Handlers;
-using LicenciamentoSoftware.Application.Cliente.Abstractions;
-using LicenciamentoSoftware.Application.Cliente.Handlers;
+using LicenciamentoSoftware.Application.Cliente.Abstractions;using LicenciamentoSoftware.Application.Cliente.Handlers;
 using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
 using LicenciamentoSoftware.Application.Jobs;
@@ -100,8 +99,6 @@ internal static class ServiceCollectionExtensions
     {
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("AdministradorPlataforma",
-                p => p.RequireRole("AdministradorPlataforma"));
             options.AddPolicy("AdministradorCliente",
                 p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente"));
             options.AddPolicy("OperadorCliente",
@@ -183,6 +180,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<LogoutHandler>();
         services.AddScoped<RegistrarUsuarioHandler>();
         services.AddScoped<ConfigurarTotpHandler>();
+        services.AddScoped<AutoCadastrarClienteHandler>();
 
         // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration
         services.AddScoped<EmitirTokenLicencaHandler>(sp =>

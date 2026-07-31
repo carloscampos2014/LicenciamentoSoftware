@@ -1,0 +1,177 @@
+@page "/licencas/emitir"
+@attribute [Authorize(Roles = "AdministradorCliente,OperadorCliente")]
+@inject LicencaApiService LicencaService
+@inject AplicacaoApiService AplicacaoService
+@inject ClienteFinalApiService ClienteFinalService
+
+<PageTitle>Emitir Licença</PageTitle>
+
+<div class="col-12 col-md-8 col-lg-6">
+    <h3 class="mb-4">Emitir licença</h3>
+
+    @if (_passo == 1)
+    {
+        <h5 class="mb-3">1. Selecione a aplicação e o cliente final</h5>
+        @if (_carregando) { <p><span class="spinner-border spinner-border-sm me-1"></span>Carregando...</p> }
+        else
+        {
+            <div class="mb-3">
+                <label class="form-label">Aplicação *</label>
+                <select class="form-select" @bind="_idAplicacao">
+                    <option value="">— selecione —</option>
+                    @foreach (var a in _aplicacoes)
+                    {
+                        <option value="@a.Id">@a.Titulo (@a.TipoLicencaDescricao)</option>
+                    }
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Cliente Final *</label>
+                <select class="form-select" @bind="_idClienteFinal">
+                    <option value="">— selecione —</option>
+                    @foreach (var c in _clientesFinais)
+                    {
+                        <option value="@c.Id">@c.RazaoSocial</option>
+                    }
+                </select>
+            </div>
+            <ApiError Erro="@_erro" />
+            <button class="btn btn-primary" @onclick="AvancarPasso1"
+                    disabled="@(_idAplicacao == Guid.Empty || _idClienteFinal == Guid.Empty)">
+                Próximo
+            </button>
+        }
+    }
+    else if (_passo == 2)
+    {
+        <h5 class="mb-3">2. Configurar detalhes (@_tipoLicenca)</h5>
+        @if (_tipoLicenca == "Permanente")
+        {
+            <p class="text-muted">Licença permanente não requer configuração adicional.</p>
+        }
+        else if (_tipoLicenca == "Por Período")
+        {
+            <div class="row mb-3">
+                <div class="col"><label class="form-label">Data início *</label><InputDate class="form-control" @bind-Value="_dataInicio" /></div>
+                <div class="col"><label class="form-label">Data fim *</label><InputDate class="form-control" @bind-Value="_dataFim" /></div>
+            </div>
+            <div class="mb-3 form-check">
+                <InputCheckbox class="form-check-input" id="renovacao" @bind-Value="_renovacaoAutomatica" />
+                <label class="form-check-label" for="renovacao">Renovação automática</label>
+            </div>
+        }
+        else if (_tipoLicenca == "Por Usuários")
+        {
+            <div class="row mb-3">
+                <div class="col"><label class="form-label">Máx. usuários *</label><InputNumber class="form-control" @bind-Value="_qtdMaxUsuarios" /></div>
+                <div class="col"><label class="form-label">Máx. sessões/usuário</label><InputNumber class="form-control" @bind-Value="_maxSessoesPorUsuario" /></div>
+            </div>
+            <div class="mb-3"><label class="form-label">Limite sessão (horas)</label><InputNumber class="form-control" @bind-Value="_tempoLimiteSessaoHoras" /></div>
+        }
+        else if (_tipoLicenca == "Por Instalação")
+        {
+            <div class="mb-3"><label class="form-label">Máx. instalações *</label><InputNumber class="form-control" @bind-Value="_qtdMaxInstalacoes" /></div>
+        }
+        <div class="mb-3 form-check mt-3">
+            <InputCheckbox class="form-check-input" id="emitirToken" @bind-Value="_emitirToken" />
+            <label class="form-check-label" for="emitirToken">Gerar token HMAC junto com a licença</label>
+        </div>
+        <ApiError Erro="@_erro" />
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-outline-secondary" @onclick="() => _passo = 1">Voltar</button>
+            <button class="btn btn-primary" @onclick="EmitirLicenca" disabled="@_salvando">
+                @if (_salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                Emitir licença
+            </button>
+        </div>
+    }
+    else if (_passo == 3)
+    {
+        <div class="alert alert-success">
+            <h5>Licença emitida com sucesso!</h5>
+            @if (_tokenEmitido is not null)
+            {
+                <p><strong>Token HMAC:</strong><br /><code class="user-select-all">@_tokenEmitido</code></p>
+                <p class="text-danger small"><strong>Atenção:</strong> Exibido uma única vez. Guarde com segurança.</p>
+            }
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/licencas" class="btn btn-primary">Ver licenças</a>
+            @if (_idLicencaEmitida != Guid.Empty)
+            {
+                <a href="/licencas/@_idLicencaEmitida" class="btn btn-outline-secondary">Ver detalhes</a>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private int _passo = 1;
+    private bool _carregando, _salvando;
+    private string? _erro;
+
+    private Guid _idAplicacao = Guid.Empty;
+    private Guid _idClienteFinal = Guid.Empty;
+    private string _tipoLicenca = string.Empty;
+    private List<AplicacaoResult> _aplicacoes = [];
+    private List<ClienteFinalResult> _clientesFinais = [];
+
+    private DateTime _dataInicio = DateTime.Today;
+    private DateTime _dataFim = DateTime.Today.AddYears(1);
+    private bool _renovacaoAutomatica;
+    private int _qtdMaxUsuarios = 10;
+    private int _maxSessoesPorUsuario = 5;
+    private int _tempoLimiteSessaoHoras = 24;
+    private int _qtdMaxInstalacoes = 5;
+    private bool _emitirToken;
+
+    private string? _tokenEmitido;
+    private Guid _idLicencaEmitida;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _carregando = true;
+        try
+        {
+            var ap = await AplicacaoService.ListarAsync(ativo: true, tamanhoPagina: 100);
+            var cf = await ClienteFinalService.ListarAsync(ativo: true, tamanhoPagina: 100);
+            _aplicacoes = ap?.Itens.ToList() ?? [];
+            _clientesFinais = cf?.Itens.ToList() ?? [];
+        }
+        finally { _carregando = false; }
+    }
+
+    private void AvancarPasso1()
+    {
+        var app = _aplicacoes.FirstOrDefault(a => a.Id == _idAplicacao);
+        if (app is null) { _erro = "Selecione uma aplicação."; return; }
+        _tipoLicenca = app.TipoLicencaDescricao;
+        _erro = null; _passo = 2;
+    }
+
+    private async Task EmitirLicenca()
+    {
+        _salvando = true; _erro = null;
+        try
+        {
+            var request = new EmitirLicencaRequest(
+                _idClienteFinal, _idAplicacao,
+                _tipoLicenca == "Por Período" ? new(_dataInicio, _dataFim, _renovacaoAutomatica) : null,
+                _tipoLicenca == "Por Usuários" ? new(_qtdMaxUsuarios, _maxSessoesPorUsuario, _tempoLimiteSessaoHoras) : null,
+                _tipoLicenca == "Por Instalação" ? new(_qtdMaxInstalacoes) : null,
+                _emitirToken);
+
+            var (sucesso, result, erro, erros) = await LicencaService.EmitirAsync(request);
+            if (!sucesso) { _erro = erro ?? string.Join("; ", erros ?? []); return; }
+
+            if (result is System.Text.Json.JsonElement el)
+            {
+                _idLicencaEmitida = el.TryGetProperty("licenca", out var lic) && lic.TryGetProperty("id", out var idEl)
+                    ? idEl.GetGuid() : Guid.Empty;
+                _tokenEmitido = el.TryGetProperty("tokenTexto", out var tok) ? tok.GetString() : null;
+            }
+            _passo = 3;
+        }
+        finally { _salvando = false; }
+    }
+}

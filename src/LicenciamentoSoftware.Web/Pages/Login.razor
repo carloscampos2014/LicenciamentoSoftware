@@ -1,0 +1,123 @@
+@page "/login"
+@layout Layout.PublicLayout
+@inject HttpClient Http
+@inject JwtAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<PageTitle>Login — Licenciamento</PageTitle>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-12 col-md-5 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="card-title mb-4 text-center">Entrar</h4>
+
+                <EditForm Model="_model" OnValidSubmit="HandleLogin">
+                    <DataAnnotationsValidator />
+
+                    <div class="mb-3">
+                        <label class="form-label">E-mail</label>
+                        <InputText class="form-control" @bind-Value="_model.Email"
+                                   autocomplete="email" placeholder="seu@email.com" />
+                        <ValidationMessage For="@(() => _model.Email)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Senha</label>
+                        <InputText type="password" class="form-control"
+                                   @bind-Value="_model.Senha" autocomplete="current-password" />
+                        <ValidationMessage For="@(() => _model.Senha)" />
+                    </div>
+
+                    <ApiError Erro="@_erro" />
+
+                    <button type="submit" class="btn btn-primary w-100" disabled="@_carregando">
+                        @if (_carregando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                        Entrar
+                    </button>
+                </EditForm>
+
+                <hr />
+                <p class="text-center small mb-0">
+                    Ainda não tem conta?
+                    <a href="/cadastro">Cadastre-se</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private readonly LoginModel _model = new();
+    private string? _erro;
+    private bool _carregando;
+
+    [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthProvider.GetAuthenticationStateAsync();
+        if (state.User.Identity?.IsAuthenticated == true)
+            Nav.NavigateTo(ReturnUrl ?? "/");
+    }
+
+    private async Task HandleLogin()
+    {
+        _carregando = true;
+        _erro = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/bff/login",
+                new { Email = _model.Email, Senha = _model.Senha });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                _erro = "E-mail ou senha inválidos.";
+                return;
+            }
+
+            var body = await response.Content.ReadFromJsonAsync<BffLoginResponse>();
+            if (body is null) { _erro = "Resposta inválida do servidor."; return; }
+
+            if (body.Requer2FA)
+            {
+                Nav.NavigateTo($"/totp?token={Uri.EscapeDataString(body.TokenTemporario ?? "")}");
+                return;
+            }
+
+            AuthProvider.MarcarAutenticado(
+                body.AccessToken!,
+                body.Nome ?? string.Empty,
+                body.Papel ?? string.Empty);
+
+            Nav.NavigateTo(ReturnUrl ?? "/");
+        }
+        catch
+        {
+            _erro = "Não foi possível conectar ao servidor. Tente novamente.";
+        }
+        finally
+        {
+            _carregando = false;
+        }
+    }
+
+    private sealed record BffLoginResponse(
+        string? AccessToken,
+        DateTime? Expiracao,
+        string? Nome,
+        string? Papel,
+        bool Requer2FA,
+        string? TokenTemporario);
+
+    private sealed class LoginModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "E-mail é obrigatório.")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "E-mail inválido.")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Senha é obrigatória.")]
+        public string Senha { get; set; } = string.Empty;
+    }
+}
