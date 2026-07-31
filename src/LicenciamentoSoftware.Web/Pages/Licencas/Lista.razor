@@ -53,9 +53,7 @@ else
                     </div>
                 </div>
                 <div class="d-flex gap-1 mb-2">
-                    <span class="badge-pill @(item.Ativo ? "badge-ativo" : "badge-inativo")">
-                        @(item.Ativo ? "Ativa" : "Inativa")
-                    </span>
+                    <span class="badge-pill @(item.Ativo ? "badge-ativo" : "badge-inativo")">@(item.Ativo ? "Ativa" : "Inativa")</span>
                     <span class="badge-pill @BadgeTipo(item.TipoLicenca)">@item.TipoLicenca</span>
                 </div>
                 <div class="item-card-body">
@@ -63,8 +61,7 @@ else
                     {
                         <div class="item-card-row">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
                             @item.Periodo.DataInicio.ToString("dd/MM/yyyy") → @item.Periodo.DataFim.ToString("dd/MM/yyyy")
                         </div>
@@ -73,8 +70,7 @@ else
                     {
                         <div class="item-card-row">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197"/>
                             </svg>
                             Usuários: @(item.Sessoes?.Count(s => s.Ativo) ?? 0)/@item.Usuarios.QuantidadeMaxima
                         </div>
@@ -83,8 +79,7 @@ else
                     {
                         <div class="item-card-row">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                             </svg>
                             Instalações: @(item.InstalacoesRegistradas?.Count(i => i.Ativo) ?? 0)/@item.Instalacao.QuantidadeMaxima
                         </div>
@@ -95,7 +90,7 @@ else
                     </div>
                 </div>
                 <div class="item-card-footer">
-                    <a href="/licencas/@item.Id" class="btn btn-outline-secondary btn-sm">Detalhes</a>
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => AbrirDetalhe(item.Id)">Detalhes</button>
                     @if (item.Ativo)
                     {
                         <button class="btn btn-outline-danger btn-sm" @onclick="() => Desativar(item.Id)">Desativar</button>
@@ -113,20 +108,15 @@ else
         @if (_emissaoSucesso)
         {
             <div class="text-center py-2">
-                <div style="width:48px;height:48px;background:#d1fae5;border-radius:50%;
-                            display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
-                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#065f46">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
+                <div style="width:48px;height:48px;background:#d1fae5;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
+                    <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#065f46"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                 </div>
                 <p class="fw-semibold mb-1">Licença emitida com sucesso!</p>
                 @if (_tokenEmitido is not null)
                 {
                     <div class="alert alert-warning text-start mt-2" style="font-size:.8rem">
                         <strong>Token HMAC — exibido uma única vez:</strong>
-                        <div class="mt-1 user-select-all" style="word-break:break-all">
-                            <code>@_tokenEmitido</code>
-                        </div>
+                        <div class="mt-1 user-select-all" style="word-break:break-all"><code>@_tokenEmitido</code></div>
                         <small class="text-danger d-block mt-1">Copie e guarde com segurança.</small>
                     </div>
                 }
@@ -138,41 +128,24 @@ else
                 <label class="form-label">Aplicação *</label>
                 <select class="form-select" @bind="_emitirIdAplicacao" @bind:after="AtualizarTipo">
                     <option value="">— selecione —</option>
-                    @foreach (var a in _aplicacoes)
-                    {
-                        <option value="@a.Id">@a.Titulo (@a.TipoLicencaDescricao)</option>
-                    }
+                    @foreach (var a in _aplicacoes) { <option value="@a.Id">@a.Titulo (@a.TipoLicencaDescricao)</option> }
                 </select>
             </div>
-
             <div class="form-group">
                 <label class="form-label">Cliente Final *</label>
                 <select class="form-select" @bind="_emitirIdClienteFinal">
                     <option value="">— selecione —</option>
-                    @foreach (var c in _clientesFinais)
-                    {
-                        <option value="@c.Id">@c.RazaoSocial</option>
-                    }
+                    @foreach (var c in _clientesFinais) { <option value="@c.Id">@c.RazaoSocial</option> }
                 </select>
             </div>
-
             @if (!string.IsNullOrEmpty(_emitirTipo))
             {
-                <div class="mb-3">
-                    <span class="badge-pill @BadgeTipo(_emitirTipo)">@_emitirTipo</span>
-                </div>
-
+                <div class="mb-3"><span class="badge-pill @BadgeTipo(_emitirTipo)">@_emitirTipo</span></div>
                 @if (_emitirTipo == "Por Período")
                 {
                     <div class="form-grid-2">
-                        <div class="form-group">
-                            <label class="form-label">Data início *</label>
-                            <InputDate class="form-control" @bind-Value="_emitirDataInicio" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Data fim *</label>
-                            <InputDate class="form-control" @bind-Value="_emitirDataFim" />
-                        </div>
+                        <div class="form-group"><label class="form-label">Data início *</label><InputDate class="form-control" @bind-Value="_emitirDataInicio" /></div>
+                        <div class="form-group"><label class="form-label">Data fim *</label><InputDate class="form-control" @bind-Value="_emitirDataFim" /></div>
                     </div>
                     <div class="form-group form-check">
                         <InputCheckbox class="form-check-input" id="renovacaoAuto" @bind-Value="_emitirRenovacao" />
@@ -182,38 +155,24 @@ else
                 else if (_emitirTipo == "Por Usuários")
                 {
                     <div class="form-grid-2">
-                        <div class="form-group">
-                            <label class="form-label">Máx. usuários *</label>
-                            <InputNumber class="form-control" @bind-Value="_emitirQtdUsuarios" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Máx. sessões/usuário</label>
-                            <InputNumber class="form-control" @bind-Value="_emitirMaxSessoes" />
-                        </div>
+                        <div class="form-group"><label class="form-label">Máx. usuários *</label><InputNumber class="form-control" @bind-Value="_emitirQtdUsuarios" /></div>
+                        <div class="form-group"><label class="form-label">Máx. sessões/usuário</label><InputNumber class="form-control" @bind-Value="_emitirMaxSessoes" /></div>
                     </div>
                 }
                 else if (_emitirTipo == "Por Instalação")
                 {
-                    <div class="form-group">
-                        <label class="form-label">Máx. instalações *</label>
-                        <InputNumber class="form-control" @bind-Value="_emitirQtdInstalacoes" />
-                    </div>
+                    <div class="form-group"><label class="form-label">Máx. instalações *</label><InputNumber class="form-control" @bind-Value="_emitirQtdInstalacoes" /></div>
                 }
             }
-
             <div class="form-group form-check">
                 <InputCheckbox class="form-check-input" id="emitirToken" @bind-Value="_emitirToken" />
                 <label class="form-check-label" for="emitirToken">Gerar token HMAC</label>
             </div>
-
             <ApiError Erro="@_erroEmitir" />
         }
     </ChildContent>
     <Footer>
-        @if (_emissaoSucesso)
-        {
-            <button class="btn btn-primary btn-sm" @onclick="FecharEmitirERecarregar">Fechar</button>
-        }
+        @if (_emissaoSucesso) { <button class="btn btn-primary btn-sm" @onclick="FecharEmitirERecarregar">Fechar</button> }
         else
         {
             <button class="btn btn-outline-secondary btn-sm" @onclick="FecharEmitir">Cancelar</button>
@@ -226,49 +185,133 @@ else
     </Footer>
 </Modal>
 
+<!-- ── Modal de detalhe ─────────────────────────────── -->
+<Modal Visivel="_modalDetalhe" Titulo="@(_detalhe?.ClienteFinalRazaoSocial ?? "Detalhe da Licença")" OnFechar="FecharDetalhe">
+    <ChildContent>
+        @if (_carregandoDetalhe)
+        {
+            <div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>
+        }
+        else if (_detalhe is not null)
+        {
+            <div class="d-flex gap-1 mb-3 flex-wrap">
+                <span class="badge-pill @(_detalhe.Ativo ? "badge-ativo" : "badge-inativo")">@(_detalhe.Ativo ? "Ativa" : "Inativa")</span>
+                <span class="badge-pill @BadgeTipo(_detalhe.TipoLicenca)">@_detalhe.TipoLicenca</span>
+                <small class="text-muted align-self-center ms-1">@_detalhe.AplicativoTitulo</small>
+            </div>
+            <ApiError Erro="@_erroDetalhe" />
+            @if (_detalhe.Periodo is { } p)
+            {
+                <div class="item-card mb-3">
+                    <p class="fw-semibold mb-2 small text-muted text-uppercase" style="letter-spacing:.05em">Período</p>
+                    <div class="row g-2 mb-2">
+                        <div class="col-4"><small class="text-muted d-block">Início</small>@p.DataInicio.ToString("dd/MM/yyyy")</div>
+                        <div class="col-4"><small class="text-muted d-block">Fim</small>@p.DataFim.ToString("dd/MM/yyyy")</div>
+                        <div class="col-4"><small class="text-muted d-block">Renovação auto</small>@(p.RenovacaoAutomatica ? "Sim" : "Não")</div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center mt-2">
+                        <label class="form-label mb-0 small">Nova data fim:</label>
+                        <input type="date" class="form-control form-control-sm" style="width:150px" @bind="_novaDataFim" />
+                        <button class="btn btn-outline-primary btn-sm" @onclick="RenovarPeriodo" disabled="@_salvandoDetalhe">Renovar</button>
+                    </div>
+                </div>
+            }
+            @if (_detalhe.Usuarios is { } u)
+            {
+                <div class="item-card mb-3">
+                    <p class="fw-semibold mb-2 small text-muted text-uppercase" style="letter-spacing:.05em">Usuários</p>
+                    <small class="text-muted">Máx: <strong>@u.QuantidadeMaxima</strong> | Sessões/usuário: <strong>@u.MaxSessoesPorUsuario</strong></small>
+                </div>
+            }
+            @if (_detalhe.Sessoes?.Any(s => s.Ativo) == true)
+            {
+                <div class="item-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="fw-semibold mb-0 small text-muted text-uppercase" style="letter-spacing:.05em">Sessões ativas</p>
+                        <span class="badge-pill badge-usuarios">@(_detalhe.Sessoes!.Count(s => s.Ativo))</span>
+                    </div>
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light"><tr><th>Identificador</th><th>Login</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var s in _detalhe.Sessoes!.Where(s => s.Ativo))
+                            {
+                                <tr>
+                                    <td><code style="font-size:.7rem">@s.IdentificadorUsuario</code></td>
+                                    <td><small>@s.DataLogin.ToString("dd/MM HH:mm")</small></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size:.7rem"
+                                                @onclick="() => EncerrarSessao(s.Id)" disabled="@_salvandoDetalhe">Encerrar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (_detalhe.InstalacoesRegistradas?.Any(i => i.Ativo) == true)
+            {
+                <div class="item-card mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="fw-semibold mb-0 small text-muted text-uppercase" style="letter-spacing:.05em">Instalações</p>
+                        <span class="badge-pill badge-instalacao">@(_detalhe.InstalacoesRegistradas!.Count(i => i.Ativo))/@(_detalhe.Instalacao?.QuantidadeMaxima ?? 0)</span>
+                    </div>
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light"><tr><th>Máquina</th><th>Data</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var ins in _detalhe.InstalacoesRegistradas!.Where(i => i.Ativo))
+                            {
+                                <tr>
+                                    <td><code style="font-size:.7rem">@ins.IdentificadorMaquina</code></td>
+                                    <td><small>@ins.DataRegistro.ToString("dd/MM/yyyy")</small></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size:.7rem"
+                                                @onclick="() => LiberarInstalacao(ins.Id)" disabled="@_salvandoDetalhe">Liberar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="FecharDetalhe">Fechar</button>
+    </Footer>
+</Modal>
+
 <ConfirmDialog @ref="_confirmDialog" Titulo="Desativar licença" TextoBotaoConfirmar="Desativar" />
+<ConfirmDialog @ref="_confirmAcao" Titulo="Confirmar" TextoBotaoConfirmar="Confirmar" />
 
 @code {
-    // ── Lista ──────────────────────────────────────────
     private List<LicencaResult> _itens = [];
     private bool _carregando; private string? _erro; private string? _filtro;
     private int _pagina = 1, _totalPaginas = 1, _total;
     private ConfirmDialog _confirmDialog = default!;
+    private ConfirmDialog _confirmAcao = default!;
 
-    // ── Dados para o modal de emissão ──────────────────
+    // Modal emissão
     private List<AplicacaoResult> _aplicacoes = [];
     private List<ClienteFinalResult> _clientesFinais = [];
     private bool _dadosCarregados;
-
-    // ── Estado do modal de emissão ─────────────────────
-    private bool _modalEmitir;
-    private bool _emissaoSucesso;
-    private bool _salvandoEmitir;
-    private string? _erroEmitir;
-    private string? _tokenEmitido;
-
-    private Guid _emitirIdAplicacao = Guid.Empty;
-    private Guid _emitirIdClienteFinal = Guid.Empty;
+    private bool _modalEmitir; private bool _emissaoSucesso; private bool _salvandoEmitir;
+    private string? _erroEmitir; private string? _tokenEmitido;
+    private Guid _emitirIdAplicacao = Guid.Empty; private Guid _emitirIdClienteFinal = Guid.Empty;
     private string _emitirTipo = string.Empty;
-    private DateTime _emitirDataInicio = DateTime.Today;
-    private DateTime _emitirDataFim = DateTime.Today.AddYears(1);
-    private bool _emitirRenovacao;
-    private int _emitirQtdUsuarios = 10;
-    private int _emitirMaxSessoes = 5;
-    private int _emitirQtdInstalacoes = 5;
-    private bool _emitirToken;
+    private DateTime _emitirDataInicio = DateTime.Today; private DateTime _emitirDataFim = DateTime.Today.AddYears(1);
+    private bool _emitirRenovacao; private int _emitirQtdUsuarios = 10; private int _emitirMaxSessoes = 5; private int _emitirQtdInstalacoes = 5; private bool _emitirToken;
+
+    // Modal detalhe
+    private bool _modalDetalhe; private bool _carregandoDetalhe; private bool _salvandoDetalhe;
+    private string? _erroDetalhe; private LicencaResult? _detalhe;
+    private DateTime _novaDataFim = DateTime.Today.AddMonths(1);
 
     protected override async Task OnInitializedAsync() => await CarregarAsync();
 
     private async Task CarregarAsync()
     {
         _carregando = true; _erro = null;
-        try
-        {
-            var r = await Service.ListarAsync(pagina: _pagina);
-            if (r is null) { _erro = "Erro ao carregar."; return; }
-            _itens = r.Itens.ToList(); _total = r.Total; _totalPaginas = r.TotalPaginas;
-        }
+        try { var r = await Service.ListarAsync(pagina: _pagina); if (r is null) { _erro = "Erro ao carregar."; return; } _itens = r.Itens.ToList(); _total = r.Total; _totalPaginas = r.TotalPaginas; }
         catch { _erro = "Erro ao conectar com o servidor."; }
         finally { _carregando = false; }
     }
@@ -279,58 +322,73 @@ else
 
     private async Task AbrirEmitir()
     {
-        // Carrega aplicações e clientes na primeira abertura
-        if (!_dadosCarregados)
-        {
-            var ap = await AplicacaoService.ListarAsync(ativo: true, tamanhoPagina: 100);
-            var cf = await ClienteFinalService.ListarAsync(ativo: true, tamanhoPagina: 100);
-            _aplicacoes = ap?.Itens.ToList() ?? [];
-            _clientesFinais = cf?.Itens.ToList() ?? [];
-            _dadosCarregados = true;
-        }
-        ResetarEmitir();
+        if (!_dadosCarregados) { var ap = await AplicacaoService.ListarAsync(ativo: true, tamanhoPagina: 100); var cf = await ClienteFinalService.ListarAsync(ativo: true, tamanhoPagina: 100); _aplicacoes = ap?.Itens.ToList() ?? []; _clientesFinais = cf?.Itens.ToList() ?? []; _dadosCarregados = true; }
+        _emitirIdAplicacao = Guid.Empty; _emitirIdClienteFinal = Guid.Empty; _emitirTipo = string.Empty; _erroEmitir = null; _emissaoSucesso = false; _tokenEmitido = null; _emitirToken = false; _emitirRenovacao = false; _emitirDataInicio = DateTime.Today; _emitirDataFim = DateTime.Today.AddYears(1); _emitirQtdUsuarios = 10; _emitirMaxSessoes = 5; _emitirQtdInstalacoes = 5;
         _modalEmitir = true;
     }
 
-    private void ResetarEmitir()
-    {
-        _emitirIdAplicacao = Guid.Empty; _emitirIdClienteFinal = Guid.Empty;
-        _emitirTipo = string.Empty; _erroEmitir = null; _emissaoSucesso = false;
-        _tokenEmitido = null; _emitirToken = false; _emitirRenovacao = false;
-        _emitirDataInicio = DateTime.Today; _emitirDataFim = DateTime.Today.AddYears(1);
-        _emitirQtdUsuarios = 10; _emitirMaxSessoes = 5; _emitirQtdInstalacoes = 5;
-    }
-
-    private void FecharEmitir() { _modalEmitir = false; }
+    private void FecharEmitir() => _modalEmitir = false;
     private async Task FecharEmitirERecarregar() { _modalEmitir = false; await CarregarAsync(); }
-
-    private void AtualizarTipo()
-    {
-        var app = _aplicacoes.FirstOrDefault(a => a.Id == _emitirIdAplicacao);
-        _emitirTipo = app?.TipoLicencaDescricao ?? string.Empty;
-    }
+    private void AtualizarTipo() { var app = _aplicacoes.FirstOrDefault(a => a.Id == _emitirIdAplicacao); _emitirTipo = app?.TipoLicencaDescricao ?? string.Empty; }
 
     private async Task Emitir()
     {
         _salvandoEmitir = true; _erroEmitir = null;
         try
         {
-            var request = new EmitirLicencaRequest(
-                _emitirIdClienteFinal, _emitirIdAplicacao,
+            var request = new EmitirLicencaRequest(_emitirIdClienteFinal, _emitirIdAplicacao,
                 _emitirTipo == "Por Período"    ? new(_emitirDataInicio, _emitirDataFim, _emitirRenovacao) : null,
                 _emitirTipo == "Por Usuários"   ? new(_emitirQtdUsuarios, _emitirMaxSessoes, 24) : null,
-                _emitirTipo == "Por Instalação" ? new(_emitirQtdInstalacoes) : null,
-                _emitirToken);
-
+                _emitirTipo == "Por Instalação" ? new(_emitirQtdInstalacoes) : null, _emitirToken);
             var (sucesso, result, erro, erros) = await Service.EmitirAsync(request);
             if (!sucesso) { _erroEmitir = erro ?? string.Join("; ", erros ?? []); return; }
-
-            if (result is System.Text.Json.JsonElement el)
-                _tokenEmitido = el.TryGetProperty("tokenTexto", out var tok) ? tok.GetString() : null;
-
+            if (result is System.Text.Json.JsonElement el) _tokenEmitido = el.TryGetProperty("tokenTexto", out var tok) ? tok.GetString() : null;
             _emissaoSucesso = true;
         }
         finally { _salvandoEmitir = false; }
+    }
+
+    private async Task AbrirDetalhe(Guid id)
+    {
+        _detalhe = null; _erroDetalhe = null; _modalDetalhe = true; _carregandoDetalhe = true;
+        _detalhe = await Service.BuscarPorIdAsync(id);
+        if (_detalhe is not null) _novaDataFim = _detalhe.Periodo?.DataFim.AddYears(1) ?? DateTime.Today.AddMonths(1);
+        _carregandoDetalhe = false;
+    }
+
+    private void FecharDetalhe() => _modalDetalhe = false;
+
+    private async Task RenovarPeriodo()
+    {
+        if (_detalhe is null) return;
+        _confirmAcao.Mensagem = $"Renovar o período até {_novaDataFim:dd/MM/yyyy}?";
+        if (!await _confirmAcao.MostrarAsync()) return;
+        _salvandoDetalhe = true;
+        var (sucesso, _, erro) = await Service.RenovarPeriodoAsync(_detalhe.Id, new(_novaDataFim));
+        _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
+        if (sucesso) await AbrirDetalhe(_detalhe.Id);
+    }
+
+    private async Task EncerrarSessao(Guid idSessao)
+    {
+        if (_detalhe is null) return;
+        _confirmAcao.Mensagem = "Encerrar esta sessão?";
+        if (!await _confirmAcao.MostrarAsync()) return;
+        _salvandoDetalhe = true;
+        var (sucesso, erro) = await Service.EncerrarSessaoAsync(_detalhe.Id, idSessao);
+        _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
+        if (sucesso) await AbrirDetalhe(_detalhe.Id);
+    }
+
+    private async Task LiberarInstalacao(Guid idInstalacao)
+    {
+        if (_detalhe is null) return;
+        _confirmAcao.Mensagem = "Liberar esta instalação?";
+        if (!await _confirmAcao.MostrarAsync()) return;
+        _salvandoDetalhe = true;
+        var (sucesso, erro) = await Service.LiberarInstalacaoAsync(_detalhe.Id, idInstalacao);
+        _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
+        if (sucesso) await AbrirDetalhe(_detalhe.Id);
     }
 
     private async Task Desativar(Guid id)
@@ -338,8 +396,7 @@ else
         _confirmDialog.Mensagem = "Desativar esta licença? Isso encerrará o acesso do cliente final.";
         if (!await _confirmDialog.MostrarAsync()) return;
         var (sucesso, erro) = await Service.DesativarAsync(id);
-        if (sucesso) await CarregarAsync();
-        else _erro = erro;
+        if (sucesso) await CarregarAsync(); else _erro = erro;
     }
 
     private static string BadgeTipo(string tipo) => tipo switch
