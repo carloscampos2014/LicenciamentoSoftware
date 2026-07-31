@@ -44,7 +44,8 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
 
         const string sqlSessoes = """
-            SELECT id AS "Id",
+            SELECT id                      AS "Id",
+                   licenca_id              AS "LicencaId",
                    identificador_usuario   AS "IdentificadorUsuario",
                    data_login              AS "DataLogin",
                    data_ultima_atividade   AS "DataUltimaAtividade",
@@ -56,6 +57,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
 
         const string sqlInstalacoes = """
             SELECT id                      AS "Id",
+                   licenca_id              AS "LicencaId",
                    identificador_maquina   AS "IdentificadorMaquina",
                    data_registro           AS "DataRegistro",
                    ativo                   AS "Ativo"

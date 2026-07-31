@@ -35,6 +35,7 @@ public sealed record DetalheInstalacaoResult(int QuantidadeMaxima);
 
 public sealed record SessaoResult(
     Guid Id,
+    Guid LicencaId,
     string IdentificadorUsuario,
     DateTime DataLogin,
     DateTime DataUltimaAtividade,
@@ -42,6 +43,7 @@ public sealed record SessaoResult(
 
 public sealed record InstalacaoRegistradaResult(
     Guid Id,
+    Guid LicencaId,
     string IdentificadorMaquina,
     DateTime DataRegistro,
     bool Ativo);
