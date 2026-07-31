@@ -15,22 +15,19 @@ builder.Services.AddApiClientServices();
 builder.Services.ConfigureApiHttpClients(builder.Configuration);
 
 // YARP — proxy reverso transparente para todos os endpoints da API
-// O WASM chama /clientes-finais, /licencas, etc. no Web.Server,
-// que repassa para a API com o Bearer token no header
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
-    .AddTransforms(context =>
+    .AddTransforms(builderContext =>
     {
-        // Garante que o header Authorization do WASM é propagado para a API
-        context.AddRequestTransform(async transformContext =>
+        builderContext.AddRequestTransform(ctx =>
         {
-            var authHeader = transformContext.HttpContext.Request.Headers.Authorization.ToString();
-            if (!string.IsNullOrEmpty(authHeader))
+            // Passa o header Authorization do request original diretamente para o proxy
+            if (ctx.HttpContext.Request.Headers.TryGetValue("Authorization", out var auth))
             {
-                transformContext.ProxyRequest.Headers.TryAddWithoutValidation(
-                    "Authorization", authHeader);
+                ctx.ProxyRequest.Headers.Remove("Authorization");
+                ctx.ProxyRequest.Headers.TryAddWithoutValidation("Authorization", (string?)auth);
             }
-            await Task.CompletedTask;
+            return ValueTask.CompletedTask;
         });
     });
 
