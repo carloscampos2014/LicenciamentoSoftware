@@ -108,17 +108,18 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
                 cancellationToken: ct));
 
         return new DashboardResumoResult(
-            TotalClientesFinaisAtivos:        row.ClientesFinaisAtivos,
-            TotalAplicacoesAtivas:            row.AplicacoesAtivas,
-            TotalLicencasAtivas:              row.LicencasAtivas,
-            TotalLicencasInativas:            row.LicencasInativas,
+            TotalClientesFinaisAtivos:        (int)row.ClientesFinaisAtivos,
+            TotalAplicacoesAtivas:            (int)row.AplicacoesAtivas,
+            TotalLicencasAtivas:              (int)row.LicencasAtivas,
+            TotalLicencasInativas:            (int)row.LicencasInativas,
             LicencasPorTipo: new LicencasPorTipoResult(
-                row.Permanente, row.PorPeriodo, row.PorUsuarios, row.PorInstalacao),
-            LicencasExpirandoEm7Dias:         row.LicencasExpirandoEm7Dias,
-            SessoesAtivasAgora:               row.SessoesAtivasAgora,
-            TokensExpirandoEm7Dias:           row.TokensExpirandoEm7Dias,
-            NovasLicencasUltimos30Dias:        row.NovasLicencasUltimos30Dias,
-            NovosClientesFinaisUltimos30Dias:  row.NovosClientesFinaisUltimos30Dias);
+                (int)row.Permanente, (int)row.PorPeriodo,
+                (int)row.PorUsuarios, (int)row.PorInstalacao),
+            LicencasExpirandoEm7Dias:         (int)row.LicencasExpirandoEm7Dias,
+            SessoesAtivasAgora:               (int)row.SessoesAtivasAgora,
+            TokensExpirandoEm7Dias:           (int)row.TokensExpirandoEm7Dias,
+            NovasLicencasUltimos30Dias:        (int)row.NovasLicencasUltimos30Dias,
+            NovosClientesFinaisUltimos30Dias:  (int)row.NovosClientesFinaisUltimos30Dias);
     }
 
     public async Task<DashboardAlertasResult> BuscarAlertasAsync(
@@ -279,19 +280,19 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
     // ── Tipos de mapeamento internos ──────────────────────────────────────────
 
     private sealed record ResumoRaw(
-        int ClientesFinaisAtivos,
-        int AplicacoesAtivas,
-        int LicencasAtivas,
-        int LicencasInativas,
-        int Permanente,
-        int PorPeriodo,
-        int PorUsuarios,
-        int PorInstalacao,
-        int LicencasExpirandoEm7Dias,
-        int SessoesAtivasAgora,
-        int TokensExpirandoEm7Dias,
-        int NovasLicencasUltimos30Dias,
-        int NovosClientesFinaisUltimos30Dias);
+        long ClientesFinaisAtivos,
+        long AplicacoesAtivas,
+        long LicencasAtivas,
+        long LicencasInativas,
+        long Permanente,
+        long PorPeriodo,
+        long PorUsuarios,
+        long PorInstalacao,
+        long LicencasExpirandoEm7Dias,
+        long SessoesAtivasAgora,
+        long TokensExpirandoEm7Dias,
+        long NovasLicencasUltimos30Dias,
+        long NovosClientesFinaisUltimos30Dias);
 
     private sealed record LimitRaw(
         Guid Idlicenca,
