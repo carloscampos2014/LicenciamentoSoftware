@@ -7,6 +7,8 @@ using LicenciamentoSoftware.Application.Cliente.Abstractions;using Licenciamento
 using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
 using LicenciamentoSoftware.Application.Jobs;
+using LicenciamentoSoftware.Application.Dashboard.Abstractions;
+using LicenciamentoSoftware.Application.Dashboard.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Handlers;using LicenciamentoSoftware.Application.TipoLicenca.Abstractions;
 using LicenciamentoSoftware.Application.TipoLicenca.Handlers;
@@ -153,6 +155,9 @@ internal static class ServiceCollectionExtensions
         // Fase 9.1 — repositório de log de validação
         services.AddScoped<IValidacaoLogRepository, ValidacaoLogRepository>();
 
+        // Fase 9.1 — repositório do dashboard
+        services.AddScoped<IDashboardRepository, DashboardRepository>();
+
         // Auditoria
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
 
@@ -258,6 +263,10 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<RenovarPeriodoHandler>();
         services.AddScoped<EncerrarSessaoHandler>();
         services.AddScoped<LiberarInstalacaoHandler>();
+
+        // Fase 9.1 — handlers do dashboard
+        services.AddScoped<BuscarDashboardResumoHandler>();
+        services.AddScoped<BuscarDashboardAlertasHandler>();
 
         // Fase 7 — handlers de validação
         services.AddScoped<ValidarLoginHandler>();
