@@ -169,21 +169,24 @@ Requisitos transversais:
 
 ---
 
-## Fase 9 — Frontend Web (Blazor WASM)
+## Fase 9 — Frontend Web (Blazor WASM) ✅ Concluída
 
-**Objetivo:** interface web completa publicada no GitHub Pages.
+**Objetivo:** interface web completa com BFF para gestão de licenças.
 
-1. Configurar projeto Blazor WASM consumindo `LicenciamentoSoftware.Client`.
-2. Implementar fluxo de login + 2FA TOTP com armazenamento de JWT em memória.
-3. Criar layout com menu lateral adaptado por papel e proteção de rotas.
-4. Implementar telas de CRUD: Clientes Finais, Usuários, Aplicações.
-5. Implementar telas de gestão de licenças: emissão, histórico de sessões, instalações registradas, operações manuais.
-6. Mapear erros da API (400, 403, 409) para mensagens amigáveis.
-7. Configurar publicação estática para GitHub Pages e pipeline de deploy automático.
+1. ✅ Implementar BFF (`LicenciamentoSoftware.Web.Server`) com proxy reverso YARP e endpoints `/bff/*` para autenticação via cookie HttpOnly.
+2. ✅ Implementar `LicenciamentoSoftware.Client` — biblioteca HTTP compartilhada com todos os services e DTOs da API.
+3. ✅ Fluxo de login + 2FA TOTP com JWT em memória (access token) e cookie HttpOnly (refresh token via BFF).
+4. ✅ Layout com sidebar adaptável, proteção de rotas e redirecionamento para login.
+5. ✅ Telas CRUD em grid de cards com modais inline: Clientes Finais, Usuários, Aplicações.
+6. ✅ Gestão de licenças: emissão por tipo (Permanente/Período/Usuários/Instalação), detalhe com sessões ativas, instalações registradas e operações manuais (renovar período, encerrar sessão, liberar instalação) — tudo em modais.
+7. ✅ Token HMAC: gerar, renovar e copiar token no modal de detalhe da licença com exibição única.
+8. ✅ Auto-cadastro público (`POST /bff/cadastrar`) — cria empresa + primeiro usuário (AdministradorCliente) em uma transação.
+9. ✅ Badges coloridos por tipo de licença, feedback visual em ações destrutivas.
+10. ✅ Pipeline CI atualizado para `.NET 10` e testes passando.
 
-**Testes mínimos:** proteção de rota redireciona para login; papel `Leitor` não vê botões de escrita; formulário valida campos antes de submeter.
+**Resultado:** 207 testes aprovados. Três projetos implementados: `Web.Server` (BFF + YARP), `Web` (Blazor WASM), `Client` (HTTP services). Nenhuma página de formulário separada — tudo em modais inline.
 
-**Demo:** deploy no GitHub Pages — login com 2FA funciona; emitir licença; ver sessões ativas; encerrar sessão manualmente.
+**Demo:** login com 2FA funciona; emitir licença com token HMAC; copiar token; ver sessões ativas; encerrar sessão manualmente; gerar/renovar token no detalhe da licença.
 
 ---
 

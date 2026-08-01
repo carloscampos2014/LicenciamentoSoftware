@@ -8,10 +8,11 @@ Sistema de licenciamento de software construído com .NET 10, Clean Architecture
 |---|---|
 | Runtime | .NET 10 (LTS) |
 | API | ASP.NET Core 10, JWT Bearer, Rate Limiting nativo |
-| Banco de dados | PostgreSQL (WSL2 em dev, Supabase/Oracle Cloud em prod) |
+| Frontend Web | Blazor WASM + BFF (ASP.NET Core), proxy reverso YARP |
+| Banco de dados | PostgreSQL (WSL2 em dev) |
 | Migrations | DbUp (scripts SQL versionados embarcados no assembly) |
 | Queries | Dapper (sem EF Core) |
-| Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256 |
+| Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256, cookie HttpOnly (BFF) |
 | Jobs | BackgroundService + PeriodicTimer (interface IScheduledJob) |
 | E-mail | MailKit (SMTP) com templates HTML embarcados |
 | Testes | xUnit, FluentAssertions, NSubstitute, NetArchTest |
@@ -24,8 +25,9 @@ src/
   LicenciamentoSoftware.Application/      Handlers, Commands, interfaces de porta, Jobs
   LicenciamentoSoftware.Infrastructure/   Repositórios Dapper, DbUp, Email (MailKit), Jobs
   LicenciamentoSoftware.Api/              Controllers, Middleware, configuração DI
-  LicenciamentoSoftware.Client/           Cliente HTTP compartilhado (Web + MAUI)
-  LicenciamentoSoftware.Web/              Blazor WASM (em desenvolvimento)
+  LicenciamentoSoftware.Client/           Cliente HTTP compartilhado (Web + MAUI) — DTOs e services
+  LicenciamentoSoftware.Web/              Blazor WASM — páginas, componentes, autenticação em memória
+  LicenciamentoSoftware.Web.Server/       BFF — serve o WASM, proxy YARP para API, cookie HttpOnly
   LicenciamentoSoftware.Maui/             App Desktop/Mobile MAUI (em desenvolvimento)
 
 tests/
@@ -46,7 +48,7 @@ tests/
 | 6 | Emissão e gestão de licenças — emissão, operações manuais, histórico | ✅ Concluída |
 | 7 | API de validação — login, heartbeat, logout, instalação | ✅ Concluída |
 | 8 | Jobs agendados — sessões, expiração, renovação, rotação de tokens, e-mail | ✅ Concluída |
-| 9 | Frontend Web — Blazor WASM, GitHub Pages | 🔜 Próxima |
+| 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
 | 10 | MAUI Desktop + Mobile — Windows e Android | 🔜 Planejada |
 | 11 | CI/CD e infraestrutura — pipeline completo, deploy VM | 🔜 Planejada |
 
@@ -69,34 +71,57 @@ $env:JwtSettings__Secret = "sua-chave-secreta-com-pelo-menos-32-caracteres"
 ### 2. Iniciar o PostgreSQL
 
 ```powershell
+# Via WSL2 (recomendado)
+wsl sudo service postgresql start
+.\scripts\start-wsl2.ps1
+
 # Via Docker
 .\scripts\start-docker.ps1
+```
 
-# Via WSL2
+### 3. Configurar User Secrets da API
+
+No Visual Studio: clique direito em `LicenciamentoSoftware.Api` → **Manage User Secrets**:
+
+```json
+{
+  "JwtSettings:Secret": "sua-chave-secreta-minimo-32-caracteres",
+  "ConnectionStrings:DefaultConnection": "Host=localhost;Port=5432;Database=licenciamento_dev;Username=postgres;Password=SUA-SENHA"
+}
+```
+
+### 4. Rodar a API e o frontend
+
+Configure **Multiple Startup Projects** no Visual Studio:
+
+| Projeto | Action |
+|---|---|
+| `LicenciamentoSoftware.Api` | Start |
+| `LicenciamentoSoftware.Web` | Start |
+| `LicenciamentoSoftware.Web.Server` | Start |
+
+Pressione **F5**. O browser abrirá automaticamente em `https://localhost:7152`.
+
+As migrations do DbUp são aplicadas automaticamente na inicialização da API.
+
+### 5. Só API (sem frontend)
+
+```powershell
 .\scripts\start-wsl2.ps1
 ```
 
-### 3. Rodar a API
-
-```powershell
-dotnet run --project src/LicenciamentoSoftware.Api
-```
-
-As migrations do DbUp são aplicadas automaticamente na inicialização.
 A API fica disponível em `http://localhost:5016`.
 
-### 4. Documentação interativa
-
-Acesse o Scalar UI em modo Development:
+### 6. Documentação interativa
 
 ```
-http://localhost:5016/scalar/v1
+https://localhost:7075/scalar/v1
 ```
 
-### 5. Health check
+### 7. Health check
 
 ```
-GET http://localhost:5016/health
+GET https://localhost:7075/health
 ```
 
 ## Rodar os testes
@@ -202,6 +227,34 @@ $env:EmailSettings__Usuario = "seu@email.com"
 $env:EmailSettings__Senha = "sua-senha-smtp"
 $env:EmailSettings__EmailRemetente = "noreply@suaempresa.com"
 ```
+
+## Frontend Web (Blazor WASM + BFF)
+
+O portal web usa uma arquitetura BFF (Backend for Frontend) para segurança máxima:
+
+```
+Browser (Blazor WASM)
+    ↕ HTTPS mesmo domínio
+Web.Server (BFF — localhost:7152)
+    ├── Serve os arquivos WASM estáticos
+    ├── /bff/login → emite cookie HttpOnly com refresh token
+    ├── /bff/refresh → renova access token via cookie
+    ├── /bff/logout → revoga sessão
+    └── Proxy YARP → repassa todas as chamadas da API com o Bearer token
+    ↕ chamada interna
+API (localhost:7075)
+```
+
+**Segurança dos tokens:**
+- `AccessToken` (JWT) — fica exclusivamente em memória C# no WASM, nunca toca o DOM
+- `RefreshToken` — fica no cookie `HttpOnly; Secure; SameSite=Strict`, invisível ao JavaScript
+
+**Funcionalidades do portal:**
+- Cadastro de empresa + login com 2FA TOTP
+- CRUD de Clientes Finais, Usuários, Aplicações em modais inline
+- Emissão de licenças por tipo (Permanente, Por Período, Por Usuários, Por Instalação)
+- Gestão de sessões ativas, instalações registradas, operações manuais
+- Geração e renovação de token HMAC com exibição única e botão Copiar
 
 ## Decisões de design
 
