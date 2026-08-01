@@ -8,8 +8,7 @@ using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
 using LicenciamentoSoftware.Application.Jobs;
 using LicenciamentoSoftware.Application.Licenca.Abstractions;
-using LicenciamentoSoftware.Application.Licenca.Handlers;
-using LicenciamentoSoftware.Application.TipoLicenca.Abstractions;
+using LicenciamentoSoftware.Application.Licenca.Handlers;using LicenciamentoSoftware.Application.TipoLicenca.Abstractions;
 using LicenciamentoSoftware.Application.TipoLicenca.Handlers;
 using LicenciamentoSoftware.Application.Usuario.Abstractions;
 using LicenciamentoSoftware.Application.Usuario.Handlers;
@@ -150,6 +149,9 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<ILicencaInstalacaoRepository, LicencaInstalacaoRepository>();
         // Fase 7 — repositório de validação
         services.AddScoped<IValidacaoLicencaRepository, ValidacaoLicencaRepository>();
+
+        // Fase 9.1 — repositório de log de validação
+        services.AddScoped<IValidacaoLogRepository, ValidacaoLogRepository>();
 
         // Auditoria
         services.AddScoped<IAuditLogWriter, AuditLogWriter>();
