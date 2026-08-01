@@ -40,7 +40,7 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
             LEFT JOIN licenca_periodo lp ON lp.licenca_id = l.id
             LEFT JOIN licenca_usuarios lu ON lu.licenca_id = l.id
             LEFT JOIN licenca_instalacao li ON li.licenca_id = l.id
-            LEFT JOIN licenca_token lt ON lt.licenca_id = l.id AND lt.ativo = TRUE
+            LEFT JOIN licenca_token lt ON lt.id_licenca = l.id AND lt.ativo = TRUE
             WHERE l.id = @Id
             LIMIT 1
             """;
