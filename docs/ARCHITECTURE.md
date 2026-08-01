@@ -62,7 +62,7 @@ src/
   LicenciamentoSoftware.Domain/
     Entities/ ValueObjects/ Rules/
   LicenciamentoSoftware.Application/
-    Clientes/ Usuarios/ ClientesFinais/ Aplicacoes/ Licencas/ Validacao/
+    Clientes/ Usuarios/ ClientesFinais/ Aplicacoes/ Licencas/ Validacao/ Dashboard/
     Abstractions/ Validation/ Behaviors/
   LicenciamentoSoftware.Infrastructure/
     Persistence/ Repositories/ Security/ BackgroundJobs/ Auditing/
@@ -147,6 +147,7 @@ O frontend é composto por dois projetos que trabalham juntos:
 - Proteção de rotas via `AuthorizeRouteView`; sem token redireciona para `/login`.
 - Todos os formulários (criar/editar/emitir) são modais inline — sem páginas separadas de formulário.
 - Badges coloridos por tipo de licença; botão "Copiar" com feedback visual nos tokens HMAC.
+- **Dashboard** (`/dashboard`): página inicial com 7 cards de métricas em tempo real e seção de alertas operacionais (sessões inativas, instalações adormecidas, licenças no limite, erros de validação). Carregamento paralelo via `Task.WhenAll`.
 
 ### Maui (Desktop + Mobile)
 

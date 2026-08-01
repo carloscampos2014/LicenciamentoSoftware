@@ -403,6 +403,36 @@ Abre ao clicar "Detalhes" em qualquer card da lista. Carrega o detalhe completo 
 
 ---
 
+### 5.8 Dashboard (`/dashboard`)
+
+**Layout:** MainLayout (autenticado) — primeiro item do menu
+
+**Carregamento:** resumo e alertas carregados em paralelo via `Task.WhenAll`. Skeleton loader exibido durante carregamento.
+
+**Cards de métricas (sempre visíveis após carregamento):**
+
+| Card | Métrica | Alerta visual |
+|---|---|---|
+| Clientes Finais | Total ativos + novos 30d | — |
+| Aplicações | Total ativas | — |
+| Licenças Ativas | Total + inativas | — |
+| Expirando em 7 dias | Contagem | Laranja se > 0 |
+| Sessões abertas agora | Total ativas | — |
+| Tokens expirando em 7 dias | Contagem | Laranja se > 0 |
+| Novas licenças (30 dias) | Contagem | — |
+
+**Breakdown por tipo:** badges coloridos mostrando Permanente / Por Período / Por Usuários / Por Instalação.
+
+**Seção de alertas** (oculta quando não há dados):
+- Erros de validação nas últimas 24h com breakdown por motivo
+- Licenças no limite de capacidade (usuários ou instalações)
+- Sessões inativas prolongadas (> 2× TempoLimiteSessaoHoras)
+- Instalações adormecidas (> 30 dias sem validação)
+
+**Componente `MetricaCard.razor`:** reutilizável, aceita `Titulo`, `Valor`, `Subtitulo`, `Cor`, `Icone` e `Alerta`. Inclui skeleton loader via CSS animation.
+
+---
+
 ## 6. Componentes compartilhados
 
 ### 6.1 Modal.razor
@@ -608,10 +638,8 @@ O projeto `Web` não precisa estar em Start — o `Web.Server` já inclui seus a
 
 | Limitação | Fase planejada |
 |---|---|
-| Portal do Cliente Final (ver suas próprias licenças) | Fase 9.1 |
-| Login social (Google, Microsoft, GitHub) via OAuth | Fase 9.1 |
-| Setup de TOTP via QR code no portal | Fase 9.1 |
-| Dashboard com métricas (total de licenças, expirando) | Fase 9.2 |
-| Notificações em tempo real (SignalR) | Fase futura |
+| Portal do Cliente Final (ver suas próprias licenças) | Fase 9.2 |
+| Login social (Google, Microsoft, GitHub) via OAuth | Fase 9.2 |
+| Setup de TOTP via QR code no portal | Fase 9.2 |
 | App Desktop/Mobile (MAUI) | Fase 10 |
 | Deploy em produção com host real | Fase 11 |
