@@ -375,3 +375,61 @@ html, body {
     position: fixed; bottom: 0; width: 100%; z-index: 2000;
     display: none;
 }
+
+/* ── Metric cards (Dashboard) ─────────────────────────── */
+.metric-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: box-shadow .15s;
+}
+
+.metric-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+
+.metric-card--alerta { border-color: #fcd34d; }
+
+.metric-card--skeleton {
+    min-height: 100px;
+    background: linear-gradient(90deg, #f3f4f6 25%, #e9ecef 50%, #f3f4f6 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+}
+
+@keyframes skeleton-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.metric-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: .5rem;
+}
+
+.metric-card-titulo {
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #6c757d;
+}
+
+.metric-card-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.metric-card-valor {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: .25rem;
+}
+
+.metric-card-subtitulo {
+    font-size: .75rem;
+    color: #6c757d;
+}

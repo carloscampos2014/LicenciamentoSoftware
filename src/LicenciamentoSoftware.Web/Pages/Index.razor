@@ -7,7 +7,7 @@
     {
         var state = await AuthProvider.GetAuthenticationStateAsync();
         if (state.User.Identity?.IsAuthenticated == true)
-            Nav.NavigateTo("/clientes-finais", replace: true);
+            Nav.NavigateTo("/dashboard", replace: true);
         else
             Nav.NavigateTo("/login", replace: true);
     }
