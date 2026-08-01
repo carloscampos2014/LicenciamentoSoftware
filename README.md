@@ -49,6 +49,7 @@ tests/
 | 7 | API de validação — login, heartbeat, logout, instalação | ✅ Concluída |
 | 8 | Jobs agendados — sessões, expiração, renovação, rotação de tokens, e-mail | ✅ Concluída |
 | 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
+| 9.1 | Dashboard Web + instrumentação de métricas e alertas | 🔜 Próxima |
 | 10 | MAUI Desktop + Mobile — Windows e Android | 🔜 Planejada |
 | 11 | CI/CD e infraestrutura — pipeline completo, deploy VM | 🔜 Planejada |
 

@@ -190,6 +190,23 @@ Requisitos transversais:
 
 ---
 
+## Fase 9.1 — Dashboard Web + Instrumentação de Métricas
+
+**Objetivo:** adicionar tela de Dashboard ao portal Web com métricas gerais e alertas operacionais, instrumentando o backend para coletar os dados necessários. A mesma API de métricas será reutilizada pelo MAUI na Fase 10.
+
+1. **[#41]** Migration V005 — adicionar `data_ultima_validacao` em `licenca_instalacao_registrada` e criar tabela `validacao_log` (tipo_operacao, resultado, motivo_erro, ip_origem, criado_em).
+2. **[#42]** Instrumentar API de validação — gravar `validacao_log` em todos os handlers (`ValidarLoginHandler`, `ValidarInstalacaoHandler`, `HeartbeatHandler`, `LogoutValidacaoHandler`) e atualizar `data_ultima_validacao` nas instalações.
+3. **[#43]** Endpoint `GET /dashboard/resumo` — métricas gerais do tenant: total de clientes finais, aplicações, licenças ativas/inativas por tipo, licenças expirando em 7 dias, sessões abertas, tokens expirando, novos cadastros nos últimos 30 dias.
+4. **[#44]** Endpoint `GET /dashboard/alertas` — alertas operacionais: sessões inativas prolongadas, instalações adormecidas (>30 dias sem validação), licenças no limite de capacidade (usuários/instalações), erros de validação nas últimas 24h com breakdown por motivo.
+5. **[#45]** Tela Dashboard Web — página inicial do portal com cards de métricas, seção de alertas (oculta quando não há dados) e lista de licenças recentes.
+6. **[#46]** Atualizar documentação — `WEB_SPECIFICATION.md`, `ARCHITECTURE.md`, `DEVELOPMENT_PLAN.md` e `README.md` com Fase 9.1 concluída.
+
+**Testes mínimos:** handler de dashboard retorna dados corretos isolados por tenant; métricas de erro retornam 0 quando log está vazio; dashboard oculta seção de alertas quando não há dados.
+
+**Demo:** dashboard exibe métricas reais do tenant; alerta aparece quando sessão está inativa por tempo excessivo; gráfico de erros mostra pico após tentativas de validação inválidas.
+
+---
+
 ## Fase 10 — MAUI Desktop e Mobile
 
 **Objetivo:** aplicativo MAUI com paridade funcional ao Blazor Web, para Windows e Android.
