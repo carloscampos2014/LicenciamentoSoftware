@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels"
+             x:Class="LicenciamentoSoftware.Maui.Views.TotpPage"
+             x:DataType="vm:TotpViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <VerticalStackLayout Padding="32,64" Spacing="0">
+
+        <Label Text="Verificação em dois fatores"
+               FontSize="22" FontAttributes="Bold"
+               TextColor="{StaticResource TextPrimary}"
+               HorizontalOptions="Center" Margin="0,0,0,8" />
+
+        <Label Text="Digite o código de 6 dígitos do seu autenticador."
+               FontSize="14" TextColor="{StaticResource TextSecondary}"
+               HorizontalOptions="Center" HorizontalTextAlignment="Center"
+               Margin="0,0,0,40" />
+
+        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,8">
+            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+            <Entry Style="{StaticResource CampoTexto}"
+                   Text="{Binding Codigo}"
+                   Keyboard="Numeric"
+                   MaxLength="6"
+                   Placeholder="000000"
+                   HorizontalTextAlignment="Center"
+                   FontSize="28"
+                   ReturnType="Go"
+                   ReturnCommand="{Binding VerificarCommand}" />
+        </Border>
+
+        <Label Text="{Binding Erro}"
+               Style="{StaticResource LabelErro}"
+               IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}"
+               HorizontalOptions="Center" Margin="0,4,0,8" />
+
+        <Button Text="Verificar"
+                Style="{StaticResource BotaoPrimario}"
+                Command="{Binding VerificarCommand}"
+                IsEnabled="{Binding NaoOcupado}"
+                Margin="0,8,0,0" />
+
+        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                           IsVisible="{Binding Ocupado}"
+                           Margin="0,12,0,0" />
+
+        <Label Text="Voltar ao login"
+               TextColor="{StaticResource Primary}"
+               FontSize="14" HorizontalOptions="Center"
+               Margin="0,24,0,0">
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding VoltarCommand}" />
+            </Label.GestureRecognizers>
+        </Label>
+
+    </VerticalStackLayout>
+</ContentPage>
