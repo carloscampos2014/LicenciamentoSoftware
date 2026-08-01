@@ -317,8 +317,8 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
         string Razaosocial,
         string Tituloaplic,
         string Tipo,
-        int Usoatual,
-        int Maximo);
+        long Usoatual,
+        long Maximo);
 
     private sealed record ErroRaw(string? Motivo, int Total);
 }

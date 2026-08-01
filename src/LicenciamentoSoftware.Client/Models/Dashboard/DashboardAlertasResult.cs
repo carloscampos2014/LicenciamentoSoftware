@@ -13,7 +13,7 @@ public sealed record SessaoInativaAlerta(
     string AplicativoTitulo,
     string IdentificadorUsuario,
     DateTime DataUltimaAtividade,
-    int HorasInativa);
+    double HorasInativa);
 
 public sealed record InstalacaoAdormentaAlerta(
     Guid IdLicenca,
@@ -22,25 +22,25 @@ public sealed record InstalacaoAdormentaAlerta(
     string AplicativoTitulo,
     string IdentificadorMaquina,
     DateTime? DataUltimaValidacao,
-    int DiasAdormecida);
+    double DiasAdormecida);
 
 public sealed record LicencaLimiteAlerta(
     Guid IdLicenca,
     string ClienteFinalRazaoSocial,
     string AplicativoTitulo,
     string TipoLicenca,
-    int UsoAtual,
-    int Maximo);
+    long UsoAtual,
+    long Maximo);
 
 public sealed record ErrosValidacaoAlerta(
-    int TotalErros,
+    long TotalErros,
     IReadOnlyList<ErrosPorMotivo> PorMotivo,
     IReadOnlyList<LicencaComMaisErros> LicencasComMaisErros);
 
-public sealed record ErrosPorMotivo(string Motivo, int Total);
+public sealed record ErrosPorMotivo(string Motivo, long Total);
 
 public sealed record LicencaComMaisErros(
     Guid IdLicenca,
     string ClienteFinalRazaoSocial,
     string AplicativoTitulo,
-    int TotalErros);
+    long TotalErros);

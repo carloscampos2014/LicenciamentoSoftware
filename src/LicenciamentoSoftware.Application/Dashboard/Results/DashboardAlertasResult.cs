@@ -1,8 +1,6 @@
 namespace LicenciamentoSoftware.Application.Dashboard.Results;
 
-/// <summary>
-/// Alertas operacionais do tenant — itens que requerem atenção do administrador.
-/// </summary>
+/// <summary>Alertas operacionais do tenant — itens que requerem atenção do administrador.</summary>
 public sealed record DashboardAlertasResult(
     IReadOnlyList<SessaoInativaAlerta> SessoesInativas,
     IReadOnlyList<InstalacaoAdormentaAlerta> InstalacoesAdormecidas,
@@ -17,7 +15,7 @@ public sealed record SessaoInativaAlerta(
     string AplicativoTitulo,
     string IdentificadorUsuario,
     DateTime DataUltimaAtividade,
-    int HorasInativa);
+    double HorasInativa);
 
 /// <summary>Instalação registrada sem validação há mais de 30 dias.</summary>
 public sealed record InstalacaoAdormentaAlerta(
@@ -27,7 +25,7 @@ public sealed record InstalacaoAdormentaAlerta(
     string AplicativoTitulo,
     string IdentificadorMaquina,
     DateTime? DataUltimaValidacao,
-    int DiasAdormecida);
+    double DiasAdormecida);
 
 /// <summary>Licença com uso no limite de capacidade (usuários ou instalações).</summary>
 public sealed record LicencaLimiteAlerta(
@@ -35,19 +33,19 @@ public sealed record LicencaLimiteAlerta(
     string ClienteFinalRazaoSocial,
     string AplicativoTitulo,
     string TipoLicenca,
-    int UsoAtual,
-    int Maximo);
+    long UsoAtual,
+    long Maximo);
 
 /// <summary>Métricas de erros de validação nas últimas 24h.</summary>
 public sealed record ErrosValidacaoAlerta(
-    int TotalErros,
+    long TotalErros,
     IReadOnlyList<ErrosPorMotivo> PorMotivo,
     IReadOnlyList<LicencaComMaisErros> LicencasComMaisErros);
 
-public sealed record ErrosPorMotivo(string Motivo, int Total);
+public sealed record ErrosPorMotivo(string Motivo, long Total);
 
 public sealed record LicencaComMaisErros(
     Guid IdLicenca,
     string ClienteFinalRazaoSocial,
     string AplicativoTitulo,
-    int TotalErros);
+    long TotalErros);
