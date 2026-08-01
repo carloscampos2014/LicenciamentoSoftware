@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels.Licencas"
+             xmlns:model="clr-namespace:LicenciamentoSoftware.Client.Models.Licencas;assembly=LicenciamentoSoftware.Client"
+             x:Class="LicenciamentoSoftware.Maui.Views.Licencas.ListaLicencasPage"
+             x:DataType="vm:ListaLicencasViewModel"
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource Background}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="+ Emitir" Command="{Binding EmitirNovaCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <!-- Lista principal -->
+        <RefreshView IsRefreshing="{Binding Ocupado}"
+                     Command="{Binding CarregarCommand}">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Filtro de cliente -->
+                <Grid Padding="16,12" ColumnDefinitions="*"
+                      BackgroundColor="{StaticResource Surface}">
+                    <Picker ItemsSource="{Binding ClientesFinais}"
+                            SelectedItem="{Binding ClienteFinalSelecionado}"
+                            ItemDisplayBinding="{Binding RazaoSocial}"
+                            Title="Filtrar por cliente" />
+                </Grid>
+
+                <Label Text="{Binding Erro}"
+                       Style="{StaticResource LabelErro}"
+                       Margin="16,8"
+                       IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}" />
+
+                <CollectionView ItemsSource="{Binding Itens}"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding CarregarMaisCommand}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:LicencaResult">
+                            <Border Style="{StaticResource Card}" Margin="16,0,16,8">
+                                <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.VerDetalheCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding ClienteFinalRazaoSocial}"
+                                           FontAttributes="Bold" FontSize="15"
+                                           TextColor="{StaticResource TextPrimary}" />
+
+                                    <Border Grid.Row="0" Grid.Column="1"
+                                            Padding="8,3" BackgroundColor="{StaticResource SuccessLight}">
+                                        <Border.StrokeShape>RoundRectangle 10</Border.StrokeShape>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Ativo}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label FontSize="11" FontAttributes="Bold">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Ativo}" Value="True">
+                                                    <Setter Property="Text" Value="Ativa" />
+                                                    <Setter Property="TextColor" Value="{StaticResource Success}" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Ativo}" Value="False">
+                                                    <Setter Property="Text" Value="Inativa" />
+                                                    <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Text="{Binding AplicativoTitulo}"
+                                           FontSize="13" TextColor="{StaticResource TextSecondary}" />
+
+                                    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Text="{Binding TipoLicencaDescricao}"
+                                           FontSize="12" TextColor="{StaticResource TextSecondary}" />
+
+                                    <Label Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2"
+                                           FontSize="11" TextColor="{StaticResource TextSecondary}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="Cadastro: " />
+                                                <Span Text="{Binding DataCadastro, StringFormat='{0:dd/MM/yyyy}'}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.Footer>
+                        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                                           IsVisible="{Binding Ocupado}"
+                                           Margin="0,8,0,24" />
+                    </CollectionView.Footer>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </RefreshView>
+
+        <!-- ── Painel de detalhe (overlay) ── -->
+        <Grid IsVisible="{Binding ExibirDetalhe}" BackgroundColor="#80000000">
+            <Border Style="{StaticResource Card}"
+                    BackgroundColor="{StaticResource Surface}"
+                    Margin="16" Padding="0"
+                    VerticalOptions="Fill">
+                <Border.StrokeShape>RoundRectangle 12</Border.StrokeShape>
+
+                <Grid RowDefinitions="Auto,*,Auto">
+
+                    <!-- Header do detalhe -->
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="16,12"
+                          BackgroundColor="{StaticResource Primary}">
+                        <Label Grid.Column="0"
+                               Text="{Binding LicencaSelecionada.ClienteFinalRazaoSocial}"
+                               FontAttributes="Bold" FontSize="16" TextColor="White" />
+                        <Button Grid.Column="1" Text="✕"
+                                BackgroundColor="Transparent" TextColor="White"
+                                Command="{Binding FecharDetalheCommand}" />
+                    </Grid>
+
+                    <!-- Conteúdo do detalhe -->
+                    <ScrollView Grid.Row="1">
+                        <VerticalStackLayout Padding="16" Spacing="12"
+                                             BindingContext="{Binding LicencaSelecionada}">
+
+                            <!-- Info básica -->
+                            <Label Style="{StaticResource LabelSecao}" Text="Informações" />
+                            <Label FontSize="13" TextColor="{StaticResource TextSecondary}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="Aplicação: " FontAttributes="Bold" />
+                                        <Span Text="{Binding AplicativoTitulo}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label FontSize="13" TextColor="{StaticResource TextSecondary}">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="Tipo: " FontAttributes="Bold" />
+                                        <Span Text="{Binding TipoLicencaDescricao}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+
+                            <!-- Período -->
+                            <VerticalStackLayout IsVisible="{Binding Periodo, Converter={StaticResource StringNotNullConverter}}"
+                                                 Spacing="4">
+                                <Label Style="{StaticResource LabelSecao}" Text="Período" />
+                                <Label FontSize="13" TextColor="{StaticResource TextSecondary}">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding Periodo.DataInicio, StringFormat='{0:dd/MM/yyyy}'}" />
+                                            <Span Text=" até " />
+                                            <Span Text="{Binding Periodo.DataFim, StringFormat='{0:dd/MM/yyyy}'}" />
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                            </VerticalStackLayout>
+
+                            <!-- Sessões ativas -->
+                            <VerticalStackLayout Spacing="4">
+                                <Label Style="{StaticResource LabelSecao}" Text="Sessões Ativas" />
+                                <CollectionView ItemsSource="{Binding Sessoes}">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:SessaoResult">
+                                            <Border Style="{StaticResource Card}" Margin="0,0,0,6">
+                                                <Border.StrokeShape>RoundRectangle 6</Border.StrokeShape>
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                                        <Label Text="{Binding IdentificadorUsuario}"
+                                                               FontSize="13" FontAttributes="Bold"
+                                                               TextColor="{StaticResource TextPrimary}" />
+                                                        <Label Text="{Binding DataUltimaAtividade, StringFormat='Última ativ: {0:dd/MM HH:mm}'}"
+                                                               FontSize="11" TextColor="{StaticResource TextSecondary}" />
+                                                    </VerticalStackLayout>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                    <CollectionView.EmptyView>
+                                        <Label Text="Nenhuma sessão ativa"
+                                               FontSize="12" TextColor="{StaticResource TextSecondary}"
+                                               HorizontalOptions="Center" />
+                                    </CollectionView.EmptyView>
+                                </CollectionView>
+                            </VerticalStackLayout>
+
+                        </VerticalStackLayout>
+                    </ScrollView>
+
+                    <!-- Ações do detalhe -->
+                    <VerticalStackLayout Grid.Row="2" Padding="16" Spacing="8">
+                        <Button Text="Renovar Token"
+                                Style="{StaticResource BotaoSecundario}"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RenovarTokenCommand}"
+                                CommandParameter="{Binding LicencaSelecionada.Id}" />
+                        <Button Text="Desativar Licença"
+                                Style="{StaticResource BotaoPerigo}"
+                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.DesativarCommand}"
+                                CommandParameter="{Binding LicencaSelecionada}" />
+                    </VerticalStackLayout>
+
+                </Grid>
+            </Border>
+        </Grid>
+
+    </Grid>
+</ContentPage>

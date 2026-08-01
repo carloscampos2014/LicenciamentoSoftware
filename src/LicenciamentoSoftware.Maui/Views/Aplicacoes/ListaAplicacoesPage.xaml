@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels.Aplicacoes"
+             xmlns:model="clr-namespace:LicenciamentoSoftware.Client.Models.Aplicacoes;assembly=LicenciamentoSoftware.Client"
+             x:Class="LicenciamentoSoftware.Maui.Views.Aplicacoes.ListaAplicacoesPage"
+             x:DataType="vm:ListaAplicacoesViewModel"
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource Background}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="+" Command="{Binding AbrirFormularioCriarCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <RefreshView IsRefreshing="{Binding Ocupado}"
+                     Command="{Binding CarregarCommand}">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Barra de busca -->
+                <Grid Padding="16,12" ColumnDefinitions="*,Auto" ColumnSpacing="8"
+                      BackgroundColor="{StaticResource Surface}">
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Padding="10,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding Busca}"
+                               Placeholder="Buscar por título..."
+                               ReturnCommand="{Binding BuscarCommand}"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+                    <Button Grid.Column="1" Text="Buscar"
+                            Style="{StaticResource BotaoPrimario}"
+                            Command="{Binding BuscarCommand}"
+                            WidthRequest="80" />
+                </Grid>
+
+                <Label Text="{Binding Erro}"
+                       Style="{StaticResource LabelErro}"
+                       Margin="16,8"
+                       IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}" />
+
+                <CollectionView ItemsSource="{Binding Itens}"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding CarregarMaisCommand}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:AplicacaoResult">
+                            <Border Style="{StaticResource Card}" Margin="16,0,16,8">
+                                <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding Titulo}"
+                                           FontAttributes="Bold" FontSize="15"
+                                           TextColor="{StaticResource TextPrimary}" />
+
+                                    <Border Grid.Row="0" Grid.Column="1"
+                                            Padding="8,3" BackgroundColor="{StaticResource SuccessLight}">
+                                        <Border.StrokeShape>RoundRectangle 10</Border.StrokeShape>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border" Binding="{Binding Ativo}" Value="False">
+                                                <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label FontSize="11" FontAttributes="Bold">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Ativo}" Value="True">
+                                                    <Setter Property="Text" Value="Ativa" />
+                                                    <Setter Property="TextColor" Value="{StaticResource Success}" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Ativo}" Value="False">
+                                                    <Setter Property="Text" Value="Inativa" />
+                                                    <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Text="{Binding TipoLicencaDescricao}"
+                                           FontSize="13" TextColor="{StaticResource TextSecondary}" />
+
+                                    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Text="{Binding Descricao}"
+                                           FontSize="12" TextColor="{StaticResource TextSecondary}"
+                                           IsVisible="{Binding Descricao, Converter={StaticResource StringNotNullConverter}}"
+                                           LineBreakMode="TailTruncation" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.Footer>
+                        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                                           IsVisible="{Binding Ocupado}"
+                                           Margin="0,8,0,24" />
+                    </CollectionView.Footer>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </RefreshView>
+
+        <!-- Formulário overlay -->
+        <Grid IsVisible="{Binding ExibirFormulario}" BackgroundColor="#80000000">
+            <Border Style="{StaticResource Card}"
+                    BackgroundColor="{StaticResource Surface}"
+                    Margin="16" Padding="20" VerticalOptions="Center">
+                <Border.StrokeShape>RoundRectangle 12</Border.StrokeShape>
+                <ScrollView>
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label FontSize="17" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label" Binding="{Binding IdEdicao}" Value="{x:Null}">
+                                    <Setter Property="Text" Value="Nova Aplicação" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+
+                        <Label Text="Título" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Text="{Binding FormTitulo}"
+                                   Style="{StaticResource CampoTexto}"
+                                   Placeholder="Nome da aplicação" />
+                        </Border>
+
+                        <Label Text="Descrição (opcional)" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,4">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Editor Text="{Binding FormDescricao}"
+                                    Placeholder="Descrição da aplicação"
+                                    HeightRequest="80"
+                                    AutoSize="TextChanges" />
+                        </Border>
+
+                        <Label Text="Tipo de Licença" Style="{StaticResource LabelCampo}"
+                               IsVisible="{Binding IdEdicao, Converter={StaticResource StringNullOrEmptyConverter}}" />
+                        <Picker ItemsSource="{Binding TiposLicenca}"
+                                SelectedItem="{Binding FormTipoLicencaSelecionado}"
+                                ItemDisplayBinding="{Binding Descricao}"
+                                IsVisible="{Binding IdEdicao, Converter={StaticResource StringNullOrEmptyConverter}}" />
+
+                        <Label Text="{Binding ErroFormulario}"
+                               Style="{StaticResource LabelErro}"
+                               IsVisible="{Binding ErroFormulario, Converter={StaticResource StringNotNullConverter}}" />
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,8,0,0">
+                            <Button Grid.Column="0" Text="Cancelar"
+                                    Style="{StaticResource BotaoSecundario}"
+                                    Command="{Binding FecharFormularioCommand}" />
+                            <Button Grid.Column="1" Text="Salvar"
+                                    Style="{StaticResource BotaoPrimario}"
+                                    Command="{Binding SalvarCommand}"
+                                    IsEnabled="{Binding NaoOcupado}" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
+
+    </Grid>
+</ContentPage>

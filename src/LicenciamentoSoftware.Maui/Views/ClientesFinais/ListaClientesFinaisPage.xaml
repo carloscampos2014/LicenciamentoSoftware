@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels.ClientesFinais"
+             xmlns:model="clr-namespace:LicenciamentoSoftware.Client.Models.ClientesFinais;assembly=LicenciamentoSoftware.Client"
+             x:Class="LicenciamentoSoftware.Maui.Views.ClientesFinais.ListaClientesFinaisPage"
+             x:DataType="vm:ListaClientesFinaisViewModel"
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource Background}">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="+" Command="{Binding AbrirFormularioCriarCommand}" />
+    </ContentPage.ToolbarItems>
+
+    <!-- Overlay formulário -->
+    <Grid>
+        <RefreshView IsRefreshing="{Binding Ocupado}"
+                     Command="{Binding CarregarCommand}">
+            <VerticalStackLayout Spacing="0">
+
+                <!-- Barra de busca -->
+                <Grid Padding="16,12" ColumnDefinitions="*,Auto" ColumnSpacing="8"
+                      BackgroundColor="{StaticResource Surface}">
+                    <Border Grid.Column="0" Style="{StaticResource Card}" Padding="10,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding Busca}"
+                               Placeholder="Buscar por razão social..."
+                               ReturnCommand="{Binding BuscarCommand}"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+                    <Button Grid.Column="1" Text="Buscar"
+                            Style="{StaticResource BotaoPrimario}"
+                            Command="{Binding BuscarCommand}"
+                            WidthRequest="80" />
+                </Grid>
+
+                <!-- Erro -->
+                <Label Text="{Binding Erro}"
+                       Style="{StaticResource LabelErro}"
+                       Margin="16,8"
+                       IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}" />
+
+                <!-- Lista -->
+                <CollectionView ItemsSource="{Binding Itens}"
+                                RemainingItemsThreshold="3"
+                                RemainingItemsThresholdReachedCommand="{Binding CarregarMaisCommand}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="model:ClienteFinalResult">
+                            <Border Style="{StaticResource Card}"
+                                    Margin="16,0,16,8">
+                                <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
+
+                                    <Label Grid.Row="0" Grid.Column="0"
+                                           Text="{Binding RazaoSocial}"
+                                           FontAttributes="Bold" FontSize="15"
+                                           TextColor="{StaticResource TextPrimary}" />
+
+                                    <!-- Badge ativo/inativo -->
+                                    <Border Grid.Row="0" Grid.Column="1"
+                                            Padding="8,3" BackgroundColor="{StaticResource SuccessLight}">
+                                        <Border.StrokeShape>RoundRectangle 10</Border.StrokeShape>
+                                        <Border.Triggers>
+                                            <DataTrigger TargetType="Border"
+                                                         Binding="{Binding Ativo}" Value="False">
+                                                <Setter Property="BackgroundColor"
+                                                        Value="{StaticResource DangerLight}" />
+                                            </DataTrigger>
+                                        </Border.Triggers>
+                                        <Label FontSize="11" FontAttributes="Bold">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding Ativo}" Value="True">
+                                                    <Setter Property="Text" Value="Ativo" />
+                                                    <Setter Property="TextColor" Value="{StaticResource Success}" />
+                                                </DataTrigger>
+                                                <DataTrigger TargetType="Label"
+                                                             Binding="{Binding Ativo}" Value="False">
+                                                    <Setter Property="Text" Value="Inativo" />
+                                                    <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Border>
+
+                                    <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
+                                           FontSize="13" TextColor="{StaticResource TextSecondary}">
+                                        <Label.FormattedText>
+                                            <FormattedString>
+                                                <Span Text="{Binding TipoInscricao, Converter={StaticResource TipoInscricaoConverter}}" />
+                                                <Span Text=": " />
+                                                <Span Text="{Binding NumeroInscricao}" />
+                                            </FormattedString>
+                                        </Label.FormattedText>
+                                    </Label>
+
+                                    <Label Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
+                                           Text="{Binding Email}"
+                                           FontSize="12"
+                                           TextColor="{StaticResource TextSecondary}" />
+
+                                    <!-- Ações via SwipeView -->
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+
+                    <CollectionView.Footer>
+                        <ActivityIndicator IsRunning="{Binding Ocupado}"
+                                           IsVisible="{Binding Ocupado}"
+                                           Margin="0,8,0,24" />
+                    </CollectionView.Footer>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </RefreshView>
+
+        <!-- ── Painel de formulário (overlay) ── -->
+        <Grid IsVisible="{Binding ExibirFormulario}"
+              BackgroundColor="#80000000">
+            <Border Style="{StaticResource Card}"
+                    BackgroundColor="{StaticResource Surface}"
+                    Margin="16" Padding="20"
+                    VerticalOptions="Center">
+                <Border.StrokeShape>RoundRectangle 12</Border.StrokeShape>
+                <ScrollView>
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label Text="{Binding IdEdicao, StringFormat='{0}', Converter={StaticResource StringNullOrEmptyConverter}}"
+                               FontSize="17" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}">
+                            <Label.Triggers>
+                                <DataTrigger TargetType="Label"
+                                             Binding="{Binding IdEdicao}" Value="{x:Null}">
+                                    <Setter Property="Text" Value="Novo Cliente Final" />
+                                </DataTrigger>
+                            </Label.Triggers>
+                        </Label>
+
+                        <Label Text="Razão Social" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Text="{Binding FormRazaoSocial}"
+                                   Style="{StaticResource CampoTexto}"
+                                   Placeholder="Nome / Razão Social" />
+                        </Border>
+
+                        <Label Text="Tipo de Inscrição" Style="{StaticResource LabelCampo}" />
+                        <Picker SelectedIndex="{Binding FormTipoInscricao, Converter={StaticResource InverseBoolConverter}}">
+                            <Picker.Items>
+                                <x:String>CPF</x:String>
+                                <x:String>CNPJ</x:String>
+                            </Picker.Items>
+                        </Picker>
+
+                        <Label Text="Número de Inscrição" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Text="{Binding FormNumeroInscricao}"
+                                   Style="{StaticResource CampoTexto}"
+                                   Keyboard="Numeric"
+                                   Placeholder="CPF ou CNPJ" />
+                        </Border>
+
+                        <Label Text="E-mail" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Text="{Binding FormEmail}"
+                                   Style="{StaticResource CampoTexto}"
+                                   Keyboard="Email"
+                                   Placeholder="email@empresa.com" />
+                        </Border>
+
+                        <Label Text="Telefone (opcional)" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Text="{Binding FormTelefone}"
+                                   Style="{StaticResource CampoTexto}"
+                                   Keyboard="Telephone"
+                                   Placeholder="(11) 99999-9999" />
+                        </Border>
+
+                        <Label Text="{Binding ErroFormulario}"
+                               Style="{StaticResource LabelErro}"
+                               IsVisible="{Binding ErroFormulario, Converter={StaticResource StringNotNullConverter}}" />
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,8,0,0">
+                            <Button Grid.Column="0" Text="Cancelar"
+                                    Style="{StaticResource BotaoSecundario}"
+                                    Command="{Binding FecharFormularioCommand}" />
+                            <Button Grid.Column="1" Text="Salvar"
+                                    Style="{StaticResource BotaoPrimario}"
+                                    Command="{Binding SalvarCommand}"
+                                    IsEnabled="{Binding NaoOcupado}" />
+                        </Grid>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
+
+    </Grid>
+</ContentPage>
