@@ -4,6 +4,7 @@ using LicenciamentoSoftware.Application.Licenca.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Commands;
 using LicenciamentoSoftware.Application.Licenca.Results;
 using LicenciamentoSoftware.Application.Licenca.Validators;
+using Microsoft.Extensions.Logging;
 
 namespace LicenciamentoSoftware.Application.Licenca.Handlers;
 
@@ -22,20 +23,26 @@ public sealed class ValidarInstalacaoHandler
 {
     private readonly IValidacaoLicencaRepository _validacaoRepo;
     private readonly ILicencaInstalacaoRepository _instalacaoRepo;
+    private readonly IValidacaoLogRepository _logRepo;
     private readonly IUnitOfWork _uow;
     private readonly IClock _clock;
     private readonly ValidarInstalacaoValidator _validator;
+    private readonly ILogger<ValidarInstalacaoHandler> _logger;
 
     public ValidarInstalacaoHandler(
         IValidacaoLicencaRepository validacaoRepo,
         ILicencaInstalacaoRepository instalacaoRepo,
+        IValidacaoLogRepository logRepo,
         IUnitOfWork uow,
-        IClock clock)
+        IClock clock,
+        ILogger<ValidarInstalacaoHandler> logger)
     {
         _validacaoRepo  = validacaoRepo;
         _instalacaoRepo = instalacaoRepo;
+        _logRepo        = logRepo;
         _uow            = uow;
         _clock          = clock;
+        _logger         = logger;
         _validator      = new ValidarInstalacaoValidator();
     }
 
@@ -52,23 +59,39 @@ public sealed class ValidarInstalacaoHandler
         // 2. Carrega licença com detalhe em uma única query
         var licenca = await _validacaoRepo.BuscarParaValidacaoAsync(command.IdLicenca, ct);
         if (licenca is null)
+        {
+            await GravarLogAsync(command.IdLicenca, "erro",
+                MotivoErroValidacao.LicenceNaoEncontrada, command.IpOrigem, ct);
             return new ValidarInstalacaoResult.LicencaNaoEncontrada();
+        }
 
         if (!licenca.Ativo)
+        {
+            await GravarLogAsync(command.IdLicenca, "erro",
+                MotivoErroValidacao.LicencaInativa, command.IpOrigem, ct);
             return new ValidarInstalacaoResult.LicencaInativa();
+        }
 
         // 3. Apenas licenças Por Instalação
         if (licenca.IdTipoLicenca != TiposLicencaIds.Instalacao)
+        {
+            await GravarLogAsync(command.IdLicenca, "erro",
+                MotivoErroValidacao.InstalacaoInvalida, command.IpOrigem, ct);
             return new ValidarInstalacaoResult.TipoLicencaIncompativel(
                 "Esta licença não é do tipo Por Instalação. Use o endpoint POST /validacao/login.");
+        }
 
-        // 4. Verificar expiração de período (se a licença Por Instalação tiver período associado)
+        // 4. Verificar expiração de período
         if (licenca.DataFim is not null && licenca.DataFim.Value < _clock.UtcNow)
+        {
+            await GravarLogAsync(command.IdLicenca, "erro",
+                MotivoErroValidacao.LicencaExpirada, command.IpOrigem, ct);
             return new ValidarInstalacaoResult.LicencaExpirada();
+        }
 
         var quantidadeMaxima = licenca.QuantidadeMaximaInstalacoes!.Value;
 
-        // 5. Transação serializável: idempotência + verificação de limite + inserção atômica
+        // 5. Transação serializável
         await _uow.BeginAsync(IsolationLevel.Serializable, ct);
 
         try
@@ -80,6 +103,9 @@ public sealed class ValidarInstalacaoHandler
             if (existente is not null)
             {
                 await _uow.RollbackAsync(ct);
+                // Atualiza última validação fora da transação (fire-and-forget seguro)
+                _ = AtualizarUltimaValidacaoSafeAsync(existente.Id, ct);
+                await GravarLogAsync(command.IdLicenca, "sucesso", null, command.IpOrigem, ct);
                 return new ValidarInstalacaoResult.Sucesso(existente.Id, JaRegistrada: true);
             }
 
@@ -88,6 +114,8 @@ public sealed class ValidarInstalacaoHandler
             if (totalAtivas >= quantidadeMaxima)
             {
                 await _uow.RollbackAsync(ct);
+                await GravarLogAsync(command.IdLicenca, "erro",
+                    MotivoErroValidacao.LimiteExcedido, command.IpOrigem, ct);
                 return new ValidarInstalacaoResult.LimiteInstalacoesAtingido(quantidadeMaxima);
             }
 
@@ -107,6 +135,9 @@ public sealed class ValidarInstalacaoHandler
             await _instalacaoRepo.InserirRegistradaAsync(instalacao, ct);
             await _uow.CommitAsync(ct);
 
+            // Atualiza última validação imediatamente após inserção
+            _ = AtualizarUltimaValidacaoSafeAsync(instalacao.Id, ct);
+            await GravarLogAsync(command.IdLicenca, "sucesso", null, command.IpOrigem, ct);
             return new ValidarInstalacaoResult.Sucesso(instalacao.Id, JaRegistrada: false);
         }
         catch
@@ -114,5 +145,32 @@ public sealed class ValidarInstalacaoHandler
             await _uow.RollbackAsync(ct);
             throw;
         }
+    }
+
+    private static readonly Action<ILogger, Guid, Exception?> _logFalhaLog =
+        LoggerMessage.Define<Guid>(LogLevel.Warning,
+            new EventId(1, "FalhaGravarLog"),
+            "Falha ao gravar validacao_log para licença {IdLicenca}");
+
+    private static readonly Action<ILogger, Guid, Exception?> _logFalhaValidacao =
+        LoggerMessage.Define<Guid>(LogLevel.Warning,
+            new EventId(2, "FalhaAtualizarValidacao"),
+            "Falha ao atualizar data_ultima_validacao para instalação {Id}");
+
+    private async Task AtualizarUltimaValidacaoSafeAsync(Guid idInstalacao, CancellationToken ct)
+    {
+        try { await _instalacaoRepo.AtualizarUltimaValidacaoAsync(idInstalacao, ct); }
+        catch (Exception ex) { _logFalhaValidacao(_logger, idInstalacao, ex); }
+    }
+
+    private async Task GravarLogAsync(
+        Guid idLicenca, string resultado, string? motivoErro, string? ipOrigem, CancellationToken ct)
+    {
+        try
+        {
+            await _logRepo.InserirAsync(idLicenca, TipoOperacaoValidacao.Instalacao,
+                resultado, motivoErro, ipOrigem, ct);
+        }
+        catch (Exception ex) { _logFalhaLog(_logger, idLicenca, ex); }
     }
 }

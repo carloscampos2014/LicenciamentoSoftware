@@ -6,4 +6,5 @@ namespace LicenciamentoSoftware.Application.Licenca.Commands;
 /// </summary>
 public sealed record HeartbeatCommand(
     Guid IdLicenca,
-    Guid IdSessao);
+    Guid IdSessao,
+    string? IpOrigem = null);

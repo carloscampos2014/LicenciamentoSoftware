@@ -21,11 +21,13 @@ public class ValidarInstalacaoHandlerTests
         Substitute.For<IValidacaoLicencaRepository>();
     private readonly ILicencaInstalacaoRepository _instalacaoRepo =
         Substitute.For<ILicencaInstalacaoRepository>();
+    private readonly IValidacaoLogRepository _logRepo = Substitute.For<IValidacaoLogRepository>();
     private readonly IUnitOfWork _uow   = Substitute.For<IUnitOfWork>();
     private readonly IClock      _clock = Substitute.For<IClock>();
 
     private ValidarInstalacaoHandler CriarHandler() =>
-        new(_validacaoRepo, _instalacaoRepo, _uow, _clock);
+        new(_validacaoRepo, _instalacaoRepo, _logRepo, _uow, _clock,
+            Substitute.For<Microsoft.Extensions.Logging.ILogger<ValidarInstalacaoHandler>>());
 
     private static ValidarInstalacaoCommand Command(string maquina = IdentificadorMaquina) =>
         new(IdLicenca, maquina);

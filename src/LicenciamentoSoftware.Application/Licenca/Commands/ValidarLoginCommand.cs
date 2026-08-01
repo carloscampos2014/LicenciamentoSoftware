@@ -6,4 +6,5 @@ namespace LicenciamentoSoftware.Application.Licenca.Commands;
 /// </summary>
 public sealed record ValidarLoginCommand(
     Guid IdLicenca,
-    string IdentificadorUsuario);
+    string IdentificadorUsuario,
+    string? IpOrigem = null);

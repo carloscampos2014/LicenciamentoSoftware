@@ -264,7 +264,6 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<HeartbeatHandler>();
         services.AddScoped<LogoutValidacaoHandler>();
         services.AddScoped<ValidarInstalacaoHandler>();
-
         return services;
     }
 

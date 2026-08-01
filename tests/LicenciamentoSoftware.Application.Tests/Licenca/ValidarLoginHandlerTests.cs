@@ -22,11 +22,13 @@ public class ValidarLoginHandlerTests
         Substitute.For<IValidacaoLicencaRepository>();
     private readonly ILicencaSessaoRepository _sessaoRepo =
         Substitute.For<ILicencaSessaoRepository>();
+    private readonly IValidacaoLogRepository _logRepo = Substitute.For<IValidacaoLogRepository>();
     private readonly IUnitOfWork _uow  = Substitute.For<IUnitOfWork>();
     private readonly IClock      _clock = Substitute.For<IClock>();
 
     private ValidarLoginHandler CriarHandler() =>
-        new(_validacaoRepo, _sessaoRepo, _uow, _clock);
+        new(_validacaoRepo, _sessaoRepo, _logRepo, _uow, _clock,
+            Substitute.For<Microsoft.Extensions.Logging.ILogger<ValidarLoginHandler>>());
 
     private static ValidarLoginCommand Command(string usuario = IdentificadorUsuario) =>
         new(IdLicenca, usuario);
