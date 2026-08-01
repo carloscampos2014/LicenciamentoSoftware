@@ -7,4 +7,5 @@ namespace LicenciamentoSoftware.Application.Licenca.Commands;
 /// </summary>
 public sealed record ValidarInstalacaoCommand(
     Guid IdLicenca,
-    string IdentificadorMaquina);
+    string IdentificadorMaquina,
+    string? IpOrigem = null);

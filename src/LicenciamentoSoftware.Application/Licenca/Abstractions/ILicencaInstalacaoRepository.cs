@@ -40,4 +40,10 @@ public interface ILicencaInstalacaoRepository
     /// </summary>
     Task InserirRegistradaAsync(
         Domain.Entities.LicencaInstalacaoRegistrada instalacao, CancellationToken ct = default);
+
+    /// <summary>
+    /// Atualiza data_ultima_validacao de uma instalação registrada.
+    /// Chamado após cada validação bem-sucedida (login de instalação ou heartbeat).
+    /// </summary>
+    Task AtualizarUltimaValidacaoAsync(Guid id, CancellationToken ct = default);
 }

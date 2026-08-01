@@ -3,6 +3,7 @@ using LicenciamentoSoftware.Application.Licenca.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Commands;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Results;
+using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace LicenciamentoSoftware.Application.Tests.Licenca;
@@ -10,8 +11,10 @@ namespace LicenciamentoSoftware.Application.Tests.Licenca;
 public class HeartbeatHandlerTests
 {
     private readonly ILicencaSessaoRepository _sessaoRepo = Substitute.For<ILicencaSessaoRepository>();
+    private readonly IValidacaoLogRepository  _logRepo    = Substitute.For<IValidacaoLogRepository>();
 
-    private HeartbeatHandler CriarHandler() => new(_sessaoRepo);
+    private HeartbeatHandler CriarHandler() =>
+        new(_sessaoRepo, _logRepo, Substitute.For<ILogger<HeartbeatHandler>>());
 
     private static readonly Guid IdLicenca = Guid.NewGuid();
     private static readonly Guid IdSessao  = Guid.NewGuid();

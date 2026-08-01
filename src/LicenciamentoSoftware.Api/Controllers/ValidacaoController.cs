@@ -63,7 +63,8 @@ public sealed class ValidacaoController : ControllerBase
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
         var resultado = await _validarLoginHandler.HandleAsync(
-            new ValidarLoginCommand(request.IdLicenca, request.IdentificadorUsuario), ct);
+            new ValidarLoginCommand(request.IdLicenca, request.IdentificadorUsuario,
+                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
 
         return resultado switch
         {
@@ -117,7 +118,8 @@ public sealed class ValidacaoController : ControllerBase
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
         var resultado = await _heartbeatHandler.HandleAsync(
-            new HeartbeatCommand(request.IdLicenca, request.IdSessao), ct);
+            new HeartbeatCommand(request.IdLicenca, request.IdSessao,
+                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
 
         return resultado switch
         {
@@ -148,7 +150,8 @@ public sealed class ValidacaoController : ControllerBase
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
         var resultado = await _logoutHandler.HandleAsync(
-            new LogoutValidacaoCommand(request.IdLicenca, request.IdSessao), ct);
+            new LogoutValidacaoCommand(request.IdLicenca, request.IdSessao,
+                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
 
         return resultado switch
         {
@@ -179,7 +182,8 @@ public sealed class ValidacaoController : ControllerBase
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
         var resultado = await _validarInstalacaoHandler.HandleAsync(
-            new ValidarInstalacaoCommand(request.IdLicenca, request.IdentificadorMaquina), ct);
+            new ValidarInstalacaoCommand(request.IdLicenca, request.IdentificadorMaquina,
+                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
 
         return resultado switch
         {

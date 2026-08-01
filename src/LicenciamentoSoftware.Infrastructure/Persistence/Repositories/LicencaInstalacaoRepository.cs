@@ -127,4 +127,20 @@ public sealed class LicencaInstalacaoRepository : ILicencaInstalacaoRepository
                 },
                 transaction: _uow.Transaction, cancellationToken: ct));
     }
+
+    // -------------------------------------------------------------------------
+    // Fase 9.1 — atualização de última validação (dashboard)
+    // -------------------------------------------------------------------------
+
+    public async Task AtualizarUltimaValidacaoAsync(Guid id, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE licenca_instalacao_registrada
+               SET data_ultima_validacao = NOW()
+             WHERE id = @Id
+            """;
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: ct));
+    }
 }

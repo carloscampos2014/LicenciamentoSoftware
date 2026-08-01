@@ -194,11 +194,18 @@ Requisitos transversais:
 
 **Objetivo:** adicionar tela de Dashboard ao portal Web com métricas gerais e alertas operacionais, instrumentando o backend para coletar os dados necessários. A mesma API de métricas será reutilizada pelo MAUI na Fase 10.
 
-1. **[#41]** Migration V005 — adicionar `data_ultima_validacao` em `licenca_instalacao_registrada` e criar tabela `validacao_log` (tipo_operacao, resultado, motivo_erro, ip_origem, criado_em).
-2. **[#42]** Instrumentar API de validação — gravar `validacao_log` em todos os handlers (`ValidarLoginHandler`, `ValidarInstalacaoHandler`, `HeartbeatHandler`, `LogoutValidacaoHandler`) e atualizar `data_ultima_validacao` nas instalações.
-3. **[#43]** Endpoint `GET /dashboard/resumo` — métricas gerais do tenant: total de clientes finais, aplicações, licenças ativas/inativas por tipo, licenças expirando em 7 dias, sessões abertas, tokens expirando, novos cadastros nos últimos 30 dias.
-4. **[#44]** Endpoint `GET /dashboard/alertas` — alertas operacionais: sessões inativas prolongadas, instalações adormecidas (>30 dias sem validação), licenças no limite de capacidade (usuários/instalações), erros de validação nas últimas 24h com breakdown por motivo.
-5. **[#45]** Tela Dashboard Web — página inicial do portal com cards de métricas, seção de alertas (oculta quando não há dados) e lista de licenças recentes.
+1. ✅ **[#41]** Migration V004 — adicionar `data_ultima_validacao` em `licenca_instalacao_registrada` e criar tabela `validacao_log` (tipo_operacao, resultado, motivo_erro, ip_origem, criado_em).
+2. ✅ **[#42]** Instrumentar API de validação — gravar `validacao_log` em todos os handlers (`ValidarLoginHandler`, `ValidarInstalacaoHandler`, `HeartbeatHandler`, `LogoutValidacaoHandler`) e atualizar `data_ultima_validacao` nas instalações. `IpOrigem` adicionado a todos os commands.
+3. ✅ **[#43]** Endpoint `GET /dashboard/resumo` — métricas gerais do tenant: total de clientes finais, aplicações, licenças ativas/inativas por tipo, licenças expirando em 7 dias, sessões abertas, tokens expirando, novos cadastros nos últimos 30 dias. Implementado com CTEs PostgreSQL em uma única query.
+4. ✅ **[#44]** Endpoint `GET /dashboard/alertas` — alertas operacionais: sessões inativas prolongadas, instalações adormecidas (>30 dias sem validação), licenças no limite de capacidade (usuários/instalações), erros de validação nas últimas 24h com breakdown por motivo e top 5 licenças.
+5. ✅ **[#45]** Dashboard Web — página inicial do portal com 7 cards de métricas (Clientes, Aplicações, Licenças, Expirando, Sessões, Tokens, Novos), seção de alertas oculta quando não há dados, carregamento paralelo, componente `MetricaCard` reutilizável com skeleton loader.
+6. ✅ **[#46]** Atualizar documentação — `WEB_SPECIFICATION.md`, `ARCHITECTURE.md`, `DEVELOPMENT_PLAN.md` e `README.md` com Fase 9.1 concluída.
+
+**Resultado:** 211 testes aprovados. Backend instrumentado para coleta de métricas. Dashboard Web com visão operacional em tempo real do tenant.
+
+**Demo:** após login, dashboard exibe métricas do tenant; seção de alertas aparece quando há sessões inativas ou erros de validação; cards de licenças expirando ficam em laranja quando há dados.
+
+---
 6. **[#46]** Atualizar documentação — `WEB_SPECIFICATION.md`, `ARCHITECTURE.md`, `DEVELOPMENT_PLAN.md` e `README.md` com Fase 9.1 concluída.
 
 **Testes mínimos:** handler de dashboard retorna dados corretos isolados por tenant; métricas de erro retornam 0 quando log está vazio; dashboard oculta seção de alertas quando não há dados.

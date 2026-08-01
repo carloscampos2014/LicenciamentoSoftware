@@ -21,8 +21,8 @@ builder.Services.AddReverseProxy()
     {
         builderContext.AddRequestTransform(ctx =>
         {
-            // Passa o header Authorization do request original diretamente para o proxy
-            if (ctx.HttpContext.Request.Headers.TryGetValue("Authorization", out var auth))
+            if (ctx.HttpContext.Request.Headers.TryGetValue("Authorization", out var auth)
+                && !string.IsNullOrEmpty(auth))
             {
                 ctx.ProxyRequest.Headers.Remove("Authorization");
                 ctx.ProxyRequest.Headers.TryAddWithoutValidation("Authorization", (string?)auth);
