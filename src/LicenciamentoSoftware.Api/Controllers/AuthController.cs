@@ -20,6 +20,7 @@ public sealed class AuthController : ControllerBase
     private readonly LogoutHandler _logoutHandler;
     private readonly RegistrarUsuarioHandler _registrarHandler;
     private readonly ConfigurarTotpHandler _configurarTotpHandler;
+    private readonly AutoCadastrarClienteHandler _autoCadastrarHandler;
 
     public AuthController(
         LoginHandler loginHandler,
@@ -27,7 +28,8 @@ public sealed class AuthController : ControllerBase
         RefreshTokenHandler refreshHandler,
         LogoutHandler logoutHandler,
         RegistrarUsuarioHandler registrarHandler,
-        ConfigurarTotpHandler configurarTotpHandler)
+        ConfigurarTotpHandler configurarTotpHandler,
+        AutoCadastrarClienteHandler autoCadastrarHandler)
     {
         _loginHandler = loginHandler;
         _totpHandler = totpHandler;
@@ -35,6 +37,7 @@ public sealed class AuthController : ControllerBase
         _logoutHandler = logoutHandler;
         _registrarHandler = registrarHandler;
         _configurarTotpHandler = configurarTotpHandler;
+        _autoCadastrarHandler = autoCadastrarHandler;
     }
 
     /// <summary>Registra um novo usuário vinculado a um cliente.</summary>
@@ -162,6 +165,42 @@ public sealed class AuthController : ControllerBase
 
         return Ok(new { resultado.Segredo, resultado.QrCodeUri });
     }
+
+    /// <summary>
+    /// Auto-cadastro público: cria Cliente + primeiro Usuário (AdministradorCliente) em uma transação.
+    /// Não requer autenticação.
+    /// </summary>
+    [HttpPost("cadastrar")]
+    [AllowAnonymous]
+    public async Task<IActionResult> AutoCadastrar(
+        [FromBody] AutoCadastrarRequest request,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await _autoCadastrarHandler.HandleAsync(
+            new AutoCadastrarClienteCommand(
+                request.RazaoSocial,
+                request.TipoInscricao,
+                request.NumeroInscricao,
+                request.EmailCliente,
+                request.Telefone,
+                request.NomeResponsavel,
+                request.EmailResponsavel,
+                request.Senha),
+            cancellationToken);
+
+        return resultado switch
+        {
+            AutoCadastrarClienteResult.Sucesso s => CreatedAtAction(
+                nameof(AutoCadastrar),
+                new { id = s.IdCliente },
+                new { s.IdCliente, s.IdUsuario,
+                      Mensagem = "Cadastro realizado com sucesso. Faça login para continuar." }),
+            AutoCadastrarClienteResult.Invalido i         => UnprocessableEntity(new { Erros = i.Erros }),
+            AutoCadastrarClienteResult.InscricaoJaExiste  => Conflict(new { Erro = "CPF/CNPJ já cadastrado." }),
+            AutoCadastrarClienteResult.EmailJaEmUso       => Conflict(new { Erro = "E-mail do responsável já está em uso." }),
+            _                                             => StatusCode(500),
+        };
+    }
 }
 
 // ----- Request DTOs (locais ao controller — sem namespace separado para manter simples) -----
@@ -172,3 +211,12 @@ public sealed record RefreshTokenRequest(string RefreshToken);
 public sealed record LogoutRequest(string RefreshToken);
 public sealed record RegistrarUsuarioRequest(Guid IdCliente, string Nome, string Email, string Senha);
 public sealed record ConfigurarTotpRequest(Guid IdUsuario, string Email);
+public sealed record AutoCadastrarRequest(
+    string RazaoSocial,
+    int TipoInscricao,
+    string NumeroInscricao,
+    string EmailCliente,
+    string? Telefone,
+    string NomeResponsavel,
+    string EmailResponsavel,
+    string Senha);

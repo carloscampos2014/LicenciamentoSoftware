@@ -3,8 +3,7 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Aplicacao.Abstractions;
 using LicenciamentoSoftware.Application.Aplicacao.Handlers;
 using LicenciamentoSoftware.Application.Auth.Handlers;
-using LicenciamentoSoftware.Application.Cliente.Abstractions;
-using LicenciamentoSoftware.Application.Cliente.Handlers;
+using LicenciamentoSoftware.Application.Cliente.Abstractions;using LicenciamentoSoftware.Application.Cliente.Handlers;
 using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
 using LicenciamentoSoftware.Application.Jobs;
@@ -49,6 +48,7 @@ internal static class ServiceCollectionExtensions
 
         services.AddApiAuthentication(configuration);
         services.AddApiAuthorization();
+        services.AddApiCors(configuration);
         services.AddApiHealthChecks();
         services.AddApiRateLimiting(configuration);
         services.AddAntiReplayOptions(configuration);
@@ -100,14 +100,16 @@ internal static class ServiceCollectionExtensions
     {
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("AdministradorPlataforma",
-                p => p.RequireRole("AdministradorPlataforma"));
-            options.AddPolicy("AdministradorCliente",
-                p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente"));
-            options.AddPolicy("OperadorCliente",
-                p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente", "OperadorCliente"));
-            options.AddPolicy("Leitor",
-                p => p.RequireRole("AdministradorPlataforma", "AdministradorCliente", "OperadorCliente", "Leitor"));
+            // Por enquanto todos os usuários autenticados têm acesso total ao seu tenant.
+            // A separação por papel (AdministradorCliente vs UsuarioFinal) será implementada
+            // como feature separada quando o portal do cliente final for desenvolvido.
+            var policyAutenticado = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+
+            options.AddPolicy("AdministradorCliente",  policyAutenticado);
+            options.AddPolicy("OperadorCliente",       policyAutenticado);
+            options.AddPolicy("Leitor",                policyAutenticado);
         });
 
         return services;
@@ -183,6 +185,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<LogoutHandler>();
         services.AddScoped<RegistrarUsuarioHandler>();
         services.AddScoped<ConfigurarTotpHandler>();
+        services.AddScoped<AutoCadastrarClienteHandler>();
 
         // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration
         services.AddScoped<EmitirTokenLicencaHandler>(sp =>
@@ -259,6 +262,33 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<HeartbeatHandler>();
         services.AddScoped<LogoutValidacaoHandler>();
         services.AddScoped<ValidarInstalacaoHandler>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddApiCors(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        var origensPermitidas = configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? [];
+
+        services.AddCors(options =>
+        {
+            // Política para o BFF (Web.Server) — permite cookies e JWT
+            options.AddPolicy("BffPolicy", policy =>
+            {
+                if (origensPermitidas.Length > 0)
+                    policy.WithOrigins(origensPermitidas);
+                else
+                    policy.SetIsOriginAllowed(_ => true); // fallback dev sem config
+
+                policy.AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials(); // necessário para cookies HttpOnly via BFF
+            });
+        });
 
         return services;
     }

@@ -1,3 +1,4 @@
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Aplicacao.Commands;
 using LicenciamentoSoftware.Application.Aplicacao.Handlers;
 using LicenciamentoSoftware.Application.Aplicacao.Queries;
@@ -16,25 +17,27 @@ public sealed class AplicacoesController : ControllerBase
     private readonly DesativarAplicacaoHandler _desativarHandler;
     private readonly BuscarAplicacaoPorIdHandler _buscarHandler;
     private readonly ListarAplicacoesHandler _listarHandler;
+    private readonly ICurrentUser _currentUser;
 
     public AplicacoesController(
         CriarAplicacaoHandler criarHandler,
         AtualizarAplicacaoHandler atualizarHandler,
         DesativarAplicacaoHandler desativarHandler,
         BuscarAplicacaoPorIdHandler buscarHandler,
-        ListarAplicacoesHandler listarHandler)
+        ListarAplicacoesHandler listarHandler,
+        ICurrentUser currentUser)
     {
-        _criarHandler    = criarHandler;
+        _criarHandler     = criarHandler;
         _atualizarHandler = atualizarHandler;
         _desativarHandler = desativarHandler;
-        _buscarHandler   = buscarHandler;
-        _listarHandler   = listarHandler;
+        _buscarHandler    = buscarHandler;
+        _listarHandler    = listarHandler;
+        _currentUser      = currentUser;
     }
 
     [HttpGet]
     [Authorize(Policy = "Leitor")]
     public async Task<IActionResult> Listar(
-        [FromQuery] Guid? idCliente,
         [FromQuery] string? titulo,
         [FromQuery] bool? ativo,
         [FromQuery] int pagina = 1,
@@ -42,7 +45,14 @@ public sealed class AplicacoesController : ControllerBase
         CancellationToken ct = default)
     {
         var resultado = await _listarHandler.HandleAsync(
-            new ListarAplicacoesQuery { IdCliente = idCliente, Titulo = titulo, Ativo = ativo, Pagina = pagina, TamanhoPagina = tamanhoPagina }, ct);
+            new ListarAplicacoesQuery
+            {
+                IdCliente = _currentUser.IdCliente,
+                Titulo = titulo,
+                Ativo = ativo,
+                Pagina = pagina,
+                TamanhoPagina = tamanhoPagina
+            }, ct);
         return Ok(resultado);
     }
 
@@ -57,8 +67,13 @@ public sealed class AplicacoesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Criar([FromBody] CriarAplicacaoRequest request, CancellationToken ct)
     {
+        // IdCliente sempre do JWT — nunca do body
         var resultado = await _criarHandler.HandleAsync(
-            new CriarAplicacaoCommand(request.IdCliente, request.Titulo, request.IdTipoLicenca, request.Descricao), ct);
+            new CriarAplicacaoCommand(
+                _currentUser.IdCliente,
+                request.Titulo,
+                request.IdTipoLicenca,
+                request.Descricao), ct);
 
         return resultado switch
         {
@@ -77,10 +92,10 @@ public sealed class AplicacoesController : ControllerBase
 
         return resultado switch
         {
-            AtualizarAplicacaoResult.Sucesso s    => Ok(s.Aplicacao),
-            AtualizarAplicacaoResult.Invalido i   => UnprocessableEntity(new { Erros = i.Erros }),
+            AtualizarAplicacaoResult.Sucesso s     => Ok(s.Aplicacao),
+            AtualizarAplicacaoResult.Invalido i    => UnprocessableEntity(new { Erros = i.Erros }),
             AtualizarAplicacaoResult.NaoEncontrado => NotFound(),
-            _                                     => StatusCode(500),
+            _                                      => StatusCode(500),
         };
     }
 
@@ -99,5 +114,5 @@ public sealed class AplicacoesController : ControllerBase
     }
 }
 
-public sealed record CriarAplicacaoRequest(Guid IdCliente, string Titulo, Guid IdTipoLicenca, string? Descricao);
+public sealed record CriarAplicacaoRequest(string Titulo, Guid IdTipoLicenca, string? Descricao);
 public sealed record AtualizarAplicacaoRequest(string Titulo, string? Descricao);

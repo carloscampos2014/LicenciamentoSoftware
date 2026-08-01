@@ -1,0 +1,38 @@
+@if (_visivel)
+{
+    <div class="modal-overlay">
+        <div class="modal-card" style="max-width:420px">
+            <div class="modal-card-header">
+                <h5>@Titulo</h5>
+                <button class="btn-close-modal" @onclick="Cancelar">&times;</button>
+            </div>
+            <div class="modal-card-body">
+                <p class="mb-0 text-secondary">@Mensagem</p>
+            </div>
+            <div class="modal-card-footer">
+                <button class="btn btn-outline-secondary btn-sm" @onclick="Cancelar">Cancelar</button>
+                <button class="btn btn-danger btn-sm" @onclick="Confirmar">@TextoBotaoConfirmar</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _visivel;
+    private TaskCompletionSource<bool>? _tcs;
+
+    [Parameter] public string Titulo { get; set; } = "Confirmar";
+    [Parameter] public string TextoBotaoConfirmar { get; set; } = "Confirmar";
+    public string Mensagem { get; set; } = string.Empty;
+
+    public Task<bool> MostrarAsync()
+    {
+        _tcs = new TaskCompletionSource<bool>();
+        _visivel = true;
+        StateHasChanged();
+        return _tcs.Task;
+    }
+
+    private void Confirmar() { _visivel = false; _tcs?.SetResult(true); }
+    private void Cancelar()  { _visivel = false; _tcs?.SetResult(false); }
+}

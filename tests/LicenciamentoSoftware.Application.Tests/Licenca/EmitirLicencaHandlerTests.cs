@@ -52,7 +52,7 @@ public class EmitirLicencaHandlerTests
 
         _appRepo.BuscarPorIdAsync(IdAplicativo, Arg.Any<CancellationToken>())
             .Returns(new AplicacaoResult(IdAplicativo, IdTenant,
-                "App Teste", null, tipoId, true));
+                "App Teste", null, tipoId, "Permanente", true));
 
         _licencaRepo.ExisteLicencaAtivaAsync(IdTenant, IdClienteFinal, IdAplicativo, Arg.Any<CancellationToken>())
             .Returns(false);
@@ -62,8 +62,9 @@ public class EmitirLicencaHandlerTests
 
         _licencaRepo.BuscarPorIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new LicencaResult(
-                Guid.NewGuid(), IdTenant, IdClienteFinal, IdAplicativo,
-                tipoId, "Permanente", DateTime.UtcNow, true, null, null, null));
+                Guid.NewGuid(), IdTenant, IdClienteFinal, "CF Teste",
+                IdAplicativo, "App Teste",
+                tipoId, "Permanente", DateTime.UtcNow, true, null, null, null, null, null, null));
     }
 
     private static EmitirLicencaCommand CommandPermanente() =>
@@ -126,7 +127,7 @@ public class EmitirLicencaHandlerTests
                 "CF", 2, "11222333000181", "cf@x.com", null, true));
         _appRepo.BuscarPorIdAsync(IdAplicativo, Arg.Any<CancellationToken>())
             .Returns(new AplicacaoResult(IdAplicativo, Guid.NewGuid(),
-                "App", null, TipoPermanente, true));
+                "App", null, TipoPermanente, "Permanente", true));
 
         var resultado = await CriarHandler().HandleAsync(CommandPermanente());
 
@@ -201,10 +202,11 @@ public class EmitirLicencaHandlerTests
 
         _licencaRepo.BuscarPorIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
             .Returns(new LicencaResult(
-                Guid.NewGuid(), IdTenant, IdClienteFinal, IdAplicativo,
+                Guid.NewGuid(), IdTenant, IdClienteFinal, "CF Teste",
+                IdAplicativo, "App Teste",
                 TipoPeriodo, "Por Período", DateTime.UtcNow, true,
                 new DetalhePeriodoResult(DateTime.UtcNow.Date, DateTime.UtcNow.AddYears(1), false),
-                null, null));
+                null, null, null, null, null));
 
         var resultado = await CriarHandler().HandleAsync(CommandPeriodo());
 

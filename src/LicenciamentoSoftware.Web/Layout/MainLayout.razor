@@ -1,16 +1,14 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+@inject JwtAuthStateProvider Auth
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+<div class="app-shell">
+    <AuthorizeView>
+        <Authorized>
+            <NavMenu NomeUsuario="@Auth.ObterNome()" />
+        </Authorized>
+    </AuthorizeView>
 
-        <article class="content px-4">
-            @Body
-        </article>
+    <main class="main-content">
+        @Body
     </main>
 </div>

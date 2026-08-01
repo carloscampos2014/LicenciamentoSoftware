@@ -1,0 +1,45 @@
+@if (TotalPaginas > 1)
+{
+    <nav aria-label="Paginação">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(PaginaAtual <= 1 ? "disabled" : "")">
+                <button class="page-link" @onclick="() => MudarPagina(PaginaAtual - 1)"
+                        disabled="@(PaginaAtual <= 1)">
+                    &laquo;
+                </button>
+            </li>
+
+            @for (int i = PaginaInicio; i <= PaginaFim; i++)
+            {
+                var pagina = i;
+                <li class="page-item @(pagina == PaginaAtual ? "active" : "")">
+                    <button class="page-link" @onclick="() => MudarPagina(pagina)">@pagina</button>
+                </li>
+            }
+
+            <li class="page-item @(PaginaAtual >= TotalPaginas ? "disabled" : "")">
+                <button class="page-link" @onclick="() => MudarPagina(PaginaAtual + 1)"
+                        disabled="@(PaginaAtual >= TotalPaginas)">
+                    &raquo;
+                </button>
+            </li>
+        </ul>
+    </nav>
+    <p class="text-center text-muted small">Página @PaginaAtual de @TotalPaginas (@Total itens)</p>
+}
+
+@code {
+    [Parameter, EditorRequired] public int PaginaAtual { get; set; }
+    [Parameter, EditorRequired] public int TotalPaginas { get; set; }
+    [Parameter, EditorRequired] public int Total { get; set; }
+    [Parameter, EditorRequired] public EventCallback<int> OnPaginaMudou { get; set; }
+
+    private int PaginaInicio => Math.Max(1, PaginaAtual - 2);
+    private int PaginaFim => Math.Min(TotalPaginas, PaginaAtual + 2);
+
+    private async Task MudarPagina(int pagina)
+    {
+        if (pagina >= 1 && pagina <= TotalPaginas && pagina != PaginaAtual)
+            await OnPaginaMudou.InvokeAsync(pagina);
+    }
+}

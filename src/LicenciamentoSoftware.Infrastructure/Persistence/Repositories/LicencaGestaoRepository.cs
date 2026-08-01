@@ -5,11 +5,9 @@ using LicenciamentoSoftware.Application.Licenca.Results;
 
 namespace LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 
-public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
+public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILicencaGestaoRepository
 {
-    private readonly DbConnectionFactory _factory;
-
-    public LicencaGestaoRepository(DbConnectionFactory factory) => _factory = factory;
+    private readonly DbConnectionFactory _factory = factory;
 
     public async Task<LicencaResult?> BuscarPorIdAsync(Guid id, CancellationToken ct = default)
     {
@@ -18,36 +16,72 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
                 l.id                        AS "Id",
                 l.id_cliente                AS "IdCliente",
                 l.id_cliente_final          AS "IdClienteFinal",
+                cf.razao_social             AS "ClienteFinalRazaoSocial",
                 l.id_aplicativo             AS "IdAplicativo",
+                a.titulo                    AS "AplicativoTitulo",
                 a.id_tipo_licenca           AS "IdTipoLicenca",
                 tl.descricao                AS "TipoLicencaDescricao",
                 l.data_cadastro             AS "DataCadastro",
                 l.ativo                     AS "Ativo",
-                -- Período
                 lp.data_inicio              AS "Periodo_DataInicio",
                 lp.data_fim                 AS "Periodo_DataFim",
                 lp.renovacao_automatica     AS "Periodo_RenovacaoAutomatica",
-                -- Usuários
                 lu.quantidade_maxima        AS "Usuarios_QuantidadeMaxima",
                 lu.max_sessoes_por_usuario  AS "Usuarios_MaxSessoesPorUsuario",
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
-                -- Instalação
-                li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima"
+                li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima",
+                lt.id                       AS "Token_Id",
+                (lt.criado_em + (lt.expiracao_minutos * INTERVAL '1 minute')) AS "Token_Expiracao",
+                lt.ativo                    AS "Token_Ativo"
             FROM licenca l
+            JOIN cliente_final cf ON cf.id = l.id_cliente_final
             JOIN aplicacao a ON a.id = l.id_aplicativo
             JOIN tipo_licenca tl ON tl.id = a.id_tipo_licenca
             LEFT JOIN licenca_periodo lp ON lp.licenca_id = l.id
             LEFT JOIN licenca_usuarios lu ON lu.licenca_id = l.id
             LEFT JOIN licenca_instalacao li ON li.licenca_id = l.id
+            LEFT JOIN licenca_token lt ON lt.id_licenca = l.id AND lt.ativo = TRUE
             WHERE l.id = @Id
             LIMIT 1
+            """;
+
+        const string sqlSessoes = """
+            SELECT id                      AS "Id",
+                   licenca_id              AS "LicencaId",
+                   identificador_usuario   AS "IdentificadorUsuario",
+                   data_login              AS "DataLogin",
+                   data_ultima_atividade   AS "DataUltimaAtividade",
+                   ativo                   AS "Ativo"
+            FROM licenca_sessao
+            WHERE licenca_id = @Id
+            ORDER BY data_login DESC
+            """;
+
+        const string sqlInstalacoes = """
+            SELECT id                      AS "Id",
+                   licenca_id              AS "LicencaId",
+                   identificador_maquina   AS "IdentificadorMaquina",
+                   data_registro           AS "DataRegistro",
+                   ativo                   AS "Ativo"
+            FROM licenca_instalacao_registrada
+            WHERE licenca_id = @Id
+            ORDER BY data_registro DESC
             """;
 
         using var conn = _factory.CreateConnection();
         var rows = await conn.QueryAsync<dynamic>(
             new CommandDefinition(sql, new { Id = id }, cancellationToken: ct));
 
-        return rows.Select(MapRow).FirstOrDefault();
+        var licenca = rows.Select(MapRow).FirstOrDefault();
+        if (licenca is null) return null;
+
+        var sessoes = (await conn.QueryAsync<SessaoResult>(
+            new CommandDefinition(sqlSessoes, new { Id = id }, cancellationToken: ct))).AsList();
+
+        var instalacoes = (await conn.QueryAsync<InstalacaoRegistradaResult>(
+            new CommandDefinition(sqlInstalacoes, new { Id = id }, cancellationToken: ct))).AsList();
+
+        return licenca with { Sessoes = sessoes, InstalacoesRegistradas = instalacoes };
     }
 
     public async Task<bool> ExisteLicencaAtivaAsync(
@@ -88,7 +122,9 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
                 l.id                        AS "Id",
                 l.id_cliente                AS "IdCliente",
                 l.id_cliente_final          AS "IdClienteFinal",
+                cf.razao_social             AS "ClienteFinalRazaoSocial",
                 l.id_aplicativo             AS "IdAplicativo",
+                a.titulo                    AS "AplicativoTitulo",
                 a.id_tipo_licenca           AS "IdTipoLicenca",
                 tl.descricao                AS "TipoLicencaDescricao",
                 l.data_cadastro             AS "DataCadastro",
@@ -101,6 +137,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
                 li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima"
             FROM licenca l
+            JOIN cliente_final cf ON cf.id = l.id_cliente_final
             JOIN aplicacao a ON a.id = l.id_aplicativo
             JOIN tipo_licenca tl ON tl.id = a.id_tipo_licenca
             LEFT JOIN licenca_periodo lp ON lp.licenca_id = l.id
@@ -140,7 +177,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = licenca.Id, IdCliente = licenca.IdCliente,
+            new { licenca.Id, IdCliente = licenca.IdCliente,
                   IdClienteFinal = licenca.IdClienteFinal, IdAplicativo = licenca.IdAplicativo,
                   DataCadastro = licenca.DataCadastro },
             cancellationToken: ct));
@@ -156,7 +193,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = periodo.Id, LicencaId = periodo.LicencaId,
+            new { periodo.Id, LicencaId = periodo.LicencaId,
                   DataInicio = periodo.DataInicio, DataFim = periodo.DataFim,
                   RenovacaoAutomatica = periodo.RenovacaoAutomatica },
             cancellationToken: ct));
@@ -173,7 +210,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = usuarios.Id, LicencaId = usuarios.LicencaId,
+            new { usuarios.Id, LicencaId = usuarios.LicencaId,
                   QuantidadeMaxima = usuarios.QuantidadeMaxima,
                   MaxSessoesPorUsuario = usuarios.MaxSessoesPorUsuario,
                   TempoLimiteSessaoHoras = usuarios.TempoLimiteSessaoHoras },
@@ -189,7 +226,7 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             """;
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { Id = instalacao.Id, LicencaId = instalacao.LicencaId,
+            new { instalacao.Id, LicencaId = instalacao.LicencaId,
                   QuantidadeMaxima = instalacao.QuantidadeMaxima },
             cancellationToken: ct));
     }
@@ -289,17 +326,9 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             new CommandDefinition(sql, new { Ids = ids.ToArray() }, cancellationToken: ct));
     }
 
-    public async Task RenovarDataFimLicencaAsync(
+    public Task RenovarDataFimLicencaAsync(
         Guid idLicenca, DateTime novaDataFim, CancellationToken ct = default)
-    {
-        const string sql = """
-            UPDATE licenca_periodo SET data_fim = @DataFim WHERE licenca_id = @IdLicenca
-            """;
-        using var conn = _factory.CreateConnection();
-        await conn.ExecuteAsync(new CommandDefinition(sql,
-            new { IdLicenca = idLicenca, DataFim = novaDataFim },
-            cancellationToken: ct));
-    }
+        => AtualizarDataFimPeriodoAsync(idLicenca, novaDataFim, ct);
 
     public async Task<IReadOnlyList<Application.Jobs.LicencaPeriodoJobInfo>> BuscarLicencasProximasVencimentoAsync(
         DateTime agora, int diasAntecedencia, CancellationToken ct = default)
@@ -360,13 +389,19 @@ public sealed class LicencaGestaoRepository : ILicencaGestaoRepository
             (Guid)r.Id,
             (Guid)r.IdCliente,
             (Guid)r.IdClienteFinal,
+            (string)(r.ClienteFinalRazaoSocial ?? string.Empty),
             (Guid)r.IdAplicativo,
+            (string)(r.AplicativoTitulo ?? string.Empty),
             (Guid)r.IdTipoLicenca,
             (string)r.TipoLicencaDescricao,
             (DateTime)r.DataCadastro,
             (bool)r.Ativo,
             periodo,
             usuarios,
-            instalacao);
+            instalacao,
+            Sessoes: null,
+            InstalacoesRegistradas: null,
+            Token: r.Token_Id is null ? null
+                : new TokenInfoResult((Guid)r.Token_Id, (DateTime)r.Token_Expiracao, (bool)r.Token_Ativo));
     }
 }

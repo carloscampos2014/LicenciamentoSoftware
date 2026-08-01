@@ -1,0 +1,177 @@
+@page "/usuarios"
+@attribute [Authorize]
+@inject UsuarioApiService Service
+
+<PageTitle>Usuários — Licenciamento</PageTitle>
+
+<div class="page-header-row">
+    <div class="page-header">
+        <h1>Usuários</h1>
+        <p>Gerencie os usuários do sistema</p>
+    </div>
+    <button class="btn btn-primary" @onclick="AbrirNovo">+ Novo Usuário</button>
+</div>
+
+<div class="mb-3">
+    <input class="search-bar" placeholder="Buscar por nome..."
+           @bind="_filtro" @bind:event="oninput" @onkeyup="HandleFiltro" />
+</div>
+
+@if (_carregando)
+{
+    <div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>
+}
+else if (_erro is not null) { <ApiError Erro="@_erro" /> }
+else if (_itens.Count == 0)
+{
+    <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+        <p>Nenhum usuário encontrado.</p>
+    </div>
+}
+else
+{
+    <div class="cards-grid">
+        @foreach (var item in _itens)
+        {
+            var iniciais = string.Concat(item.Nome.Split(' ').Take(2).Select(p => p[0].ToString().ToUpperInvariant()));
+            <div class="item-card">
+                <div class="item-card-header">
+                    <div style="display:flex;align-items:center;gap:.75rem">
+                        <div class="sidebar-footer-avatar" style="width:40px;height:40px;font-size:.85rem">
+                            @iniciais
+                        </div>
+                        <div>
+                            <p class="item-card-title mb-0">@item.Nome</p>
+                            <small class="text-muted">@item.Email</small>
+                        </div>
+                    </div>
+                    <span class="badge-pill @(item.Ativo ? "badge-ativo" : "badge-inativo")">
+                        @(item.Ativo ? "Ativo" : "Inativo")
+                    </span>
+                </div>
+                <div class="item-card-footer">
+                    <button class="btn btn-outline-secondary btn-sm" @onclick="() => AbrirEditar(item)">Editar</button>
+                    @if (item.Ativo)
+                    {
+                        <button class="btn btn-outline-danger btn-sm" @onclick="() => Desativar(item.Id, item.Nome)">Desativar</button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <Paginacao PaginaAtual="_pagina" TotalPaginas="_totalPaginas" Total="_total" OnPaginaMudou="MudarPagina" />
+}
+
+<Modal Visivel="_modalAberto" Titulo="@_modalTitulo" OnFechar="FecharModal">
+    <ChildContent>
+        <div class="form-group">
+            <label class="form-label">Nome *</label>
+            <input class="form-control" @bind="_form.Nome" />
+        </div>
+        <div class="form-group">
+            <label class="form-label">E-mail *</label>
+            <input class="form-control" type="email" @bind="_form.Email" />
+        </div>
+        @if (_editandoId is null)
+        {
+            <div class="form-group">
+                <label class="form-label">Senha *</label>
+                <input class="form-control" type="password" @bind="_form.Senha" />
+            </div>
+        }
+        <ApiError Erro="@_formErro" Erros="@_formErros" />
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="FecharModal">Cancelar</button>
+        <button class="btn btn-primary btn-sm" @onclick="Salvar" disabled="@_salvando">
+            @if (_salvando) { <span class="spinner-border spinner-border-sm me-1"></span> }
+            Salvar
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog @ref="_confirmDialog" Titulo="Desativar usuário" TextoBotaoConfirmar="Desativar" />
+
+@code {
+    private List<UsuarioResult> _itens = [];
+    private bool _carregando; private string? _erro; private string? _filtro;
+    private int _pagina = 1, _totalPaginas = 1, _total;
+    private ConfirmDialog _confirmDialog = default!;
+    private bool _modalAberto; private string _modalTitulo = "Novo Usuário";
+    private Guid? _editandoId;
+    private readonly FormModel _form = new();
+    private string? _formErro; private IReadOnlyList<string>? _formErros; private bool _salvando;
+
+    protected override async Task OnInitializedAsync() => await CarregarAsync();
+
+    private async Task CarregarAsync()
+    {
+        _carregando = true; _erro = null;
+        try
+        {
+            var r = await Service.ListarAsync(_filtro, pagina: _pagina);
+            if (r is null) { _erro = "Erro ao carregar."; return; }
+            _itens = r.Itens.ToList(); _total = r.Total; _totalPaginas = r.TotalPaginas;
+        }
+        catch { _erro = "Erro ao conectar com o servidor."; }
+        finally { _carregando = false; }
+    }
+
+    private async Task MudarPagina(int p) { _pagina = p; await CarregarAsync(); }
+    private async Task HandleFiltro(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    { if (e.Key == "Enter") { _pagina = 1; await CarregarAsync(); } }
+
+    private void AbrirNovo()
+    {
+        _editandoId = null; _modalTitulo = "Novo Usuário";
+        _form.Reset(); _formErro = null; _formErros = null; _modalAberto = true;
+    }
+
+    private void AbrirEditar(UsuarioResult item)
+    {
+        _editandoId = item.Id; _modalTitulo = "Editar Usuário";
+        _form.Nome = item.Nome; _form.Email = item.Email;
+        _formErro = null; _formErros = null; _modalAberto = true;
+    }
+
+    private void FecharModal() => _modalAberto = false;
+
+    private async Task Salvar()
+    {
+        _salvando = true; _formErro = null; _formErros = null;
+        bool sucesso;
+        if (_editandoId.HasValue)
+        {
+            var (s, _, e, erros) = await Service.AtualizarAsync(_editandoId.Value, new(_form.Nome, _form.Email));
+            sucesso = s; _formErro = e; _formErros = erros;
+        }
+        else
+        {
+            var (s, _, e, erros) = await Service.CriarAsync(new(_form.Nome, _form.Email, _form.Senha ?? string.Empty, null));
+            sucesso = s; _formErro = e; _formErros = erros;
+        }
+        _salvando = false;
+        if (sucesso) { _modalAberto = false; await CarregarAsync(); }
+    }
+
+    private async Task Desativar(Guid id, string nome)
+    {
+        _confirmDialog.Mensagem = $"Desativar o usuário \"{nome}\"?";
+        if (!await _confirmDialog.MostrarAsync()) return;
+        var (sucesso, erro) = await Service.DesativarAsync(id);
+        if (sucesso) await CarregarAsync();
+        else _erro = erro;
+    }
+
+    private sealed class FormModel
+    {
+        public string Nome { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Senha { get; set; }
+        public void Reset() { Nome = string.Empty; Email = string.Empty; Senha = null; }
+    }
+}

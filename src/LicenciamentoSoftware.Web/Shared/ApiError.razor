@@ -1,0 +1,23 @@
+@if (!string.IsNullOrEmpty(Erro) || (Erros is { Count: > 0 }))
+{
+    <div class="alert alert-danger mt-2" role="alert">
+        @if (!string.IsNullOrEmpty(Erro))
+        {
+            <p class="mb-0">@Erro</p>
+        }
+        @if (Erros is { Count: > 0 })
+        {
+            <ul class="mb-0">
+                @foreach (var e in Erros)
+                {
+                    <li>@e</li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string? Erro { get; set; }
+    [Parameter] public IReadOnlyList<string>? Erros { get; set; }
+}

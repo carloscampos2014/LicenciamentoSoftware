@@ -1,3 +1,4 @@
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Commands;
 using LicenciamentoSoftware.Application.ClienteFinal.Handlers;
 using LicenciamentoSoftware.Application.ClienteFinal.Queries;
@@ -16,33 +17,43 @@ public sealed class ClientesFinaisController : ControllerBase
     private readonly DesativarClienteFinalHandler _desativarHandler;
     private readonly BuscarClienteFinalPorIdHandler _buscarHandler;
     private readonly ListarClientesFinaisHandler _listarHandler;
+    private readonly ICurrentUser _currentUser;
 
     public ClientesFinaisController(
         CriarClienteFinalHandler criarHandler,
         AtualizarClienteFinalHandler atualizarHandler,
         DesativarClienteFinalHandler desativarHandler,
         BuscarClienteFinalPorIdHandler buscarHandler,
-        ListarClientesFinaisHandler listarHandler)
+        ListarClientesFinaisHandler listarHandler,
+        ICurrentUser currentUser)
     {
-        _criarHandler    = criarHandler;
+        _criarHandler     = criarHandler;
         _atualizarHandler = atualizarHandler;
         _desativarHandler = desativarHandler;
-        _buscarHandler   = buscarHandler;
-        _listarHandler   = listarHandler;
+        _buscarHandler    = buscarHandler;
+        _listarHandler    = listarHandler;
+        _currentUser      = currentUser;
     }
 
     [HttpGet]
     [Authorize(Policy = "Leitor")]
     public async Task<IActionResult> Listar(
-        [FromQuery] Guid? idCliente,
         [FromQuery] string? razaoSocial,
         [FromQuery] bool? ativo,
         [FromQuery] int pagina = 1,
         [FromQuery] int tamanhoPagina = 20,
         CancellationToken ct = default)
     {
+        // IdCliente sempre do JWT — tenant isolation
         var resultado = await _listarHandler.HandleAsync(
-            new ListarClientesFinaisQuery { IdCliente = idCliente, RazaoSocial = razaoSocial, Ativo = ativo, Pagina = pagina, TamanhoPagina = tamanhoPagina }, ct);
+            new ListarClientesFinaisQuery
+            {
+                IdCliente = _currentUser.IdCliente,
+                RazaoSocial = razaoSocial,
+                Ativo = ativo,
+                Pagina = pagina,
+                TamanhoPagina = tamanhoPagina
+            }, ct);
         return Ok(resultado);
     }
 
@@ -57,9 +68,15 @@ public sealed class ClientesFinaisController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Criar([FromBody] CriarClienteFinalRequest request, CancellationToken ct)
     {
+        // IdCliente sempre do JWT — nunca do body
         var resultado = await _criarHandler.HandleAsync(
-            new CriarClienteFinalCommand(request.IdCliente, request.RazaoSocial,
-                request.TipoInscricao, request.NumeroInscricao, request.Email, request.Telefone), ct);
+            new CriarClienteFinalCommand(
+                _currentUser.IdCliente,
+                request.RazaoSocial,
+                request.TipoInscricao,
+                request.NumeroInscricao,
+                request.Email,
+                request.Telefone), ct);
 
         return resultado switch
         {
@@ -101,7 +118,7 @@ public sealed class ClientesFinaisController : ControllerBase
 }
 
 public sealed record CriarClienteFinalRequest(
-    Guid IdCliente, string RazaoSocial, int TipoInscricao,
+    string RazaoSocial, int TipoInscricao,
     string NumeroInscricao, string Email, string? Telefone);
 
 public sealed record AtualizarClienteFinalRequest(string RazaoSocial, string Email, string? Telefone);

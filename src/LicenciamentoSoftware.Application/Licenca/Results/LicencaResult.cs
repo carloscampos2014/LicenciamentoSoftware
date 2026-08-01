@@ -5,14 +5,19 @@ public sealed record LicencaResult(
     Guid Id,
     Guid IdCliente,
     Guid IdClienteFinal,
+    string ClienteFinalRazaoSocial,
     Guid IdAplicativo,
+    string AplicativoTitulo,
     Guid IdTipoLicenca,
     string TipoLicencaDescricao,
     DateTime DataCadastro,
     bool Ativo,
     DetalhePeriodoResult? Periodo,
     DetalheUsuariosResult? Usuarios,
-    DetalheInstalacaoResult? Instalacao);
+    DetalheInstalacaoResult? Instalacao,
+    IReadOnlyList<SessaoResult>? Sessoes,
+    IReadOnlyList<InstalacaoRegistradaResult>? InstalacoesRegistradas,
+    TokenInfoResult? Token);
 
 public sealed record DetalhePeriodoResult(
     DateTime DataInicio,
@@ -40,4 +45,13 @@ public sealed record InstalacaoRegistradaResult(
     Guid LicencaId,
     string IdentificadorMaquina,
     DateTime DataRegistro,
+    bool Ativo);
+
+/// <summary>
+/// Informações do token HMAC da licença — apenas metadados, nunca o valor do secret.
+/// O valor do token só é exibido no momento da emissão/renovação.
+/// </summary>
+public sealed record TokenInfoResult(
+    Guid Id,
+    DateTime Expiracao,
     bool Ativo);

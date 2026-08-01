@@ -1,3 +1,4 @@
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Usuario.Commands;
 using LicenciamentoSoftware.Application.Usuario.Handlers;
 using LicenciamentoSoftware.Application.Usuario.Queries;
@@ -16,25 +17,27 @@ public sealed class UsuariosController : ControllerBase
     private readonly DesativarUsuarioHandler _desativarHandler;
     private readonly BuscarUsuarioPorIdHandler _buscarHandler;
     private readonly ListarUsuariosHandler _listarHandler;
+    private readonly ICurrentUser _currentUser;
 
     public UsuariosController(
         CriarUsuarioHandler criarHandler,
         AtualizarUsuarioHandler atualizarHandler,
         DesativarUsuarioHandler desativarHandler,
         BuscarUsuarioPorIdHandler buscarHandler,
-        ListarUsuariosHandler listarHandler)
+        ListarUsuariosHandler listarHandler,
+        ICurrentUser currentUser)
     {
-        _criarHandler    = criarHandler;
+        _criarHandler     = criarHandler;
         _atualizarHandler = atualizarHandler;
         _desativarHandler = desativarHandler;
-        _buscarHandler   = buscarHandler;
-        _listarHandler   = listarHandler;
+        _buscarHandler    = buscarHandler;
+        _listarHandler    = listarHandler;
+        _currentUser      = currentUser;
     }
 
     [HttpGet]
     [Authorize(Policy = "Leitor")]
     public async Task<IActionResult> Listar(
-        [FromQuery] Guid? idCliente,
         [FromQuery] string? nome,
         [FromQuery] bool? ativo,
         [FromQuery] int pagina = 1,
@@ -42,7 +45,14 @@ public sealed class UsuariosController : ControllerBase
         CancellationToken ct = default)
     {
         var resultado = await _listarHandler.HandleAsync(
-            new ListarUsuariosQuery { IdCliente = idCliente, Nome = nome, Ativo = ativo, Pagina = pagina, TamanhoPagina = tamanhoPagina }, ct);
+            new ListarUsuariosQuery
+            {
+                IdCliente = _currentUser.IdCliente,
+                Nome = nome,
+                Ativo = ativo,
+                Pagina = pagina,
+                TamanhoPagina = tamanhoPagina
+            }, ct);
         return Ok(resultado);
     }
 
@@ -57,15 +67,21 @@ public sealed class UsuariosController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Criar([FromBody] CriarUsuarioRequest request, CancellationToken ct)
     {
+        // IdCliente sempre do JWT — nunca do body
         var resultado = await _criarHandler.HandleAsync(
-            new CriarUsuarioCommand(request.IdCliente, request.Nome, request.Email, request.Senha, request.Papel ?? "OperadorCliente"), ct);
+            new CriarUsuarioCommand(
+                _currentUser.IdCliente,
+                request.Nome,
+                request.Email,
+                request.Senha,
+                request.Papel ?? "OperadorCliente"), ct);
 
         return resultado switch
         {
-            CriarUsuarioResult.Sucesso s      => CreatedAtAction(nameof(BuscarPorId), new { id = s.Usuario.Id }, s.Usuario),
-            CriarUsuarioResult.Invalido i     => UnprocessableEntity(new { Erros = i.Erros }),
-            CriarUsuarioResult.EmailJaExiste  => Conflict(new { Erro = "E-mail já está em uso." }),
-            _                                 => StatusCode(500),
+            CriarUsuarioResult.Sucesso s     => CreatedAtAction(nameof(BuscarPorId), new { id = s.Usuario.Id }, s.Usuario),
+            CriarUsuarioResult.Invalido i    => UnprocessableEntity(new { Erros = i.Erros }),
+            CriarUsuarioResult.EmailJaExiste => Conflict(new { Erro = "E-mail já está em uso." }),
+            _                                => StatusCode(500),
         };
     }
 
@@ -77,11 +93,11 @@ public sealed class UsuariosController : ControllerBase
 
         return resultado switch
         {
-            AtualizarUsuarioResult.Sucesso s      => Ok(s.Usuario),
-            AtualizarUsuarioResult.Invalido i     => UnprocessableEntity(new { Erros = i.Erros }),
-            AtualizarUsuarioResult.NaoEncontrado  => NotFound(),
-            AtualizarUsuarioResult.EmailJaExiste  => Conflict(new { Erro = "E-mail já está em uso." }),
-            _                                     => StatusCode(500),
+            AtualizarUsuarioResult.Sucesso s     => Ok(s.Usuario),
+            AtualizarUsuarioResult.Invalido i    => UnprocessableEntity(new { Erros = i.Erros }),
+            AtualizarUsuarioResult.NaoEncontrado => NotFound(),
+            AtualizarUsuarioResult.EmailJaExiste => Conflict(new { Erro = "E-mail já está em uso." }),
+            _                                    => StatusCode(500),
         };
     }
 
@@ -100,5 +116,5 @@ public sealed class UsuariosController : ControllerBase
     }
 }
 
-public sealed record CriarUsuarioRequest(Guid IdCliente, string Nome, string Email, string Senha, string? Papel);
+public sealed record CriarUsuarioRequest(string Nome, string Email, string Senha, string? Papel);
 public sealed record AtualizarUsuarioRequest(string Nome, string Email);
