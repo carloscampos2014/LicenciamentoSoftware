@@ -30,7 +30,7 @@ public sealed class LicencaApiService(HttpClient http)
     public async Task<LicencaResult?> BuscarPorIdAsync(Guid id, CancellationToken ct = default)
         => await http.GetFromJsonAsync<LicencaResult>($"licencas/{id}", ct);
 
-    public async Task<(bool Sucesso, object? Result, string? Erro, IReadOnlyList<string>? Erros)> EmitirAsync(
+    public async Task<(bool Sucesso, LicencaResult? Licenca, string? TokenTexto, string? Erro, IReadOnlyList<string>? Erros)> EmitirAsync(
         EmitirLicencaRequest request,
         CancellationToken ct = default)
     {
@@ -39,22 +39,22 @@ public sealed class LicencaApiService(HttpClient http)
         if (response.IsSuccessStatusCode)
         {
             var result = await response.Content.ReadFromJsonAsync<EmitirLicencaResponse>(ct);
-            return (true, result, null, null);
+            return (true, result?.Licenca, result?.TokenTexto, null, null);
         }
 
         if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
         {
             var body = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
-            return (false, null, body?.Erro ?? "Licença duplicada.", null);
+            return (false, null, null, body?.Erro ?? "Licença duplicada.", null);
         }
 
         if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
         {
             var body = await response.Content.ReadFromJsonAsync<ErrosResponse>(ct);
-            return (false, null, body?.Erro, body?.Erros);
+            return (false, null, null, body?.Erro, body?.Erros);
         }
 
-        return (false, null, "Erro inesperado.", null);
+        return (false, null, null, "Erro inesperado.", null);
     }
 
     public async Task<(bool Sucesso, string? Erro)> DesativarAsync(Guid id, CancellationToken ct = default)

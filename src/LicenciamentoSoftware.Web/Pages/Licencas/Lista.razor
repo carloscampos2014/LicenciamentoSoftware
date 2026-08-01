@@ -385,9 +385,9 @@ else
                 _emitirTipo == "Por Período"    ? new(_emitirDataInicio, _emitirDataFim, _emitirRenovacao) : null,
                 _emitirTipo == "Por Usuários"   ? new(_emitirQtdUsuarios, _emitirMaxSessoes, 24) : null,
                 _emitirTipo == "Por Instalação" ? new(_emitirQtdInstalacoes) : null, _emitirToken);
-            var (sucesso, result, erro, erros) = await Service.EmitirAsync(request);
+            var (sucesso, _, tokenTexto, erro, erros) = await Service.EmitirAsync(request);
             if (!sucesso) { _erroEmitir = erro ?? string.Join("; ", erros ?? []); return; }
-            if (result is System.Text.Json.JsonElement el) _tokenEmitido = el.TryGetProperty("tokenTexto", out var tok) ? tok.GetString() : null;
+            _tokenEmitido = tokenTexto;
             _emissaoSucesso = true;
         }
         finally { _salvandoEmitir = false; }
