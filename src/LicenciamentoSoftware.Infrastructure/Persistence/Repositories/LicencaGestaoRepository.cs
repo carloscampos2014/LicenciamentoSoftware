@@ -29,7 +29,10 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
                 lu.quantidade_maxima        AS "Usuarios_QuantidadeMaxima",
                 lu.max_sessoes_por_usuario  AS "Usuarios_MaxSessoesPorUsuario",
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
-                li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima"
+                li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima",
+                lt.id                       AS "Token_Id",
+                lt.expiracao                AS "Token_Expiracao",
+                lt.ativo                    AS "Token_Ativo"
             FROM licenca l
             JOIN cliente_final cf ON cf.id = l.id_cliente_final
             JOIN aplicacao a ON a.id = l.id_aplicativo
@@ -37,6 +40,7 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
             LEFT JOIN licenca_periodo lp ON lp.licenca_id = l.id
             LEFT JOIN licenca_usuarios lu ON lu.licenca_id = l.id
             LEFT JOIN licenca_instalacao li ON li.licenca_id = l.id
+            LEFT JOIN licenca_token lt ON lt.licenca_id = l.id AND lt.ativo = TRUE
             WHERE l.id = @Id
             LIMIT 1
             """;
@@ -396,6 +400,8 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
             usuarios,
             instalacao,
             Sessoes: null,
-            InstalacoesRegistradas: null);
+            InstalacoesRegistradas: null,
+            Token: r.Token_Id is null ? null
+                : new TokenInfoResult((Guid)r.Token_Id, (DateTime)r.Token_Expiracao, (bool)r.Token_Ativo));
     }
 }

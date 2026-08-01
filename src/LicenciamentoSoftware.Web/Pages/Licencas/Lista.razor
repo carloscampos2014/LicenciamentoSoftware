@@ -273,6 +273,51 @@ else
                     </table>
                 </div>
             }
+
+            <!-- Seção Token HMAC -->
+            <div class="item-card mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <p class="fw-semibold mb-0 small text-muted text-uppercase" style="letter-spacing:.05em">Token HMAC</p>
+                    @if (_detalhe.Token is { Ativo: true } t)
+                    {
+                        <span class="badge-pill badge-ativo">Ativo · exp. @t.Expiracao.ToString("dd/MM/yyyy")</span>
+                    }
+                    else if (_detalhe.Token is { Ativo: false })
+                    {
+                        <span class="badge-pill badge-inativo">Expirado</span>
+                    }
+                    else
+                    {
+                        <span class="badge-pill badge-inativo">Sem token</span>
+                    }
+                </div>
+
+                @if (_tokenGerado is not null)
+                {
+                    <div class="alert alert-warning mb-2" style="font-size:.8rem">
+                        <strong>Token gerado — exibido uma única vez:</strong>
+                        <div class="mt-1 user-select-all" style="word-break:break-all"><code>@_tokenGerado</code></div>
+                        <small class="text-danger d-block mt-1">Copie e configure no seu aplicativo agora.</small>
+                    </div>
+                }
+
+                <div class="d-flex gap-2 mt-1">
+                    @if (_detalhe.Token is null || _detalhe.Token is { Ativo: false })
+                    {
+                        <button class="btn btn-outline-primary btn-sm" @onclick="GerarToken" disabled="@_salvandoDetalhe">
+                            @if (_salvandoDetalhe) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                            Gerar token
+                        </button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-outline-warning btn-sm" @onclick="RenovarToken" disabled="@_salvandoDetalhe">
+                            @if (_salvandoDetalhe) { <span class="spinner-border spinner-border-sm me-1"></span> }
+                            Renovar token
+                        </button>
+                    }
+                </div>
+            </div>
         }
     </ChildContent>
     <Footer>
@@ -350,7 +395,8 @@ else
 
     private async Task AbrirDetalhe(Guid id)
     {
-        _detalhe = null; _erroDetalhe = null; _modalDetalhe = true; _carregandoDetalhe = true;
+        _detalhe = null; _erroDetalhe = null; _tokenGerado = null;
+        _modalDetalhe = true; _carregandoDetalhe = true;
         _detalhe = await Service.BuscarPorIdAsync(id);
         if (_detalhe is not null) _novaDataFim = _detalhe.Periodo?.DataFim.AddYears(1) ?? DateTime.Today.AddMonths(1);
         _carregandoDetalhe = false;
@@ -389,6 +435,31 @@ else
         var (sucesso, erro) = await Service.LiberarInstalacaoAsync(_detalhe.Id, idInstalacao);
         _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
         if (sucesso) await AbrirDetalhe(_detalhe.Id);
+    }
+
+    // ── Token HMAC ─────────────────────────────────────
+    private string? _tokenGerado;
+
+    private async Task GerarToken()
+    {
+        if (_detalhe is null) return;
+        _salvandoDetalhe = true; _erroDetalhe = null; _tokenGerado = null;
+        var (sucesso, token, erro) = await Service.GerarTokenAsync(_detalhe.Id);
+        _salvandoDetalhe = false;
+        if (sucesso) { var idAtual = _detalhe.Id; await AbrirDetalhe(idAtual); _tokenGerado = token; }
+        else _erroDetalhe = erro;
+    }
+
+    private async Task RenovarToken()
+    {
+        if (_detalhe is null) return;
+        _confirmAcao.Mensagem = "Renovar o token? O token atual será revogado e um novo será gerado.";
+        if (!await _confirmAcao.MostrarAsync()) return;
+        _salvandoDetalhe = true; _erroDetalhe = null; _tokenGerado = null;
+        var (sucesso, token, erro) = await Service.RenovarTokenAsync(_detalhe.Id);
+        _salvandoDetalhe = false;
+        if (sucesso) { var idAtual = _detalhe.Id; await AbrirDetalhe(idAtual); _tokenGerado = token; }
+        else _erroDetalhe = erro;
     }
 
     private async Task Desativar(Guid id)

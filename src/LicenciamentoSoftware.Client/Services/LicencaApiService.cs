@@ -107,12 +107,52 @@ public sealed class LicencaApiService(HttpClient http)
         return (false, "Erro inesperado.");
     }
 
+    public async Task<(bool Sucesso, string? TokenTexto, string? Erro)> GerarTokenAsync(
+        Guid idLicenca, int? expiracaoMinutos = null, CancellationToken ct = default)
+    {
+        var response = await http.PostAsJsonAsync(
+            $"licencas/{idLicenca}/token",
+            new { ExpiracaoMinutos = expiracaoMinutos },
+            ct);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadFromJsonAsync<TokenEmitidoResponse>(ct);
+            return (true, body?.TokenTexto, null);
+        }
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            return (false, null, "Já existe um token ativo. Use Renovar Token.");
+
+        var erro = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
+        return (false, null, erro?.Erro ?? "Erro inesperado.");
+    }
+
+    public async Task<(bool Sucesso, string? TokenTexto, string? Erro)> RenovarTokenAsync(
+        Guid idLicenca, int? expiracaoMinutos = null, CancellationToken ct = default)
+    {
+        var response = await http.PostAsJsonAsync(
+            $"licencas/{idLicenca}/token/renovar",
+            new { ExpiracaoMinutos = expiracaoMinutos },
+            ct);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadFromJsonAsync<TokenEmitidoResponse>(ct);
+            return (true, body?.TokenTexto, null);
+        }
+
+        var erro = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
+        return (false, null, erro?.Erro ?? "Erro inesperado.");
+    }
+
+    private sealed record TokenEmitidoResponse(string? TokenTexto);
+    private sealed record RenovarPeriodoResponse(DateTime NovaDataFim);
+
     private sealed record EmitirLicencaResponse(
         LicencaResult Licenca,
         string? TokenTexto,
         string? Aviso);
-
-    private sealed record RenovarPeriodoResponse(DateTime NovaDataFim);
     private sealed record ErroResponse(string? Erro);
     private sealed record ErrosResponse(string? Erro, IReadOnlyList<string>? Erros);
 }

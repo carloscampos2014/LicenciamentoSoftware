@@ -15,35 +15,22 @@ public sealed record LicencaResult(
     DetalheUsuariosResult? Usuarios,
     DetalheInstalacaoResult? Instalacao,
     IReadOnlyList<SessaoResult>? Sessoes,
-    IReadOnlyList<InstalacaoRegistradaResult>? InstalacoesRegistradas)
+    IReadOnlyList<InstalacaoRegistradaResult>? InstalacoesRegistradas,
+    TokenInfoResult? Token)
 {
-    // Alias para compatibilidade com as páginas que usam TipoLicenca
     public string TipoLicenca => TipoLicencaDescricao;
 }
 
-public sealed record DetalhePeriodoResult(
-    DateTime DataInicio,
-    DateTime DataFim,
-    bool RenovacaoAutomatica);
+/// <summary>Metadados do token HMAC — sem o valor do secret.</summary>
+public sealed record TokenInfoResult(Guid Id, DateTime Expiracao, bool Ativo);
 
-public sealed record DetalheUsuariosResult(
-    int QuantidadeMaxima,
-    int MaxSessoesPorUsuario,
-    int TempoLimiteSessaoHoras);
-
+public sealed record DetalhePeriodoResult(DateTime DataInicio, DateTime DataFim, bool RenovacaoAutomatica);
+public sealed record DetalheUsuariosResult(int QuantidadeMaxima, int MaxSessoesPorUsuario, int TempoLimiteSessaoHoras);
 public sealed record DetalheInstalacaoResult(int QuantidadeMaxima);
 
 public sealed record SessaoResult(
-    Guid Id,
-    Guid LicencaId,
-    string IdentificadorUsuario,
-    DateTime DataLogin,
-    DateTime DataUltimaAtividade,
-    bool Ativo);
+    Guid Id, Guid LicencaId, string IdentificadorUsuario,
+    DateTime DataLogin, DateTime DataUltimaAtividade, bool Ativo);
 
 public sealed record InstalacaoRegistradaResult(
-    Guid Id,
-    Guid LicencaId,
-    string IdentificadorMaquina,
-    DateTime DataRegistro,
-    bool Ativo);
+    Guid Id, Guid LicencaId, string IdentificadorMaquina, DateTime DataRegistro, bool Ativo);

@@ -20,7 +20,7 @@ public class DesativarLicencaHandlerTests
         Guid.NewGuid(), IdTenant, Guid.NewGuid(), "Cliente Teste",
         Guid.NewGuid(), "App Teste",
         Guid.Parse("11111111-1111-1111-1111-111111111111"), "Permanente",
-        DateTime.UtcNow, true, null, null, null, null, null);
+        DateTime.UtcNow, true, null, null, null, null, null, null);
 
     [Fact]
     public async Task Handle_LicencaNaoEncontrada_RetornaNaoEncontrado()
