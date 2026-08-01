@@ -125,8 +125,6 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
     public async Task<DashboardAlertasResult> BuscarAlertasAsync(
         Guid idCliente, CancellationToken ct = default)
     {
-        using var conn = factory.CreateConnection();
-
         // Query 1: Sessões inativas prolongadas (> 2x TempoLimiteSessaoHoras)
         const string sqlSessoes = """
             SELECT
@@ -248,11 +246,31 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
 
         var param = new { IdCliente = idCliente };
 
-        var sessoesTask     = conn.QueryAsync<SessaoInativaAlerta>(new CommandDefinition(sqlSessoes, param, cancellationToken: ct));
-        var instalacoesTask = conn.QueryAsync<InstalacaoAdormentaAlerta>(new CommandDefinition(sqlInstalacoes, param, cancellationToken: ct));
-        var limiteTask      = conn.QueryAsync<LimitRaw>(new CommandDefinition(sqlLimite, param, cancellationToken: ct));
-        var errosTask       = conn.QueryAsync<ErroRaw>(new CommandDefinition(sqlErros, param, cancellationToken: ct));
-        var topErrosTask    = conn.QueryAsync<LicencaComMaisErros>(new CommandDefinition(sqlTopLicencasErros, param, cancellationToken: ct));
+        var sessoesTask     = Task.Run(async () =>
+        {
+            using var c = factory.CreateConnection();
+            return await c.QueryAsync<SessaoInativaAlerta>(new CommandDefinition(sqlSessoes, param, cancellationToken: ct));
+        });
+        var instalacoesTask = Task.Run(async () =>
+        {
+            using var c = factory.CreateConnection();
+            return await c.QueryAsync<InstalacaoAdormentaAlerta>(new CommandDefinition(sqlInstalacoes, param, cancellationToken: ct));
+        });
+        var limiteTask      = Task.Run(async () =>
+        {
+            using var c = factory.CreateConnection();
+            return await c.QueryAsync<LimitRaw>(new CommandDefinition(sqlLimite, param, cancellationToken: ct));
+        });
+        var errosTask       = Task.Run(async () =>
+        {
+            using var c = factory.CreateConnection();
+            return await c.QueryAsync<ErroRaw>(new CommandDefinition(sqlErros, param, cancellationToken: ct));
+        });
+        var topErrosTask    = Task.Run(async () =>
+        {
+            using var c = factory.CreateConnection();
+            return await c.QueryAsync<LicencaComMaisErros>(new CommandDefinition(sqlTopLicencasErros, param, cancellationToken: ct));
+        });
 
         await Task.WhenAll(sessoesTask, instalacoesTask, limiteTask, errosTask, topErrosTask);
 
