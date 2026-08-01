@@ -73,10 +73,12 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
                   AND data_cadastro >= NOW() - INTERVAL '30 days'
             ),
             novos_clientes AS (
-                SELECT COUNT(*) AS total
-                FROM cliente_final
-                WHERE id_cliente = @IdCliente
-                  AND data_cadastro >= NOW() - INTERVAL '30 days'
+                -- cliente_final nao tem data_cadastro; conta clientes finais distintos
+                -- que receberam licencas nos ultimos 30 dias como proxy
+                SELECT COUNT(DISTINCT l.id_cliente_final) AS total
+                FROM licenca l
+                WHERE l.id_cliente = @IdCliente
+                  AND l.data_cadastro >= NOW() - INTERVAL '30 days'
             )
             SELECT
                 cf.ativos                  AS "ClientesFinaisAtivos",
