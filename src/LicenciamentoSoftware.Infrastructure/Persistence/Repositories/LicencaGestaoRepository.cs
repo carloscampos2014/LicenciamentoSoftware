@@ -31,7 +31,7 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
                 li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima",
                 lt.id                       AS "Token_Id",
-                lt.expiracao                AS "Token_Expiracao",
+                (lt.criado_em + (lt.expiracao_minutos * INTERVAL '1 minute')) AS "Token_Expiracao",
                 lt.ativo                    AS "Token_Ativo"
             FROM licenca l
             JOIN cliente_final cf ON cf.id = l.id_cliente_final
