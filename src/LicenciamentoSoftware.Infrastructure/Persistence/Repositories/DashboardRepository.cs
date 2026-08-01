@@ -246,56 +246,87 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
 
         var param = new { IdCliente = idCliente };
 
-        var sessoesTask     = Task.Run(async () =>
+        var sessoesTask = Task.Run(async () =>
         {
             using var c = factory.CreateConnection();
-            return await c.QueryAsync<SessaoInativaAlerta>(new CommandDefinition(sqlSessoes, param, cancellationToken: ct));
+            return await c.QueryAsync<dynamic>(new CommandDefinition(sqlSessoes, param, cancellationToken: ct));
         });
         var instalacoesTask = Task.Run(async () =>
         {
             using var c = factory.CreateConnection();
-            return await c.QueryAsync<InstalacaoAdormentaAlerta>(new CommandDefinition(sqlInstalacoes, param, cancellationToken: ct));
+            return await c.QueryAsync<dynamic>(new CommandDefinition(sqlInstalacoes, param, cancellationToken: ct));
         });
-        var limiteTask      = Task.Run(async () =>
+        var limiteTask = Task.Run(async () =>
         {
             using var c = factory.CreateConnection();
-            return await c.QueryAsync<LimitRaw>(new CommandDefinition(sqlLimite, param, cancellationToken: ct));
+            return await c.QueryAsync<dynamic>(new CommandDefinition(sqlLimite, param, cancellationToken: ct));
         });
-        var errosTask       = Task.Run(async () =>
+        var errosTask = Task.Run(async () =>
         {
             using var c = factory.CreateConnection();
-            return await c.QueryAsync<ErroRaw>(new CommandDefinition(sqlErros, param, cancellationToken: ct));
+            return await c.QueryAsync<dynamic>(new CommandDefinition(sqlErros, param, cancellationToken: ct));
         });
-        var topErrosTask    = Task.Run(async () =>
+        var topErrosTask = Task.Run(async () =>
         {
             using var c = factory.CreateConnection();
-            return await c.QueryAsync<LicencaComMaisErros>(new CommandDefinition(sqlTopLicencasErros, param, cancellationToken: ct));
+            return await c.QueryAsync<dynamic>(new CommandDefinition(sqlTopLicencasErros, param, cancellationToken: ct));
         });
 
         await Task.WhenAll(sessoesTask, instalacoesTask, limiteTask, errosTask, topErrosTask);
 
+        var sessoesRows = (await sessoesTask).AsList();
+        var instalacoesRows = (await instalacoesTask).AsList();
         var errosRows = (await errosTask).AsList();
-        var totalErros = errosRows.Sum(e => e.Total);
-        var porMotivo = errosRows
-            .Select(e => new ErrosPorMotivo(e.Motivo ?? "desconhecido", e.Total))
-            .ToList();
-
         var limiteRows = (await limiteTask).AsList();
-        var licencasLimite = limiteRows
-            .Select(r => new LicencaLimiteAlerta(r.Idlicenca, r.Razaosocial, r.Tituloaplic, r.Tipo, r.Usoatual, r.Maximo))
-            .ToList();
+        var topErrosRows = (await topErrosTask).AsList();
+
+        var sessoes = sessoesRows.Select(r => new SessaoInativaAlerta(
+            (Guid)r.IdLicenca,
+            (Guid)r.IdSessao,
+            (string)r.ClienteFinalRazaoSocial,
+            (string)r.AplicativoTitulo,
+            (string)r.IdentificadorUsuario,
+            (DateTime)r.DataUltimaAtividade,
+            (double)r.HorasInativa)).ToList();
+
+        var instalacoes = instalacoesRows.Select(r => new InstalacaoAdormentaAlerta(
+            (Guid)r.IdLicenca,
+            (Guid)r.IdInstalacao,
+            (string)r.ClienteFinalRazaoSocial,
+            (string)r.AplicativoTitulo,
+            (string)r.IdentificadorMaquina,
+            r.DataUltimaValidacao is null ? (DateTime?)null : (DateTime)r.DataUltimaValidacao,
+            (double)r.DiasAdormecida)).ToList();
+
+        var limites = limiteRows.Select(r => new LicencaLimiteAlerta(
+            (Guid)r.idlicenca,
+            (string)r.razaosocial,
+            (string)r.tituloaplic,
+            (string)r.tipo,
+            (long)r.usoatual,
+            (long)r.maximo)).ToList();
+
+        var porMotivo = errosRows.Select(r =>
+            new ErrosPorMotivo(r.Motivo is null ? "desconhecido" : (string)r.Motivo, (long)r.Total)).ToList();
+        var totalErros = porMotivo.Sum(e => e.Total);
+
+        var topLicencas = topErrosRows.Select(r => new LicencaComMaisErros(
+            (Guid)r.IdLicenca,
+            (string)r.ClienteFinalRazaoSocial,
+            (string)r.AplicativoTitulo,
+            (long)r.TotalErros)).ToList();
 
         return new DashboardAlertasResult(
-            SessoesInativas:        (await sessoesTask).AsList(),
-            InstalacoesAdormecidas: (await instalacoesTask).AsList(),
-            LicencasNoLimite:       licencasLimite,
+            SessoesInativas:        sessoes,
+            InstalacoesAdormecidas: instalacoes,
+            LicencasNoLimite:       limites,
             ErrosValidacao: new ErrosValidacaoAlerta(
-                TotalErros:            totalErros,
-                PorMotivo:             porMotivo,
-                LicencasComMaisErros:  (await topErrosTask).AsList()));
+                TotalErros:           totalErros,
+                PorMotivo:            porMotivo,
+                LicencasComMaisErros: topLicencas));
     }
 
-    // ── Tipos de mapeamento internos ──────────────────────────────────────────
+    // ── Tipos de mapeamento internos — apenas para ResumoRaw (CTE único) ─────
 
     private sealed record ResumoRaw(
         long ClientesFinaisAtivos,
@@ -311,14 +342,4 @@ public sealed class DashboardRepository(DbConnectionFactory factory) : IDashboar
         long TokensExpirandoEm7Dias,
         long NovasLicencasUltimos30Dias,
         long NovosClientesFinaisUltimos30Dias);
-
-    private sealed record LimitRaw(
-        Guid Idlicenca,
-        string Razaosocial,
-        string Tituloaplic,
-        string Tipo,
-        long Usoatual,
-        long Maximo);
-
-    private sealed record ErroRaw(string? Motivo, int Total);
 }
