@@ -49,6 +49,7 @@ flowchart LR
 | `Api` | `Application`, `Infrastructure` |
 | `Client` | Contratos públicos da `Api` (DTOs) |
 | `Web` | `Client` |
+| `Web.Server` | `Client`, `Web` (serve os arquivos estáticos) |
 | `Maui` | `Client` |
 | `Tests` | Projeto testado e bibliotecas de teste |
 
@@ -127,12 +128,25 @@ Application/Clientes/
 - Gerenciamento de token JWT, refresh e estado de autenticação.
 - Modelos de request/response (DTOs) compartilhados.
 
-### Web (Blazor WASM)
+### Web (Blazor WASM + BFF)
 
-- SPA publicada como arquivos estáticos no GitHub Pages.
-- Consome `Client` para todas as chamadas à API.
-- Proteção de rotas por papel; redirecionamento para login quando não autenticado.
-- Fluxo de login com 2FA TOTP integrado.
+O frontend é composto por dois projetos que trabalham juntos:
+
+**`LicenciamentoSoftware.Web.Server` (BFF — Backend for Frontend)**
+- ASP.NET Core que serve os arquivos estáticos do Blazor WASM.
+- Endpoints `/bff/login`, `/bff/login/2fa`, `/bff/refresh`, `/bff/logout`, `/bff/cadastrar`.
+- Emite e gerencia cookie `HttpOnly; Secure; SameSite=Strict` com o refresh token.
+- Proxy reverso YARP para todos os endpoints da API — o browser nunca chama a API diretamente.
+- O access token JWT fica em memória no Blazor WASM e é propagado automaticamente pelo YARP.
+
+**`LicenciamentoSoftware.Web` (Blazor WASM Client)**
+- Roda 100% no browser via WebAssembly.
+- `JwtAuthStateProvider`: access token exclusivamente em memória C# — nunca toca localStorage.
+- `BearerTokenHandler`: adiciona `Authorization: Bearer` em todas as requisições autenticadas.
+- `TokenRefreshHandler`: intercepta 401, chama `/bff/refresh` e retenta automaticamente.
+- Proteção de rotas via `AuthorizeRouteView`; sem token redireciona para `/login`.
+- Todos os formulários (criar/editar/emitir) são modais inline — sem páginas separadas de formulário.
+- Badges coloridos por tipo de licença; botão "Copiar" com feedback visual nos tokens HMAC.
 
 ### Maui (Desktop + Mobile)
 
