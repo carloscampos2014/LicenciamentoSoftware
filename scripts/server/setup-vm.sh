@@ -30,9 +30,9 @@ fail()  { echo -e "${RED}[!!] $1${NC}"; exit 1; }
 API_DIR="/opt/licenciamento/api"
 WEB_DIR="/var/www/licensemanager"
 SERVICE_USER="licenciamento"
-API_URL="https://api.licensemanager.enzojb.com.br"
+API_URL="https://licensemanager-api.enzojb.com.br"
 WEB_DOMAIN="licensemanager.enzojb.com.br"
-API_DOMAIN="api.licensemanager.enzojb.com.br"
+API_DOMAIN="licensemanager-api.enzojb.com.br"
 API_PORT=5016
 
 # ── 1. Atualiza sistema ───────────────────────────────────────────────────────
@@ -213,7 +213,7 @@ echo "     sudo systemctl enable --now licenciamento-api"
 echo ""
 echo "  3. Configure os registros DNS no Cloudflare:"
 echo "     A  licensemanager.enzojb.com.br    → 137.131.209.235"
-echo "     A  api.licensemanager.enzojb.com.br → 137.131.209.235"
+echo "     A  licensemanager-api.enzojb.com.br → 137.131.209.235"
 echo ""
 echo "  4. No Cloudflare, marque os registros como 'Proxied' (nuvem laranja)"
 echo "     para ativar SSL e CDN automáticos."

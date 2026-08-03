@@ -138,7 +138,7 @@ echo "[7/8] Configurando Nginx..."
 cat > /etc/nginx/sites-available/licenciamento-api << 'EOF'
 server {
     listen 80;
-    server_name api.licensemanager.enzojb.com.br;
+    server_name licensemanager-api.enzojb.com.br;
 
     # Cloudflare faz o TLS — Nginx só recebe HTTP interno
     # Para aceitar só tráfego do Cloudflare, configure o firewall
@@ -219,7 +219,7 @@ echo "     sudo nano $ENV_FILE"
 echo ""
 echo "  2. Configure os registros DNS no Cloudflare:"
 echo "     A  licensemanager.enzojb.com.br     → 137.131.209.235  (proxied)"
-echo "     A  api.licensemanager.enzojb.com.br → 137.131.209.235  (proxied)"
+echo "     A  licensemanager-api.enzojb.com.br → 137.131.209.235  (proxied)"
 echo ""
 echo "  3. Faça push para master — o GitHub Actions fará o deploy automático"
 echo ""

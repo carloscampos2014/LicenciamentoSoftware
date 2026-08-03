@@ -254,7 +254,7 @@ Requisitos transversais:
 4. ✅ `appsettings.Production.json` — CORS apontando para `licensemanager.enzojb.com.br`, logs em `/var/log/licenciamento/`, jobs com intervalos de produção.
 5. ✅ Script `setup-vm.sh` — configura VM do zero: instala .NET 10, Nginx, cria usuário de service, cria systemd unit, configura ufw.
 6. ✅ Script `setup-github-secrets.ps1` — cria todos os secrets necessários via GitHub CLI.
-7. DNS via Cloudflare: `licensemanager.enzojb.com.br` e `api.licensemanager.enzojb.com.br` → `137.131.209.235` (Proxied — SSL e CDN automáticos).
+7. DNS via Cloudflare: `licensemanager.enzojb.com.br` e `licensemanager-api.enzojb.com.br` → `137.131.209.235` (Proxied — SSL e CDN automáticos).
 
 **Infraestrutura:**
 - API: Oracle Cloud VM `137.131.209.235:22022` (Ubuntu 24.04, .NET 10, systemd)

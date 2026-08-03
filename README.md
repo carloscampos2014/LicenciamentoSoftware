@@ -61,7 +61,7 @@ tests/
 
 | Componente | URL | Hospedagem |
 |---|---|---|
-| API | `https://api.licensemanager.enzojb.com.br` | Oracle Cloud VM (Ubuntu 24.04) |
+| API | `https://licensemanager-api.enzojb.com.br` | Oracle Cloud VM (Ubuntu 24.04) |
 | Web (Blazor WASM) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM (Nginx estático) |
 | Banco de dados | `localhost:5432` (mesmo servidor da API) | Oracle Cloud VM (PostgreSQL local) |
 | DNS / SSL / CDN | Cloudflare (enzojb.com.br) | Cloudflare |
@@ -95,7 +95,7 @@ Configurar os secrets antes do primeiro deploy:
 | Tipo | Nome | Destino | Proxy |
 |---|---|---|---|
 | A | `licensemanager` | `137.131.209.235` | ✅ Proxied |
-| A | `api.licensemanager` | `137.131.209.235` | ✅ Proxied |
+| A | `licensemanager-api` | `137.131.209.235` | ✅ Proxied |
 
 ## Como rodar localmente
 
