@@ -49,7 +49,7 @@
                 <label class="form-label">E-mail</label>
                 <input class="form-control" type="email" @bind="_email"
                        placeholder="seu@email.com" autocomplete="email"
-                       @onkeyup="HandleEnter" />
+                       @onkeyup="HandleEnter" @ref="_emailInput" />
             </div>
 
             <div class="form-group">
@@ -89,6 +89,7 @@
     private string _senha = string.Empty;
     private string? _erro;
     private bool _carregando;
+    private ElementReference _emailInput;
 
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
@@ -97,6 +98,12 @@
         var state = await AuthProvider.GetAuthenticationStateAsync();
         if (state.User.Identity?.IsAuthenticated == true)
             Nav.NavigateTo(ReturnUrl ?? "/");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _emailInput.FocusAsync();
     }
 
     private async Task HandleEnter(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
