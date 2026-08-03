@@ -145,18 +145,7 @@ After=network.target licenciamento-api.service
 Wants=network.target
 
 [Service]
-Type=notify
-User=www-data
-WorkingDirectory=$WEB_DIR
-ExecStart=/usr/bin/dotnet $WEB_DIR/LicenciamentoSoftware.Web.Server.dll
-Restart=always
-RestartSec=10
-KillSignal=SIGINT
-SyslogIdentifier=licenciamento-web
-EnvironmentFile=/etc/licenciamento/web.env
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=full
+Type=simple
 
 [Install]
 WantedBy=multi-user.target
