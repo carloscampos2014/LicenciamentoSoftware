@@ -491,3 +491,6 @@ $RECYCLE.BIN/
 
 # Override de URL para dev Android — cada dev cria localmente com seu IP
 src/LicenciamentoSoftware.Maui/Resources/Raw/appsettings.android.json
+
+# MAUI — configuração local de dev Android (URL do IP local, nunca commitar)
+src/LicenciamentoSoftware.Maui/Resources/Raw/appsettings.android.json

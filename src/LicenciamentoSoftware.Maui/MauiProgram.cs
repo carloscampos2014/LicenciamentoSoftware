@@ -31,15 +31,12 @@ public static class MauiProgram
             });
 
         // ── Configuração via appsettings.json — lido dos assets em runtime ──────
-        // FileSystem.OpenAppPackageFileAsync lê o arquivo de assets/ em runtime
-        // garantindo que mudanças no appsettings.json sejam refletidas sem recompilar
+        // FileSystem.OpenAppPackageFileAsync lê assets/ em runtime (não usa assembly compilado)
         try
         {
             var stream = Task.Run(async () =>
                 await FileSystem.OpenAppPackageFileAsync("appsettings.json")).GetAwaiter().GetResult();
-            var config = new ConfigurationBuilder()
-                .AddJsonStream(stream)
-                .Build();
+            var config = new ConfigurationBuilder().AddJsonStream(stream).Build();
             builder.Configuration.AddConfiguration(config);
         }
         catch
@@ -50,12 +47,24 @@ public static class MauiProgram
                 "LicenciamentoSoftware.Maui.Resources.Raw.appsettings.json");
             if (fallbackStream is not null)
             {
-                var config = new ConfigurationBuilder()
-                    .AddJsonStream(fallbackStream)
-                    .Build();
+                var config = new ConfigurationBuilder().AddJsonStream(fallbackStream).Build();
                 builder.Configuration.AddConfiguration(config);
             }
         }
+
+#if ANDROID
+        // Override de URL para dev Android via appsettings.android.json (não versionado)
+        // Crie Resources/Raw/appsettings.android.json com: { "ApiSettings": { "BaseUrl": "http://IP:5016" } }
+        // Este arquivo está no .gitignore — nunca é commitado
+        try
+        {
+            var androidStream = Task.Run(async () =>
+                await FileSystem.OpenAppPackageFileAsync("appsettings.android.json")).GetAwaiter().GetResult();
+            var androidConfig = new ConfigurationBuilder().AddJsonStream(androidStream).Build();
+            builder.Configuration.AddConfiguration(androidConfig);
+        }
+        catch { /* arquivo opcional — não existe em produção */ }
+#endif
 
         var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
             ?? "https://localhost:7075";
