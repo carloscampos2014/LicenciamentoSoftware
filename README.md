@@ -61,8 +61,8 @@ tests/
 
 | Componente | URL | Hospedagem |
 |---|---|---|
-| API | `https://licensemanager-api.enzojb.com.br` | Oracle Cloud VM (Ubuntu 24.04) |
-| Web (Blazor WASM) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM (Nginx estático) |
+| API | `https://licensemanager-api.enzojb.com.br` | Oracle Cloud VM — porta 5016 (systemd) |
+| Web (Blazor WASM + BFF) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM — porta 5017 (systemd) |
 | Banco de dados | `localhost:5432` (mesmo servidor da API) | Oracle Cloud VM (PostgreSQL local) |
 | DNS / SSL / CDN | Cloudflare (enzojb.com.br) | Cloudflare |
 

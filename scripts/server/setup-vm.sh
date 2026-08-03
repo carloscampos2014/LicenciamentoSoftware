@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# setup-vm.sh — Configura a Oracle Cloud VM para hospedar a API e o Web
+# setup-vm.sh — Configura a Oracle Cloud VM para hospedar a API e o BFF Web
 #
 # Uso: bash setup-vm.sh
 #
@@ -9,9 +9,10 @@
 #   2. Instala .NET 10 runtime
 #   3. Instala Nginx
 #   4. Cria estrutura de diretórios
-#   5. Configura o service systemd da API
-#   6. Configura Nginx (proxy API + estático Web)
-#   7. Abre as portas no firewall do Ubuntu (ufw)
+#   5. Configura o service systemd da API (porta 5016)
+#   6. Configura o service systemd do BFF Web.Server (porta 5017)
+#   7. Configura Nginx (proxy API + proxy BFF)
+#   8. Abre as portas no firewall do Ubuntu (ufw)
 # =============================================================================
 
 set -e
@@ -28,12 +29,13 @@ fail()  { echo -e "${RED}[!!] $1${NC}"; exit 1; }
 
 # ── Variáveis ─────────────────────────────────────────────────────────────────
 API_DIR="/opt/licenciamento/api"
-WEB_DIR="/var/www/licensemanager"
+WEB_DIR="/opt/licenciamento/web"
 SERVICE_USER="licenciamento"
 API_URL="https://licensemanager-api.enzojb.com.br"
 WEB_DOMAIN="licensemanager.enzojb.com.br"
 API_DOMAIN="licensemanager-api.enzojb.com.br"
 API_PORT=5016
+WEB_PORT=5017
 
 # ── 1. Atualiza sistema ───────────────────────────────────────────────────────
 step "Atualizando sistema..."
@@ -68,7 +70,7 @@ fi
 mkdir -p "$API_DIR"
 mkdir -p "$WEB_DIR"
 chown -R "$SERVICE_USER:$SERVICE_USER" "$API_DIR"
-chown -R www-data:www-data "$WEB_DIR"
+chown -R "$SERVICE_USER:$SERVICE_USER" "$WEB_DIR"
 ok "Diretórios criados: $API_DIR e $WEB_DIR"
 
 # ── 5. Cria arquivo de variáveis de ambiente ──────────────────────────────────
@@ -123,6 +125,46 @@ SERVICEEOF
 systemctl daemon-reload
 ok "Service licenciamento-api.service criado."
 
+# ── 6b. Cria service systemd do BFF ──────────────────────────────────────────
+step "Criando service systemd do BFF (Web.Server)..."
+
+# Arquivo de env do BFF
+if [ ! -f /etc/licenciamento/web.env ]; then
+    cat > /etc/licenciamento/web.env <<'ENVEOF'
+ASPNETCORE_ENVIRONMENT=Production
+ASPNETCORE_URLS=http://localhost:5017
+ENVEOF
+    chmod 640 /etc/licenciamento/web.env
+    chown root:root /etc/licenciamento/web.env
+fi
+
+cat > /etc/systemd/system/licenciamento-web.service <<SERVICEEOF
+[Unit]
+Description=LicenciamentoSoftware Web BFF
+After=network.target licenciamento-api.service
+Wants=network.target
+
+[Service]
+Type=notify
+User=www-data
+WorkingDirectory=$WEB_DIR
+ExecStart=/usr/bin/dotnet $WEB_DIR/LicenciamentoSoftware.Web.Server.dll
+Restart=always
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=licenciamento-web
+EnvironmentFile=/etc/licenciamento/web.env
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
+SERVICEEOF
+
+systemctl daemon-reload
+ok "Service licenciamento-web.service criado."
+
 # ── 7. Configura Nginx ────────────────────────────────────────────────────────
 step "Configurando Nginx..."
 
@@ -136,7 +178,6 @@ server {
     server_name $API_DOMAIN;
 
     # Cloudflare faz o TLS — aqui só HTTP
-    # Tamanho máximo de upload (para payloads da API)
     client_max_body_size 10M;
 
     location / {
@@ -154,31 +195,31 @@ server {
 }
 NGINXEOF
 
-# Config do Web (Blazor WASM)
+# Config do BFF Web (Blazor WASM + BFF)
 cat > /etc/nginx/sites-available/web-licensemanager <<NGINXEOF
 server {
     listen 80;
     server_name $WEB_DOMAIN;
 
-    root $WEB_DIR;
-    index index.html;
+    # Cloudflare faz o TLS — Nginx só recebe HTTP
+    # O BFF (ASP.NET Core) serve o WASM estático e processa /bff/*
 
-    # Necessário para Blazor WASM — todas as rotas servem index.html
     location / {
-        try_files \$uri \$uri/ /index.html;
+        proxy_pass         http://localhost:$WEB_PORT;
+        proxy_http_version 1.1;
+        proxy_set_header   Upgrade \$http_upgrade;
+        proxy_set_header   Connection keep-alive;
+        proxy_set_header   Host \$host;
+        proxy_set_header   X-Real-IP \$remote_addr;
+        proxy_set_header   X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto \$scheme;
+        proxy_cache_bypass \$http_upgrade;
+        proxy_read_timeout 300s;
+        proxy_connect_timeout 75s;
+        proxy_buffer_size   128k;
+        proxy_buffers       4 256k;
+        proxy_busy_buffers_size 256k;
     }
-
-    # Cache agressivo para assets imutáveis do Blazor
-    location ~* \.(js|wasm|json|dll|dat|blat|pdb)$ {
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        add_header X-Content-Type-Options nosniff;
-    }
-
-    # Headers de segurança
-    add_header X-Frame-Options DENY;
-    add_header X-Content-Type-Options nosniff;
-    add_header Referrer-Policy strict-origin-when-cross-origin;
 }
 NGINXEOF
 
@@ -188,7 +229,7 @@ ln -sf /etc/nginx/sites-available/web-licensemanager /etc/nginx/sites-enabled/
 
 # Testa configuração
 nginx -t && systemctl reload nginx
-ok "Nginx configurado para $WEB_DOMAIN e $API_DOMAIN"
+ok "Nginx configurado para $WEB_DOMAIN (BFF porta $WEB_PORT) e $API_DOMAIN (API porta $API_PORT)"
 
 # ── 8. Configura firewall ─────────────────────────────────────────────────────
 step "Configurando firewall (ufw)..."
@@ -208,8 +249,9 @@ echo "  Próximos passos:"
 echo "  1. Edite as variáveis de ambiente:"
 echo "     sudo nano /etc/licenciamento/env"
 echo ""
-echo "  2. Após o primeiro deploy da API via CI/CD, inicie o service:"
+echo "  2. Após o primeiro deploy via CI/CD, inicie os services:"
 echo "     sudo systemctl enable --now licenciamento-api"
+echo "     sudo systemctl enable --now licenciamento-web"
 echo ""
 echo "  3. Configure os registros DNS no Cloudflare:"
 echo "     A  licensemanager.enzojb.com.br    → 137.131.209.235"

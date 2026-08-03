@@ -1,4 +1,4 @@
-name: Deploy Web (Blazor WASM)
+name: Deploy Web (Blazor WASM + BFF)
 
 on:
   push:
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   deploy:
-    name: Publish e Deploy Web
+    name: Publish e Deploy Web (BFF)
     runs-on: ubuntu-latest
 
     steps:
@@ -37,18 +37,15 @@ jobs:
           restore-keys: nuget-
 
       - name: Restore
-        run: dotnet restore src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj
+        run: dotnet restore src/LicenciamentoSoftware.Web.Server/LicenciamentoSoftware.Web.Server.csproj
 
-      - name: Publish Blazor WASM
+      - name: Publish Web.Server (BFF)
         run: |
-          dotnet publish src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj \
+          dotnet publish src/LicenciamentoSoftware.Web.Server/LicenciamentoSoftware.Web.Server.csproj \
             -c Release \
+            -r linux-x64 \
+            --self-contained false \
             -o ./publish/web
-
-      # Blazor WASM: todas as rotas devem servir index.html (SPA routing)
-      - name: Configurar roteamento SPA
-        run: |
-          cp ./publish/web/wwwroot/index.html ./publish/web/wwwroot/404.html
 
       - name: Configurar chave SSH
         run: |
@@ -57,34 +54,47 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
+      - name: Parar serviço BFF na VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo systemctl stop licenciamento-web || true"
+
       - name: Preparar diretório na VM
         run: |
           ssh -i ~/.ssh/deploy_key \
               -p ${{ secrets.SSH_PORT }} \
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "sudo mkdir -p /var/www/licensemanager && sudo chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} /var/www/licensemanager"
+              "sudo mkdir -p /opt/licenciamento/web && sudo chown ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} /opt/licenciamento/web"
 
       - name: Enviar arquivos para VM
         run: |
           rsync -rlptz --delete \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
-            ./publish/web/wwwroot/ \
-            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/licensemanager/
+            ./publish/web/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/licenciamento/web/
 
-      - name: Ajustar permissões
+      - name: Ajustar permissões e iniciar serviço BFF
         run: |
           ssh -i ~/.ssh/deploy_key \
               -p ${{ secrets.SSH_PORT }} \
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "sudo chown -R www-data:www-data /var/www/licensemanager && \
-               sudo nginx -t && sudo systemctl reload nginx"
+              "sudo chown -R www-data:www-data /opt/licenciamento/web && \
+               sudo systemctl enable licenciamento-web && \
+               sudo systemctl start licenciamento-web"
 
-      - name: Verificar deploy
+      - name: Aguardar serviço iniciar
+        run: sleep 10
+
+      - name: Verificar health check do BFF
         run: |
-          sleep 5
-          curl -f http://${{ secrets.SSH_HOST }} \
-            -H "Host: licensemanager.enzojb.com.br" \
-            --retry 3 --retry-delay 5 \
-            || echo "Verificação falhou — cheque o Nginx na VM"
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "curl -f -H 'Host: licensemanager.enzojb.com.br' http://localhost:5017/health || \
+               (sudo systemctl status licenciamento-web && exit 1)"
