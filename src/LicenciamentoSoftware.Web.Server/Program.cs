@@ -60,6 +60,7 @@ app.MapControllers();
 app.MapReverseProxy();
 
 // Fallback para o index.html do Blazor WASM (SPA routing)
+// Cobre qualquer rota não reconhecida — permite F5/reload em qualquer página
 app.MapFallbackToFile("index.html");
 
 app.Run();
