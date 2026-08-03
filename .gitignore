@@ -489,6 +489,9 @@ $RECYCLE.BIN/
 .kiro/session-state.md
 .kiro/hooks/
 
+# Steering files com informações locais/sensíveis
+.kiro/steering/vm-oracle.md
+
 # Override de URL para dev Android — cada dev cria localmente com seu IP
 src/LicenciamentoSoftware.Maui/Resources/Raw/appsettings.android.json
 
