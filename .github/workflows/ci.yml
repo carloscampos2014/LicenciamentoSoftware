@@ -44,10 +44,10 @@ jobs:
           key: nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: nuget-
 
-      # Restaura e compila apenas os projetos que rodam em Linux.
-      # MAUI requer workloads de plataforma (android/ios/windows) não disponíveis
-      # no runner ubuntu-latest — é compilado e testado localmente.
-      - name: Restore (sem MAUI)
+      # MAUI requer workloads de plataforma não disponíveis no ubuntu-latest.
+      # Os projetos backend e Client são compilados aqui.
+      # MAUI é compilado e testado localmente.
+      - name: Restore
         run: |
           dotnet restore src/LicenciamentoSoftware.Domain/LicenciamentoSoftware.Domain.csproj
           dotnet restore src/LicenciamentoSoftware.Application/LicenciamentoSoftware.Application.csproj
@@ -58,8 +58,9 @@ jobs:
           dotnet restore tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj
           dotnet restore tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj
           dotnet restore tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj
+          dotnet restore tests/LicenciamentoSoftware.Maui.Tests/LicenciamentoSoftware.Maui.Tests.csproj
 
-      - name: Build (sem MAUI)
+      - name: Build
         run: |
           dotnet build src/LicenciamentoSoftware.Domain/LicenciamentoSoftware.Domain.csproj --no-restore -c Release
           dotnet build src/LicenciamentoSoftware.Application/LicenciamentoSoftware.Application.csproj --no-restore -c Release
@@ -70,6 +71,7 @@ jobs:
           dotnet build tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj --no-restore -c Release
+          dotnet build tests/LicenciamentoSoftware.Maui.Tests/LicenciamentoSoftware.Maui.Tests.csproj --no-restore -c Release
 
       - name: Testes unitários — Domain
         run: |
@@ -79,12 +81,19 @@ jobs:
             --logger "trx;LogFileName=domain-results.trx" \
             --results-directory ./test-results
 
-      - name: Testes unitários — Application (inclui testes de arquitetura)
+      - name: Testes unitários — Application
         run: |
           dotnet test tests/LicenciamentoSoftware.Application.Tests \
             --no-build -c Release \
             --filter "Category!=Integration" \
             --logger "trx;LogFileName=application-results.trx" \
+            --results-directory ./test-results
+
+      - name: Testes unitários — MAUI (Converters e ViewModels)
+        run: |
+          dotnet test tests/LicenciamentoSoftware.Maui.Tests \
+            --no-build -c Release \
+            --logger "trx;LogFileName=maui-results.trx" \
             --results-directory ./test-results
 
       - name: Testes de integração

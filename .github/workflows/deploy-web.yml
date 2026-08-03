@@ -3,38 +3,30 @@ name: Deploy Web (Blazor WASM)
 on:
   push:
     branches:
-      - main
+      - master
     paths:
       - "src/LicenciamentoSoftware.Web/**"
       - "src/LicenciamentoSoftware.Client/**"
       - ".github/workflows/deploy-web.yml"
-
-  # Permite disparar manualmente pelo GitHub
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-# Garante que apenas um deploy ocorra por vez
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy-web
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build Blazor WASM
+  deploy:
+    name: Publish e Deploy Web
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET 8
+      - name: Setup .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "8.0.x"
+          dotnet-version: "10.0.x"
 
       - name: Cache NuGet
         uses: actions/cache@v4
@@ -44,40 +36,46 @@ jobs:
           restore-keys: nuget-
 
       - name: Restore
-        run: dotnet restore src/LicenciamentoSoftware.Web
+        run: dotnet restore src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj
 
       - name: Publish Blazor WASM
         run: |
-          dotnet publish src/LicenciamentoSoftware.Web \
+          dotnet publish src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj \
             -c Release \
             -o ./publish/web
 
-      # Blazor WASM no GitHub Pages precisa de 404.html = index.html
-      # para que rotas client-side funcionem após refresh
-      - name: Corrigir roteamento para GitHub Pages
+      # Blazor WASM: todas as rotas devem servir index.html (SPA routing)
+      - name: Configurar roteamento SPA
         run: |
           cp ./publish/web/wwwroot/index.html ./publish/web/wwwroot/404.html
 
-      # GitHub Pages não serve arquivos com ponto no nome de pasta (ex: _framework)
-      # sem o arquivo .nojekyll
-      - name: Criar .nojekyll
-        run: touch ./publish/web/wwwroot/.nojekyll
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
-      - name: Upload artifact para Pages
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./publish/web/wwwroot
+      - name: Enviar arquivos para VM
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+            ./publish/web/wwwroot/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/licensemanager/
 
-  deploy:
-    name: Deploy para GitHub Pages
-    needs: build
-    runs-on: ubuntu-latest
+      - name: Ajustar permissões
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo chown -R www-data:www-data /var/www/licensemanager && \
+               sudo nginx -t && sudo systemctl reload nginx"
 
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy para GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Verificar deploy
+        run: |
+          sleep 5
+          curl -f http://${{ secrets.SSH_HOST }} \
+            -H "Host: licensemanager.enzojb.com.br" \
+            --retry 3 --retry-delay 5 \
+            || echo "Verificação falhou — cheque o Nginx na VM"

@@ -244,6 +244,28 @@ Requisitos transversais:
 
 ---
 
+## Fase 11 — CI/CD e Infraestrutura 🔄 Em andamento
+
+**Objetivo:** pipeline completo de CI/CD e deploy automatizado para todos os componentes.
+
+1. ✅ **[#26]** GitHub Actions CI — restore → build → testes unitários (Domain, Application, MAUI) → testes de integração (Testcontainers). Falha bloqueia merge.
+2. ✅ **[#27]** Deploy da API na Oracle Cloud VM — Ubuntu 24.04, `.NET 10`, `systemd` service, `Nginx` como reverse proxy, deploy via SSH + rsync no push para `master`.
+3. ✅ Deploy do Blazor WASM na Oracle VM — Nginx serve os assets estáticos, SPA routing configurado, cache agressivo para assets imutáveis.
+4. ✅ `appsettings.Production.json` — CORS apontando para `licensemanager.enzojb.com.br`, logs em `/var/log/licenciamento/`, jobs com intervalos de produção.
+5. ✅ Script `setup-vm.sh` — configura VM do zero: instala .NET 10, Nginx, cria usuário de service, cria systemd unit, configura ufw.
+6. ✅ Script `setup-github-secrets.ps1` — cria todos os secrets necessários via GitHub CLI.
+7. DNS via Cloudflare: `licensemanager.enzojb.com.br` e `api.licensemanager.enzojb.com.br` → `137.131.209.235` (Proxied — SSL e CDN automáticos).
+
+**Infraestrutura:**
+- API: Oracle Cloud VM `137.131.209.235:22022` (Ubuntu 24.04, .NET 10, systemd)
+- Web: Oracle Cloud VM Nginx estático
+- Banco: Supabase PostgreSQL (`db.mnxqgrrkjgelxintdcxf.supabase.co`)
+- DNS/SSL/CDN: Cloudflare
+
+**GitHub Secrets necessários:** `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_KEY`, `DB_CONNECTION_STRING`, `JWT_SECRET`, `HMAC_SECRET`
+
+---
+
 ## Backlog posterior
 
 - **Painel de métricas e observabilidade centralizada** — Prometheus + Grafana ou Application Insights

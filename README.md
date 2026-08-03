@@ -53,9 +53,49 @@ tests/
 | 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
 | 9.1 | Dashboard Web + instrumentação de métricas e alertas | ✅ Concluída |
 | 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
-| 11 | CI/CD e infraestrutura — pipeline completo, deploy VM | 🔜 Próxima |
+| 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + Supabase | 🔄 Em andamento |
 
 **Testes:** 253 aprovados, 0 falhas (207 backend + 46 MAUI).
+
+## Infraestrutura de Produção
+
+| Componente | URL | Hospedagem |
+|---|---|---|
+| API | `https://api.licensemanager.enzojb.com.br` | Oracle Cloud VM (Ubuntu 24.04) |
+| Web (Blazor WASM) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM (Nginx estático) |
+| Banco de dados | Supabase (PostgreSQL gerenciado) | Supabase Cloud |
+| DNS / SSL / CDN | Cloudflare (enzojb.com.br) | Cloudflare |
+
+### Deploy manual (primeiro setup)
+
+```bash
+# 1. Conectar na VM
+ssh -i C:\Dev\ssh-key-2026-01-17.key -p 22022 ubuntu@137.131.209.235
+
+# 2. Rodar script de setup (uma vez)
+bash scripts/server/setup-vm.sh
+
+# 3. Configurar variáveis de ambiente na VM
+sudo nano /etc/licenciamento/env
+```
+
+### Deploy automático (CI/CD)
+
+Push para `master` dispara automaticamente:
+- **deploy-api.yml** — publica a API e reinicia o service na VM
+- **deploy-web.yml** — publica o Blazor WASM e atualiza os arquivos no Nginx
+
+Configurar os secrets antes do primeiro deploy:
+```powershell
+.\scripts\setup-github-secrets.ps1
+```
+
+### Registros DNS (Cloudflare)
+
+| Tipo | Nome | Destino | Proxy |
+|---|---|---|---|
+| A | `licensemanager` | `137.131.209.235` | ✅ Proxied |
+| A | `api.licensemanager` | `137.131.209.235` | ✅ Proxied |
 
 ## Como rodar localmente
 
