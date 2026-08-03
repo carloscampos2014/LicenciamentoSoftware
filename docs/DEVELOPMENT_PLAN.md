@@ -21,10 +21,10 @@ Cada etapa só avança quando compila, passa nos testes e não cria dependência
 | Exclusão | Sempre lógica (`Ativo = false`), nunca física |
 | Auditoria | Transacional, via interceptor EF Core, registra diff de campos |
 | Jobs | `BackgroundService` com interface `IScheduledJob` (migrável para Hangfire/Quartz) |
-| Distribuição Web | GitHub Pages (Blazor WASM estático) |
+| Distribuição Web | Oracle Cloud VM — Nginx serve o Blazor WASM estático + BFF (ASP.NET Core) |
 | Distribuição Desktop | Instalador direto (Windows) |
 | Distribuição Mobile | Google Play Store (Android) |
-| Banco de dados | PostgreSQL via Supabase (gerenciado) ou Oracle Cloud VM |
+| Banco de dados | PostgreSQL local na Oracle Cloud VM (mesma VM da API) |
 
 ---
 
@@ -259,7 +259,7 @@ Requisitos transversais:
 **Infraestrutura:**
 - API: Oracle Cloud VM `137.131.209.235:22022` (Ubuntu 24.04, .NET 10, systemd)
 - Web: Oracle Cloud VM Nginx estático
-- Banco: Supabase PostgreSQL (`db.mnxqgrrkjgelxintdcxf.supabase.co`)
+- Banco: PostgreSQL local na Oracle Cloud VM (`localhost:5432`)
 - DNS/SSL/CDN: Cloudflare
 
 **GitHub Secrets necessários:** `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_KEY`, `DB_CONNECTION_STRING`, `JWT_SECRET`, `HMAC_SECRET`

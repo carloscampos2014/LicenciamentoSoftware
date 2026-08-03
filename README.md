@@ -53,7 +53,7 @@ tests/
 | 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
 | 9.1 | Dashboard Web + instrumentação de métricas e alertas | ✅ Concluída |
 | 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
-| 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + Supabase | 🔄 Em andamento |
+| 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | 🔄 Em andamento |
 
 **Testes:** 253 aprovados, 0 falhas (207 backend + 46 MAUI).
 
@@ -63,7 +63,7 @@ tests/
 |---|---|---|
 | API | `https://api.licensemanager.enzojb.com.br` | Oracle Cloud VM (Ubuntu 24.04) |
 | Web (Blazor WASM) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM (Nginx estático) |
-| Banco de dados | Supabase (PostgreSQL gerenciado) | Supabase Cloud |
+| Banco de dados | `localhost:5432` (mesmo servidor da API) | Oracle Cloud VM (PostgreSQL local) |
 | DNS / SSL / CDN | Cloudflare (enzojb.com.br) | Cloudflare |
 
 ### Deploy manual (primeiro setup)
@@ -102,7 +102,7 @@ Configurar os secrets antes do primeiro deploy:
 ### Pré-requisitos
 
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-- PostgreSQL acessível (WSL2, Docker ou Supabase)
+- PostgreSQL acessível (WSL2 ou Docker)
 
 ### 1. Configurar variáveis de ambiente
 

@@ -6,10 +6,10 @@ inclusion: auto
 
 ## Stack obrigatória
 
-- **Backend:** .NET 8, C#, ASP.NET Core, EF Core, PostgreSQL
-- **Frontend web:** Blazor WebAssembly
+- **Backend:** .NET 10, C#, ASP.NET Core, PostgreSQL, Dapper (sem EF Core), DbUp (migrations)
+- **Frontend web:** Blazor WebAssembly + BFF (ASP.NET Core + YARP)
 - **Desktop/Mobile:** .NET MAUI (Windows, Android)
-- **Testes:** xUnit, FluentAssertions, Testcontainers
+- **Testes:** xUnit, FluentAssertions, Testcontainers, NSubstitute, NetArchTest
 - **Validação:** FluentValidation
 - **Autenticação gestão:** JWT + 2FA TOTP (Google Authenticator / Authy)
 - **Autenticação API de validação:** HMAC com timestamp (anti-replay) + token por licença com expiração automática
@@ -22,12 +22,15 @@ src/
   LicenciamentoSoftware.Application/
   LicenciamentoSoftware.Infrastructure/
   LicenciamentoSoftware.Api/
-  LicenciamentoSoftware.Web/          ← Blazor WASM (GitHub Pages)
+  LicenciamentoSoftware.Client/       ← cliente HTTP compartilhado (Web + MAUI)
+  LicenciamentoSoftware.Web/          ← Blazor WASM
+  LicenciamentoSoftware.Web.Server/   ← BFF (proxy YARP + cookie HttpOnly)
   LicenciamentoSoftware.Maui/         ← MAUI Desktop (Windows) + Mobile (Android)
 tests/
   LicenciamentoSoftware.Domain.Tests/
   LicenciamentoSoftware.Application.Tests/
   LicenciamentoSoftware.IntegrationTests/
+  LicenciamentoSoftware.Maui.Tests/
 ```
 
 ## Regras de dependência (verificadas por teste de arquitetura)
@@ -69,8 +72,8 @@ Application/Clientes/
 
 ## Interfaces e distribuição
 
-- **Web:** Blazor WASM publicado no GitHub Pages
+- **Web:** Blazor WASM + BFF publicado na Oracle Cloud VM (Nginx)
 - **Desktop:** MAUI Windows, distribuição via instalador
 - **Mobile:** MAUI Android, distribuição via Google Play
 - As três interfaces consomem a mesma API REST de gestão
-- Lógica de cliente HTTP e modelos compartilhados entre Web e MAUI via biblioteca comum
+- Lógica de cliente HTTP e modelos compartilhados entre Web e MAUI via `LicenciamentoSoftware.Client`

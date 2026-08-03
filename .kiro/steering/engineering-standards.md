@@ -30,7 +30,7 @@ Todo código produzido deve seguir obrigatoriamente os princípios abaixo. Eles 
   - `Application` → depende apenas de `Domain`
   - `Infrastructure` → depende de `Application` e `Domain`
   - `Api` → depende de `Application` e `Infrastructure`
-- `Domain` e `Application` não conhecem EF Core, HTTP, controllers ou qualquer detalhe de infraestrutura.
+- `Domain` e `Application` não conhecem PostgreSQL, Dapper, controllers, HTTP ou qualquer detalhe de infraestrutura.
 - Controllers são finos: recebem request, delegam para caso de uso, retornam resposta.
 - Casos de uso retornam resultados explícitos (`Result`, `NotFound`, `Conflict`, `ValidationError`) — sem tipos HTTP na camada de aplicação.
 - Sem repositório genérico (`GenericRepository`), sem serviço de gestão genérico (`ManagementService`).

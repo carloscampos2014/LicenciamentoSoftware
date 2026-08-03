@@ -24,7 +24,7 @@ Fornecer uma plataforma centralizada para gerenciamento de:
 
 | Interface | Tecnologia | Distribuição |
 |---|---|---|
-| Portal Web | Blazor WebAssembly | GitHub Pages |
+| Portal Web | Blazor WebAssembly + BFF | Oracle Cloud VM (Nginx) |
 | Desktop | .NET MAUI (Windows) | Instalador direto |
 | Mobile | .NET MAUI (Android) | Google Play Store |
 

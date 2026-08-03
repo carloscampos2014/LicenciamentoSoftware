@@ -251,10 +251,12 @@ As telas de manutenção mostram histórico de sessões, instalações e altera�
 
 ## Infraestrutura de hospedagem
 
-| Componente | Hospedagem recomendada |
+| Componente | Hospedagem |
 |---|---|
-| Blazor WASM + BFF (Web) | Oracle Cloud VM / Railway / Render (requer servidor ASP.NET Core) |
-| API de gestão + validação | Oracle Cloud VM (Always Free) ou Railway/Render |
-| PostgreSQL | Supabase (gerenciado, gratuito) ou VM Oracle separada |
+| Blazor WASM + BFF (Web) | Oracle Cloud VM (Nginx estático + ASP.NET Core BFF) |
+| API de gestão + validação | Oracle Cloud VM (Always Free, Ubuntu 24.04, systemd) |
+| PostgreSQL | Oracle Cloud VM (instância local, mesma VM da API) |
 | MAUI Desktop | Instalador distribuído diretamente |
 | MAUI Mobile | Google Play Store |
+
+O PostgreSQL roda como serviço local na própria Oracle Cloud VM — sem dependência de serviços gerenciados externos. A conexão entre a API e o banco é feita via `localhost`, eliminando latência de rede e custos de serviço terceirizado.
