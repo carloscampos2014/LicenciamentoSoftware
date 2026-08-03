@@ -234,14 +234,13 @@ Requisitos transversais:
 **Objetivo:** pipeline completo e deploy automatizado para todos os componentes.
 
 1. Configurar GitHub Actions: restore → build → testes unitários → testes de integração (Testcontainers) → análise estática.
-2. Deploy automático do Blazor WASM no GitHub Pages ao fazer push em `main`.
-3. Deploy da API na Oracle Cloud VM via SSH (ou Railway/Render como alternativa).
-4. Configurar HTTPS com Let's Encrypt na VM.
-5. Garantir que nenhum segredo está no repositório; usar GitHub Secrets para credenciais de deploy.
+2. Deploy da API + BFF (Web.Server) em servidor (Oracle Cloud VM, Railway ou Render).
+3. Configurar HTTPS com Let's Encrypt na VM.
+4. Garantir que nenhum segredo está no repositório; usar GitHub Secrets para credenciais de deploy.
 
 **Testes mínimos:** pipeline falha se qualquer teste falhar; deploy não ocorre com build quebrado.
 
-**Demo:** push em `main` → pipeline verde → Blazor atualizado no GitHub Pages → API deployada na VM automaticamente.
+**Demo:** push em `main` → pipeline verde → API + BFF deployados no servidor automaticamente.
 
 ---
 

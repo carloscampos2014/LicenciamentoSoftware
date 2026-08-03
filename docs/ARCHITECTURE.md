@@ -253,7 +253,7 @@ As telas de manutenção mostram histórico de sessões, instalações e altera�
 
 | Componente | Hospedagem recomendada |
 |---|---|
-| Blazor WASM (Web) | GitHub Pages (arquivos estáticos) |
+| Blazor WASM + BFF (Web) | Oracle Cloud VM / Railway / Render (requer servidor ASP.NET Core) |
 | API de gestão + validação | Oracle Cloud VM (Always Free) ou Railway/Render |
 | PostgreSQL | Supabase (gerenciado, gratuito) ou VM Oracle separada |
 | MAUI Desktop | Instalador distribuído diretamente |
