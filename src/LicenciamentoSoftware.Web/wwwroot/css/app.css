@@ -437,15 +437,18 @@ html, body {
 /* ── PasswordInput — toggle olhinho e barra de força ─────────────────────── */
 .password-input-wrapper {
     position: relative;
+    display: flex;
+    align-items: center;
 }
 
 .password-input-wrapper .form-control {
     padding-right: 2.75rem;
+    flex: 1;
 }
 
 .password-toggle-btn {
     position: absolute;
-    right: .625rem;
+    right: .5rem;
     top: 50%;
     transform: translateY(-50%);
     background: none;
@@ -458,6 +461,8 @@ html, body {
     justify-content: center;
     border-radius: 4px;
     transition: color .15s;
+    z-index: 10;
+    line-height: 1;
 }
 
 .password-toggle-btn:hover { color: #343a40; }
