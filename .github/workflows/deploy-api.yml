@@ -117,4 +117,4 @@ jobs:
               -p ${{ secrets.SSH_PORT }} \
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "curl -f http://localhost:5016/health || (sudo systemctl status licenciamento-api && exit 1)"
+              "curl -f -H 'Host: licensemanager-api.enzojb.com.br' http://localhost:80/health || (sudo systemctl status licenciamento-api && exit 1)"
