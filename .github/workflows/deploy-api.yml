@@ -9,7 +9,6 @@ on:
       - "src/LicenciamentoSoftware.Application/**"
       - "src/LicenciamentoSoftware.Infrastructure/**"
       - "src/LicenciamentoSoftware.Domain/**"
-      - "src/LicenciamentoSoftware.Client/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 
@@ -71,6 +70,25 @@ jobs:
             ./publish/api/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/licenciamento/api/
 
+      - name: Atualizar variáveis de ambiente na VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          sudo tee /etc/licenciamento/env > /dev/null << ENVEOF
+          ASPNETCORE_ENVIRONMENT=Production
+          ASPNETCORE_URLS=http://localhost:5016
+          ConnectionStrings__DefaultConnection=${{ secrets.DB_CONNECTION_STRING }}
+          JwtSettings__Secret=${{ secrets.JWT_SECRET }}
+          JwtSettings__Emissor=LicenciamentoSoftware
+          JwtSettings__Audiencia=LicenciamentoSoftware
+          JwtSettings__AccessTokenMinutos=60
+          ENVEOF
+          sudo chmod 600 /etc/licenciamento/env
+          sudo chown root:root /etc/licenciamento/env
+          EOF
+
       - name: Ajustar permissões e iniciar serviço
         run: |
           ssh -i ~/.ssh/deploy_key \
@@ -79,14 +97,15 @@ jobs:
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
               "sudo chown -R licenciamento:licenciamento /opt/licenciamento/api && \
                sudo systemctl enable licenciamento-api && \
-               sudo systemctl start licenciamento-api && \
-               sleep 5 && \
-               sudo systemctl is-active licenciamento-api"
+               sudo systemctl start licenciamento-api"
 
-      - name: Health check
+      - name: Aguardar serviço iniciar
+        run: sleep 15
+
+      - name: Verificar health check
         run: |
-          sleep 10
-          curl -f http://${{ secrets.SSH_HOST }}/health \
-            -H "Host: api.licensemanager.enzojb.com.br" \
-            --retry 5 --retry-delay 5 \
-            || echo "Health check falhou — verifique os logs na VM"
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "curl -f http://localhost:5016/health || (sudo systemctl status licenciamento-api && exit 1)"
