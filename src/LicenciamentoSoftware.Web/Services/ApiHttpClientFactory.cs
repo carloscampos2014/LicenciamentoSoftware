@@ -23,10 +23,8 @@ public sealed class ApiHttpClientFactory
 
     public ApiHttpClientFactory(string baseAddress)
     {
-        // Prefixo /api/ para separar chamadas da API das rotas do Blazor no YARP
-        var apiBase = baseAddress.TrimEnd('/') + "/api/";
+        var apiBase = baseAddress.TrimEnd('/') + "/";
 
-        // Cada service recebe seu próprio HttpClient para evitar conflitos de estado
         ClienteFinal = CriarService(apiBase, c => new ClienteFinalApiService(c));
         Usuario      = CriarService(apiBase, c => new UsuarioApiService(c));
         Aplicacao    = CriarService(apiBase, c => new AplicacaoApiService(c));
@@ -34,7 +32,6 @@ public sealed class ApiHttpClientFactory
         Licenca      = CriarService(apiBase, c => new LicencaApiService(c));
         Dashboard    = CriarService(apiBase, c => new DashboardApiService(c));
 
-        // Client anônimo para uso interno
         _baseClient = new HttpClient { BaseAddress = new Uri(baseAddress) };
     }
 
