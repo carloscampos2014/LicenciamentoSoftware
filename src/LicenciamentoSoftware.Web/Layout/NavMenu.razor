@@ -1,6 +1,6 @@
 ﻿@inject NavigationManager Nav
 
-<nav class="sidebar">
+<nav class="sidebar @(_aberta ? "sidebar-open" : "")">
     <!-- Brand -->
     <a class="sidebar-brand" href="/">
         <div class="sidebar-brand-icon">LS</div>
@@ -79,6 +79,10 @@
 
 @code {
     [Parameter] public string? NomeUsuario { get; set; }
+    [Parameter] public bool Aberta { get; set; }
+    [Parameter] public EventCallback OnFechar { get; set; }
+
+    private bool _aberta => Aberta;
 
     private string Iniciais => string.IsNullOrEmpty(NomeUsuario)
         ? "?"
