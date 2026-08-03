@@ -592,6 +592,17 @@ html, body {
         to   { opacity: 1; }
     }
 
+    /* Cards: badge abaixo do bloco de info no mobile */
+    .item-card-header {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .item-card-header .badge-pill {
+        flex-shrink: 0;
+        align-self: flex-start;
+    }
+
     /* Conteúdo principal: sem margin-left da sidebar, com padding para a topbar */
     .app-shell {
         display: block;
