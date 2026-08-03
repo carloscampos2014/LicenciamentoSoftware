@@ -95,7 +95,7 @@ jobs:
               -p ${{ secrets.SSH_PORT }} \
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "sudo chown -R licenciamento:licenciamento /opt/licenciamento/api && \
+              "sudo chown -R www-data:www-data /opt/licenciamento/api && \
                sudo systemctl enable licenciamento-api && \
                sudo systemctl start licenciamento-api"
 
