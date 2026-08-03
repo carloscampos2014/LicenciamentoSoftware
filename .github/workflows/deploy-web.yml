@@ -49,6 +49,9 @@ jobs:
         run: |
           cp ./publish/web/wwwroot/index.html ./publish/web/wwwroot/404.html
 
+      - name: Instalar rsync
+        run: sudo apt-get install -y rsync
+
       - name: Configurar chave SSH
         run: |
           mkdir -p ~/.ssh

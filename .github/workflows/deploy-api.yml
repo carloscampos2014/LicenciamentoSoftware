@@ -48,6 +48,9 @@ jobs:
             --self-contained false \
             -o ./publish/api
 
+      - name: Instalar rsync
+        run: sudo apt-get install -y rsync
+
       - name: Configurar chave SSH
         run: |
           mkdir -p ~/.ssh
