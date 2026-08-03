@@ -30,17 +30,31 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Semibold.ttf",  "OpenSansSemibold");
             });
 
-        // ── Configuração via appsettings.json embarcado ───────────────────────
-        var asm    = Assembly.GetExecutingAssembly();
-        var stream = asm.GetManifestResourceStream(
-            "LicenciamentoSoftware.Maui.Resources.Raw.appsettings.json");
-
-        if (stream is not null)
+        // ── Configuração via appsettings.json — lido dos assets em runtime ──────
+        // FileSystem.OpenAppPackageFileAsync lê o arquivo de assets/ em runtime
+        // garantindo que mudanças no appsettings.json sejam refletidas sem recompilar
+        try
         {
+            var stream = Task.Run(async () =>
+                await FileSystem.OpenAppPackageFileAsync("appsettings.json")).GetAwaiter().GetResult();
             var config = new ConfigurationBuilder()
                 .AddJsonStream(stream)
                 .Build();
             builder.Configuration.AddConfiguration(config);
+        }
+        catch
+        {
+            // Fallback via ManifestResource (compatibilidade Windows)
+            var asm = Assembly.GetExecutingAssembly();
+            var fallbackStream = asm.GetManifestResourceStream(
+                "LicenciamentoSoftware.Maui.Resources.Raw.appsettings.json");
+            if (fallbackStream is not null)
+            {
+                var config = new ConfigurationBuilder()
+                    .AddJsonStream(fallbackStream)
+                    .Build();
+                builder.Configuration.AddConfiguration(config);
+            }
         }
 
         var apiBaseUrl = builder.Configuration["ApiSettings:BaseUrl"]
@@ -53,32 +67,38 @@ public static class MauiProgram
         // ── Shell ─────────────────────────────────────────────────────────────
         builder.Services.AddSingleton<AppShell>();
 
-        // ── ViewModels — Transient (nova instância por navegação) ─────────────
-        // Auth
+        // ── ViewModels — Singleton para telas do flyout (preserva estado e evita reload duplo)
+        //                Transient para fluxos de navegação push (auth, emitir)
+        // Auth — Transient (sempre fresh ao navegar)
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<TotpViewModel>();
         builder.Services.AddTransient<CadastroViewModel>();
 
-        // Gestão
-        builder.Services.AddTransient<DashboardViewModel>();
-        builder.Services.AddTransient<ListaClientesFinaisViewModel>();
-        builder.Services.AddTransient<ListaUsuariosViewModel>();
-        builder.Services.AddTransient<ListaAplicacoesViewModel>();
-        builder.Services.AddTransient<ListaLicencasViewModel>();
+        // Gestão — Singleton (flyout reutiliza a mesma instância; flag Carregado preservado)
+        builder.Services.AddSingleton<DashboardViewModel>();
+        builder.Services.AddSingleton<ListaClientesFinaisViewModel>();
+        builder.Services.AddSingleton<ListaUsuariosViewModel>();
+        builder.Services.AddSingleton<ListaAplicacoesViewModel>();
+        builder.Services.AddSingleton<ListaLicencasViewModel>();
+
+        // Emitir — Transient (wizard sempre começa do zero)
         builder.Services.AddTransient<EmitirLicencaViewModel>();
 
-        // ── Views — Transient ─────────────────────────────────────────────────
+        // ── Views — Singleton para telas do flyout, Transient para fluxos push ──
         // Auth
         builder.Services.AddTransient<LoginPage>();
         builder.Services.AddTransient<TotpPage>();
         builder.Services.AddTransient<CadastroPage>();
+        builder.Services.AddTransient<LoadingPage>();
 
-        // Gestão
-        builder.Services.AddTransient<DashboardPage>();
-        builder.Services.AddTransient<ListaClientesFinaisPage>();
-        builder.Services.AddTransient<ListaUsuariosPage>();
-        builder.Services.AddTransient<ListaAplicacoesPage>();
-        builder.Services.AddTransient<ListaLicencasPage>();
+        // Gestão (Singleton — mesma instância enquanto app está aberto)
+        builder.Services.AddSingleton<DashboardPage>();
+        builder.Services.AddSingleton<ListaClientesFinaisPage>();
+        builder.Services.AddSingleton<ListaUsuariosPage>();
+        builder.Services.AddSingleton<ListaAplicacoesPage>();
+        builder.Services.AddSingleton<ListaLicencasPage>();
+
+        // Emitir — Transient (sempre novo)
         builder.Services.AddTransient<EmitirLicencaPage>();
 
 #if DEBUG

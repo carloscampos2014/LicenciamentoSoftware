@@ -16,6 +16,7 @@
             <conv:StringNullOrEmptyConverter x:Key="StringNullOrEmptyConverter" />
             <conv:InverseBoolConverter    x:Key="InverseBoolConverter" />
             <conv:TipoInscricaoConverter  x:Key="TipoInscricaoConverter" />
+            <conv:TipoInscricaoTextoConverter x:Key="TipoInscricaoTextoConverter" />
         </ResourceDictionary>
     </Application.Resources>
 

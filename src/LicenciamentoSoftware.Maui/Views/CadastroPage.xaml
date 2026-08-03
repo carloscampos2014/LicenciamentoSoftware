@@ -7,130 +7,162 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="{StaticResource Background}">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="24,48" Spacing="0">
+    <Grid>
+        <ScrollView HorizontalOptions="Center"
+                    VerticalOptions="Start"
+                    MaximumWidthRequest="520"
+                    Margin="0,24,0,24">
 
-            <Label Text="Criar conta" FontSize="24" FontAttributes="Bold"
-                   TextColor="{StaticResource TextPrimary}" Margin="0,0,0,4" />
-            <Label Text="Dados da empresa e do responsável"
-                   Style="{StaticResource SubtituloPagina}" Margin="0,0,0,24" />
+            <Border Style="{StaticResource Card}"
+                    Margin="24"
+                    Padding="32,36">
+                <Border.StrokeShape>RoundRectangle 16</Border.StrokeShape>
 
-            <!-- Sucesso -->
-            <Border IsVisible="{Binding Sucesso}"
-                    BackgroundColor="#d1fae5" Padding="16,12"
-                    Margin="0,0,0,16">
-                <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Cadastro realizado com sucesso!"
-                           FontAttributes="Bold" TextColor="#065f46" />
-                    <Button Text="Ir para o login"
-                            Style="{StaticResource BotaoPrimario}"
-                            Command="{Binding IrParaLoginCommand}" />
-                </VerticalStackLayout>
-            </Border>
+                <VerticalStackLayout Spacing="0">
 
-            <!-- Formulário -->
-            <VerticalStackLayout IsVisible="{Binding Sucesso, Converter={StaticResource InverseBoolConverter}}" Spacing="0">
+                    <Label Text="Criar conta"
+                           FontSize="22" FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"
+                           Margin="0,0,0,4" />
+                    <Label Text="Dados da empresa e do responsável"
+                           Style="{StaticResource SubtituloPagina}"
+                           Margin="0,0,0,24" />
 
-                <Label Text="DADOS DA EMPRESA" Style="{StaticResource LabelCampo}"
-                       Margin="0,0,0,12" />
+                    <!-- Sucesso -->
+                    <Border IsVisible="{Binding Sucesso}"
+                            BackgroundColor="{StaticResource SuccessLight}"
+                            Padding="16,12" Margin="0,0,0,16">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Cadastro realizado com sucesso!"
+                                   FontAttributes="Bold"
+                                   TextColor="{StaticResource Success}" />
+                            <Button Text="Ir para o login"
+                                    Style="{StaticResource BotaoPrimario}"
+                                    Command="{Binding IrParaLoginCommand}" />
+                        </VerticalStackLayout>
+                    </Border>
 
-                <Label Text="Razão Social *" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding RazaoSocial}"
-                           Placeholder="Nome da empresa" />
-                </Border>
+                    <!-- Formulário -->
+                    <VerticalStackLayout IsVisible="{Binding Sucesso, Converter={StaticResource InverseBoolConverter}}"
+                                         Spacing="0">
 
-                <Grid ColumnDefinitions="*,2*" ColumnSpacing="8" Margin="0,0,0,12">
-                    <VerticalStackLayout Grid.Column="0">
-                        <Label Text="Tipo *" Style="{StaticResource LabelCampo}" />
-                        <Border Style="{StaticResource Card}" Padding="4,0">
-                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                            <Picker Style="{StaticResource CampoPicker}"
-                                    SelectedIndex="{Binding TipoInscricao, Converter={StaticResource TipoInscricaoConverter}}">
-                                <Picker.Items>
-                                    <x:String>CPF</x:String>
-                                    <x:String>CNPJ</x:String>
-                                </Picker.Items>
-                            </Picker>
-                        </Border>
-                    </VerticalStackLayout>
-                    <VerticalStackLayout Grid.Column="1">
-                        <Label Text="CPF / CNPJ *" Style="{StaticResource LabelCampo}" />
-                        <Border Style="{StaticResource Card}" Padding="12,0">
+                        <Label Text="DADOS DA EMPRESA" Style="{StaticResource LabelSecao}"
+                               Margin="0,0,0,12" />
+
+                        <Label Text="Razão Social *" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
                             <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
                             <Entry Style="{StaticResource CampoTexto}"
-                                   Text="{Binding NumeroInscricao}"
-                                   Keyboard="Numeric" />
+                                   Text="{Binding RazaoSocial}"
+                                   Placeholder="Nome da empresa" />
                         </Border>
+
+                        <Grid ColumnDefinitions="*,2*" ColumnSpacing="8" Margin="0,0,0,12">
+                            <VerticalStackLayout Grid.Column="0">
+                                <Label Text="Tipo *" Style="{StaticResource LabelCampo}" />
+                                <Border Style="{StaticResource Card}" Padding="4,0">
+                                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                                    <Picker Style="{StaticResource CampoPicker}"
+                                            SelectedIndex="{Binding TipoInscricao, Converter={StaticResource TipoInscricaoConverter}}">
+                                        <Picker.Items>
+                                            <x:String>CPF</x:String>
+                                            <x:String>CNPJ</x:String>
+                                        </Picker.Items>
+                                    </Picker>
+                                </Border>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout Grid.Column="1">
+                                <Label Text="CPF / CNPJ *" Style="{StaticResource LabelCampo}" />
+                                <Border Style="{StaticResource Card}" Padding="12,0">
+                                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                                    <Entry Style="{StaticResource CampoTexto}"
+                                           Text="{Binding NumeroInscricao}"
+                                           Keyboard="Numeric" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Text="E-mail da empresa *" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Style="{StaticResource CampoTexto}"
+                                   Text="{Binding EmailCliente}"
+                                   Keyboard="Email"
+                                   Placeholder="contato@empresa.com" />
+                        </Border>
+
+                        <Label Text="Telefone" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,24">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Style="{StaticResource CampoTexto}"
+                                   Text="{Binding Telefone}"
+                                   Keyboard="Telephone"
+                                   Placeholder="(00) 00000-0000" />
+                        </Border>
+
+                        <Label Text="RESPONSÁVEL PELA CONTA" Style="{StaticResource LabelSecao}"
+                               Margin="0,0,0,12" />
+
+                        <Label Text="Nome completo *" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Style="{StaticResource CampoTexto}"
+                                   Text="{Binding NomeResponsavel}" />
+                        </Border>
+
+                        <Label Text="E-mail de acesso *" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Style="{StaticResource CampoTexto}"
+                                   Text="{Binding EmailResponsavel}"
+                                   Keyboard="Email" />
+                        </Border>
+
+                        <Label Text="Senha *" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Style="{StaticResource CampoTexto}"
+                                   Text="{Binding Senha}"
+                                   IsPassword="True" />
+                        </Border>
+
+                        <Label Text="Confirmar senha *" Style="{StaticResource LabelCampo}" />
+                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,8">
+                            <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                            <Entry Style="{StaticResource CampoTexto}"
+                                   Text="{Binding ConfirmarSenha}"
+                                   IsPassword="True" />
+                        </Border>
+
+                        <Label Text="{Binding Erro}"
+                               Style="{StaticResource LabelErro}"
+                               IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}"
+                               Margin="0,4,0,8" />
+
+                        <Button Text="Criar conta"
+                                Style="{StaticResource BotaoPrimario}"
+                                Command="{Binding CadastrarCommand}"
+                                IsEnabled="{Binding NaoOcupado}"
+                                Margin="0,8,0,16" />
+
+                        <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                            <Label Text="Já tem conta?"
+                                   TextColor="{StaticResource TextSecondary}"
+                                   FontSize="14" />
+                            <Label Text="Entrar"
+                                   TextColor="{StaticResource Primary}"
+                                   FontAttributes="Bold"
+                                   FontSize="14">
+                                <Label.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding IrParaLoginCommand}" />
+                                </Label.GestureRecognizers>
+                            </Label>
+                        </HorizontalStackLayout>
+
                     </VerticalStackLayout>
-                </Grid>
-
-                <Label Text="E-mail da empresa *" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding EmailCliente}"
-                           Keyboard="Email" Placeholder="contato@empresa.com" />
-                </Border>
-
-                <Label Text="Telefone" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,24">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding Telefone}"
-                           Keyboard="Telephone" Placeholder="(00) 00000-0000" />
-                </Border>
-
-                <Label Text="RESPONSÁVEL PELA CONTA" Style="{StaticResource LabelCampo}"
-                       Margin="0,0,0,12" />
-
-                <Label Text="Nome completo *" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding NomeResponsavel}" />
-                </Border>
-
-                <Label Text="E-mail de acesso *" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding EmailResponsavel}"
-                           Keyboard="Email" />
-                </Border>
-
-                <Label Text="Senha *" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding Senha}"
-                           IsPassword="True" />
-                </Border>
-
-                <Label Text="Confirmar senha *" Style="{StaticResource LabelCampo}" />
-                <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,8">
-                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                    <Entry Style="{StaticResource CampoTexto}" Text="{Binding ConfirmarSenha}"
-                           IsPassword="True" />
-                </Border>
-
-                <Label Text="{Binding Erro}"
-                       Style="{StaticResource LabelErro}"
-                       IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}"
-                       Margin="0,4,0,8" />
-
-                <Button Text="Criar conta" Style="{StaticResource BotaoPrimario}"
-                        Command="{Binding CadastrarCommand}"
-                        IsEnabled="{Binding NaoOcupado}" Margin="0,8,0,16" />
-
-                <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
-                    <Label Text="Já tem conta?" TextColor="{StaticResource TextSecondary}" FontSize="14" />
-                    <Label Text="Entrar" TextColor="{StaticResource Primary}"
-                           FontAttributes="Bold" FontSize="14">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding IrParaLoginCommand}" />
-                        </Label.GestureRecognizers>
-                    </Label>
-                </HorizontalStackLayout>
-
-            </VerticalStackLayout>
-        </VerticalStackLayout>
-    </ScrollView>
+                </VerticalStackLayout>
+            </Border>
+        </ScrollView>
+    </Grid>
 </ContentPage>

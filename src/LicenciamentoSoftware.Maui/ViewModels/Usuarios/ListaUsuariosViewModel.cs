@@ -9,8 +9,6 @@ namespace LicenciamentoSoftware.Maui.ViewModels.Usuarios;
 
 public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : BaseViewModel
 {
-    // ── Estado da lista ───────────────────────────────────────────────────────
-
     [ObservableProperty] ObservableCollection<UsuarioResult> _itens = [];
     [ObservableProperty] string _busca = string.Empty;
     [ObservableProperty] bool? _filtroAtivo = null;
@@ -18,8 +16,6 @@ public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : Base
     [ObservableProperty] int _paginaAtual = 1;
     [ObservableProperty] bool _temMaisPaginas;
     [ObservableProperty] string? _erro;
-
-    // ── Formulário ────────────────────────────────────────────────────────────
 
     [ObservableProperty] bool _exibirFormulario;
     [ObservableProperty] Guid? _idEdicao;
@@ -32,41 +28,57 @@ public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : Base
     public IReadOnlyList<string> PapeisDisponiveis { get; } = ["Administrador", "Operador"];
 
     private const int TamanhoPagina = 20;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    // ── Ciclo de vida ─────────────────────────────────────────────────────────
-
-    public override async Task OnAppearing()
+    protected override async Task OnCarregarAsync()
     {
         Titulo = "Usuários";
-        await CarregarAsync();
+        await RecarregarAsync();
     }
 
-    // ── Comandos de lista ─────────────────────────────────────────────────────
-
     [RelayCommand]
-    async Task CarregarAsync()
+    async Task RecarregarAsync()
     {
-        PaginaAtual = 1;
-        Itens.Clear();
-        await BuscarPaginaAsync();
+        if (!await _semaphore.WaitAsync(0)) return;
+        try
+        {
+            Ocupado = true;
+            Erro = null;
+            PaginaAtual = 1;
+            Itens.Clear();
+            TemMaisPaginas = false;
+            await BuscarPaginaInternaAsync();
+        }
+        finally
+        {
+            Ocupado = false;
+            _semaphore.Release();
+        }
     }
 
     [RelayCommand]
     async Task CarregarMaisAsync()
     {
-        if (!TemMaisPaginas || Ocupado) return;
-        PaginaAtual++;
-        await BuscarPaginaAsync();
+        if (!TemMaisPaginas) return;
+        if (!await _semaphore.WaitAsync(0)) return;
+        try
+        {
+            Ocupado = true;
+            PaginaAtual++;
+            await BuscarPaginaInternaAsync();
+        }
+        finally
+        {
+            Ocupado = false;
+            _semaphore.Release();
+        }
     }
 
     [RelayCommand]
-    async Task BuscarAsync() => await CarregarAsync();
+    async Task BuscarAsync() => await RecarregarAsync();
 
-    private async Task BuscarPaginaAsync()
+    private async Task BuscarPaginaInternaAsync()
     {
-        Ocupado = true;
-        Erro = null;
-
         try
         {
             var resultado = await factory.Usuario.ListarAsync(
@@ -78,35 +90,22 @@ public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : Base
             if (resultado is null) return;
 
             TotalRegistros = resultado.Total;
-            TemMaisPaginas = Itens.Count + resultado.Itens.Count < resultado.Total;
-
-            foreach (var item in resultado.Itens)
-                Itens.Add(item);
+            foreach (var item in resultado.Itens) Itens.Add(item);
+            TemMaisPaginas = Itens.Count < resultado.Total;
         }
         catch (Exception ex)
         {
             Erro = $"Erro ao carregar usuários: {ex.Message}";
         }
-        finally
-        {
-            Ocupado = false;
-        }
     }
-
-    // ── Desativar ─────────────────────────────────────────────────────────────
 
     [RelayCommand]
     async Task DesativarAsync(UsuarioResult item)
     {
         var (sucesso, erro) = await factory.Usuario.DesativarAsync(item.Id);
-
-        if (sucesso)
-            await CarregarAsync();
-        else
-            Erro = erro ?? "Erro ao desativar usuário.";
+        if (sucesso) await RecarregarAsync();
+        else Erro = erro ?? "Erro ao desativar.";
     }
-
-    // ── Formulário ────────────────────────────────────────────────────────────
 
     [RelayCommand]
     void AbrirFormularioCriar()
@@ -126,7 +125,7 @@ public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : Base
         IdEdicao = item.Id;
         FormNome = item.Nome;
         FormEmail = item.Email;
-        FormSenha = string.Empty;   // senha não é carregada
+        FormSenha = string.Empty;
         FormPapel = item.Papel;
         ErroFormulario = null;
         ExibirFormulario = true;
@@ -143,7 +142,6 @@ public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : Base
             ErroFormulario = "Nome e e-mail são obrigatórios.";
             return;
         }
-
         if (IdEdicao is null && string.IsNullOrWhiteSpace(FormSenha))
         {
             ErroFormulario = "Senha é obrigatória ao criar usuário.";
@@ -172,7 +170,7 @@ public partial class ListaUsuariosViewModel(MauiApiClientFactory factory) : Base
             if (sucesso)
             {
                 ExibirFormulario = false;
-                await CarregarAsync();
+                await RecarregarAsync();
             }
             else
             {

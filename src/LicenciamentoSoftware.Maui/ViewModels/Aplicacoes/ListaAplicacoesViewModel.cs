@@ -10,8 +10,6 @@ namespace LicenciamentoSoftware.Maui.ViewModels.Aplicacoes;
 
 public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : BaseViewModel
 {
-    // ── Estado da lista ───────────────────────────────────────────────────────
-
     [ObservableProperty] ObservableCollection<AplicacaoResult> _itens = [];
     [ObservableProperty] string _busca = string.Empty;
     [ObservableProperty] bool? _filtroAtivo = null;
@@ -19,8 +17,6 @@ public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : Ba
     [ObservableProperty] int _paginaAtual = 1;
     [ObservableProperty] bool _temMaisPaginas;
     [ObservableProperty] string? _erro;
-
-    // ── Formulário ────────────────────────────────────────────────────────────
 
     [ObservableProperty] bool _exibirFormulario;
     [ObservableProperty] Guid? _idEdicao;
@@ -31,16 +27,13 @@ public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : Ba
     [ObservableProperty] string? _erroFormulario;
 
     private const int TamanhoPagina = 20;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    // ── Ciclo de vida ─────────────────────────────────────────────────────────
-
-    public override async Task OnAppearing()
+    protected override async Task OnCarregarAsync()
     {
         Titulo = "Aplicações";
-        await Task.WhenAll(CarregarTiposLicencaAsync(), CarregarAsync());
+        await Task.WhenAll(CarregarTiposLicencaAsync(), RecarregarAsync());
     }
-
-    // ── Tipos de licença ──────────────────────────────────────────────────────
 
     private async Task CarregarTiposLicencaAsync()
     {
@@ -48,43 +41,56 @@ public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : Ba
         {
             var tipos = await factory.TipoLicenca.ListarAsync();
             TiposLicenca.Clear();
-
             if (tipos is null) return;
-
-            foreach (var t in tipos)
-                TiposLicenca.Add(t);
-
+            foreach (var t in tipos) TiposLicenca.Add(t);
             FormTipoLicencaSelecionado = TiposLicenca.FirstOrDefault();
         }
-        catch { /* não bloqueia o carregamento da lista */ }
+        catch { }
     }
 
-    // ── Comandos de lista ─────────────────────────────────────────────────────
-
     [RelayCommand]
-    async Task CarregarAsync()
+    async Task RecarregarAsync()
     {
-        PaginaAtual = 1;
-        Itens.Clear();
-        await BuscarPaginaAsync();
+        if (!await _semaphore.WaitAsync(0)) return;
+        try
+        {
+            Ocupado = true;
+            Erro = null;
+            PaginaAtual = 1;
+            Itens.Clear();
+            TemMaisPaginas = false;
+            await BuscarPaginaInternaAsync();
+        }
+        finally
+        {
+            Ocupado = false;
+            _semaphore.Release();
+        }
     }
 
     [RelayCommand]
     async Task CarregarMaisAsync()
     {
-        if (!TemMaisPaginas || Ocupado) return;
-        PaginaAtual++;
-        await BuscarPaginaAsync();
+        if (!TemMaisPaginas) return;
+        if (!await _semaphore.WaitAsync(0)) return;
+        try
+        {
+            Ocupado = true;
+            PaginaAtual++;
+            await BuscarPaginaInternaAsync();
+        }
+        finally
+        {
+            Ocupado = false;
+            _semaphore.Release();
+        }
     }
 
     [RelayCommand]
-    async Task BuscarAsync() => await CarregarAsync();
+    async Task BuscarAsync() => await RecarregarAsync();
 
-    private async Task BuscarPaginaAsync()
+    private async Task BuscarPaginaInternaAsync()
     {
-        Ocupado = true;
-        Erro = null;
-
         try
         {
             var resultado = await factory.Aplicacao.ListarAsync(
@@ -96,35 +102,22 @@ public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : Ba
             if (resultado is null) return;
 
             TotalRegistros = resultado.Total;
-            TemMaisPaginas = Itens.Count + resultado.Itens.Count < resultado.Total;
-
-            foreach (var item in resultado.Itens)
-                Itens.Add(item);
+            foreach (var item in resultado.Itens) Itens.Add(item);
+            TemMaisPaginas = Itens.Count < resultado.Total;
         }
         catch (Exception ex)
         {
             Erro = $"Erro ao carregar aplicações: {ex.Message}";
         }
-        finally
-        {
-            Ocupado = false;
-        }
     }
-
-    // ── Desativar ─────────────────────────────────────────────────────────────
 
     [RelayCommand]
     async Task DesativarAsync(AplicacaoResult item)
     {
         var (sucesso, erro) = await factory.Aplicacao.DesativarAsync(item.Id);
-
-        if (sucesso)
-            await CarregarAsync();
-        else
-            Erro = erro ?? "Erro ao desativar aplicação.";
+        if (sucesso) await RecarregarAsync();
+        else Erro = erro ?? "Erro ao desativar.";
     }
-
-    // ── Formulário ────────────────────────────────────────────────────────────
 
     [RelayCommand]
     void AbrirFormularioCriar()
@@ -154,17 +147,8 @@ public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : Ba
     [RelayCommand]
     async Task SalvarAsync()
     {
-        if (string.IsNullOrWhiteSpace(FormTitulo))
-        {
-            ErroFormulario = "Título é obrigatório.";
-            return;
-        }
-
-        if (FormTipoLicencaSelecionado is null)
-        {
-            ErroFormulario = "Selecione um tipo de licença.";
-            return;
-        }
+        if (string.IsNullOrWhiteSpace(FormTitulo)) { ErroFormulario = "Título é obrigatório."; return; }
+        if (FormTipoLicencaSelecionado is null) { ErroFormulario = "Selecione um tipo de licença."; return; }
 
         Ocupado = true;
         ErroFormulario = null;
@@ -193,20 +177,14 @@ public partial class ListaAplicacoesViewModel(MauiApiClientFactory factory) : Ba
             if (sucesso)
             {
                 ExibirFormulario = false;
-                await CarregarAsync();
+                await RecarregarAsync();
             }
             else
             {
                 ErroFormulario = erro ?? "Erro ao salvar.";
             }
         }
-        catch (Exception ex)
-        {
-            ErroFormulario = ex.Message;
-        }
-        finally
-        {
-            Ocupado = false;
-        }
+        catch (Exception ex) { ErroFormulario = ex.Message; }
+        finally { Ocupado = false; }
     }
 }

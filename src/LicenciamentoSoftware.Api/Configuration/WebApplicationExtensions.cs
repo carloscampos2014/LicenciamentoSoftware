@@ -31,7 +31,9 @@ internal static class WebApplicationExtensions
             });
         }
 
-        app.UseHttpsRedirection();
+        // HTTPS redirect — desabilitado em desenvolvimento para permitir HTTP do celular Android
+        if (!app.Environment.IsDevelopment())
+            app.UseHttpsRedirection();
 
         // CORS — antes de Authentication para que preflight OPTIONS seja respondido corretamente
         app.UseCors("BffPolicy");

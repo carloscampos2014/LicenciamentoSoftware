@@ -8,9 +8,14 @@
     <Color x:Key="PrimaryLight">#f0eeff</Color>
 
     <Color x:Key="Secondary">#10b981</Color>
+    <Color x:Key="Success">#10b981</Color>
+    <Color x:Key="SuccessLight">#d1fae5</Color>
     <Color x:Key="Danger">#dc3545</Color>
+    <Color x:Key="DangerLight">#fee2e2</Color>
     <Color x:Key="Warning">#f59e0b</Color>
+    <Color x:Key="WarningLight">#fef3c7</Color>
     <Color x:Key="Info">#3b82f6</Color>
+    <Color x:Key="InfoLight">#dbeafe</Color>
 
     <Color x:Key="Background">#f8f9fa</Color>
     <Color x:Key="Surface">#ffffff</Color>

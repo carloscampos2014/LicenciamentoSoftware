@@ -15,6 +15,7 @@ Sistema de licenciamento de software construído com .NET 10, Clean Architecture
 | Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256, cookie HttpOnly (BFF) |
 | Jobs | BackgroundService + PeriodicTimer (interface IScheduledJob) |
 | E-mail | MailKit (SMTP) com templates HTML embarcados |
+| Mobile/Desktop | .NET MAUI (Android + Windows), CommunityToolkit.Mvvm 8.4.0 |
 | Testes | xUnit, FluentAssertions, NSubstitute, NetArchTest |
 
 ## Estrutura de projetos
@@ -28,12 +29,13 @@ src/
   LicenciamentoSoftware.Client/           Cliente HTTP compartilhado (Web + MAUI) — DTOs e services
   LicenciamentoSoftware.Web/              Blazor WASM — páginas, componentes, autenticação em memória
   LicenciamentoSoftware.Web.Server/       BFF — serve o WASM, proxy YARP para API, cookie HttpOnly
-  LicenciamentoSoftware.Maui/             App Desktop/Mobile MAUI (em desenvolvimento)
+  LicenciamentoSoftware.Maui/             App Desktop/Mobile MAUI — Windows e Android, MVVM com CommunityToolkit.Mvvm
 
 tests/
   LicenciamentoSoftware.Domain.Tests/     Testes unitários de domínio
   LicenciamentoSoftware.Application.Tests/ Testes unitários de handlers, serviços e jobs
   LicenciamentoSoftware.IntegrationTests/ Testes de integração (requer PostgreSQL)
+  LicenciamentoSoftware.Maui.Tests/       Testes unitários de ViewModels e Converters MAUI
 ```
 
 ## Status das fases
@@ -50,10 +52,10 @@ tests/
 | 8 | Jobs agendados — sessões, expiração, renovação, rotação de tokens, e-mail | ✅ Concluída |
 | 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
 | 9.1 | Dashboard Web + instrumentação de métricas e alertas | ✅ Concluída |
-| 10 | MAUI Desktop + Mobile — Windows e Android | 🔜 Planejada |
-| 11 | CI/CD e infraestrutura — pipeline completo, deploy VM | 🔜 Planejada |
+| 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
+| 11 | CI/CD e infraestrutura — pipeline completo, deploy VM | 🔜 Próxima |
 
-**Testes:** 207 aprovados, 0 falhas.
+**Testes:** 253 aprovados, 0 falhas (207 backend + 46 MAUI).
 
 ## Como rodar localmente
 
@@ -228,6 +230,39 @@ $env:EmailSettings__Usuario = "seu@email.com"
 $env:EmailSettings__Senha = "sua-senha-smtp"
 $env:EmailSettings__EmailRemetente = "noreply@suaempresa.com"
 ```
+
+## App MAUI (Desktop + Mobile)
+
+O aplicativo MAUI oferece paridade funcional com o portal web para Windows e Android.
+
+**Arquitetura MVVM:**
+- `CommunityToolkit.Mvvm 8.4.0` com source generators (`[ObservableProperty]`, `[RelayCommand]`)
+- `BaseViewModel`: `Ocupado`, `NaoOcupado`, `Titulo`, `OnAppearing()`
+- Todos os ViewModels são `Transient`; `MauiApiClientFactory` e `MauiAuthService` são `Singleton`
+
+**Autenticação:**
+- `MauiAuthService`: login, TOTP, refresh silencioso, logout
+- Tokens armazenados via `SecureStorage` (Android Keystore / Windows DPAPI)
+- `JwtSecurityTokenHandler` para verificar expiração antes de restaurar sessão
+
+**Navegação:**
+- Shell com flyout lateral; guard de rotas redireciona para `//login` se não autenticado
+- Rotas registradas: `totp`, `cadastro`, `licencas/emitir`
+
+**Telas implementadas:**
+- Login, TOTP, Cadastro (auto-cadastro público)
+- Dashboard (7 métricas + alertas de sessões/limites/erros)
+- Clientes Finais, Usuários, Aplicações (lista paginada + formulário overlay inline)
+- Licenças (lista + painel de detalhe com sessões e instalações)
+- Emitir Licença (wizard 3 passos: seleção → configuração por tipo → resultado com token)
+
+**Controls reutilizáveis:**
+- `MetricaCardView`: card com `BindableProperty` Titulo/Valor/Subtitulo/CorValor
+- `ConfirmPopup`: diálogo de confirmação com `ShowAsync()` retornando `Task<bool>`
+
+**Testes:**
+- `LicenciamentoSoftware.Maui.Tests` (net10.0, sem targets de plataforma)
+- 46 testes: Converters, BaseViewModel, EmitirLicença lógica pura, Dashboard lógica pura
 
 ## Frontend Web (Blazor WASM + BFF)
 

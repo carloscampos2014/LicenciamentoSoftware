@@ -32,6 +32,16 @@ public sealed class InverseBoolConverter : IValueConverter
         => value is bool b ? !b : false;
 }
 
+/// <summary>Converte TipoInscricao int (1=CPF, 2=CNPJ) para texto exibível.</summary>
+public sealed class TipoInscricaoTextoConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is int v ? (v == 1 ? "CPF" : "CNPJ") : "CPF";
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
 /// <summary>Converte TipoInscricao int (1=CPF, 2=CNPJ) para índice do Picker (0=CPF, 1=CNPJ).</summary>
 public sealed class TipoInscricaoConverter : IValueConverter
 {

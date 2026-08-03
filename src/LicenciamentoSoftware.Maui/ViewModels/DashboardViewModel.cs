@@ -45,7 +45,7 @@ public partial class DashboardViewModel(
 
     // ── Ciclo de vida ─────────────────────────────────────────────────────────
 
-    public override async Task OnAppearing()
+    protected override async Task OnCarregarAsync()
     {
         Titulo = "Dashboard";
         NomeUsuario = authService.Nome ?? string.Empty;

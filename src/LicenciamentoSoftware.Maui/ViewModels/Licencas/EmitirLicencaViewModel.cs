@@ -78,7 +78,7 @@ public partial class EmitirLicencaViewModel(MauiApiClientFactory factory) : Base
 
     // ── Ciclo de vida ─────────────────────────────────────────────────────────
 
-    public override async Task OnAppearing()
+    protected override async Task OnCarregarAsync()
     {
         Titulo = "Emitir Licença";
         PassoAtual = 1;

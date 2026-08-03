@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:conv="clr-namespace:LicenciamentoSoftware.Maui.Converters"
        xmlns:views="clr-namespace:LicenciamentoSoftware.Maui.Views"
        xmlns:licencas="clr-namespace:LicenciamentoSoftware.Maui.Views.Licencas"
        xmlns:clientes="clr-namespace:LicenciamentoSoftware.Maui.Views.ClientesFinais"
@@ -8,9 +9,32 @@
        xmlns:aplicacoes="clr-namespace:LicenciamentoSoftware.Maui.Views.Aplicacoes"
        x:Class="LicenciamentoSoftware.Maui.AppShell"
        Shell.FlyoutBehavior="Flyout"
-       FlyoutBackgroundColor="{StaticResource Surface}">
+       FlyoutBackgroundColor="#ffffff">
+
+    <Shell.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <conv:StringNotNullConverter     x:Key="StringNotNullConverter" />
+            <conv:StringNullOrEmptyConverter x:Key="StringNullOrEmptyConverter" />
+            <conv:InverseBoolConverter       x:Key="InverseBoolConverter" />
+            <conv:TipoInscricaoConverter     x:Key="TipoInscricaoConverter" />
+            <conv:TipoInscricaoTextoConverter x:Key="TipoInscricaoTextoConverter" />
+        </ResourceDictionary>
+    </Shell.Resources>
+
+    <!-- ItemTemplate padrão — customização via FlyoutItem.FlyoutDisplayOptions -->
 
     <!-- ── Área pública (sem flyout) ── -->
+
+    <!-- Loading/splash — primeira rota, fica invisível durante verificação de sessão -->
+    <ShellContent x:Name="loadingShell"
+                  Route="loading"
+                  Shell.FlyoutItemIsVisible="False"
+                  ContentTemplate="{DataTemplate views:LoadingPage}" />
+
     <ShellContent x:Name="loginShell"
                   Route="login"
                   Shell.FlyoutItemIsVisible="False"
@@ -24,7 +48,7 @@
                   Shell.FlyoutItemIsVisible="False"
                   ContentTemplate="{DataTemplate views:CadastroPage}" />
 
-    <!-- ── Área autenticada (com flyout) ── -->
+    <!-- ── Área autenticada ── -->
     <FlyoutItem Title="Dashboard" Icon="home.png" Route="dashboard">
         <ShellContent ContentTemplate="{DataTemplate views:DashboardPage}" />
     </FlyoutItem>

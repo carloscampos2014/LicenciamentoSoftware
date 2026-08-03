@@ -49,13 +49,12 @@ public sealed class MauiApiClientFactory
 
     private T Criar<T>(Uri baseUri, Func<HttpClient, T> factory)
     {
-        // Android em dev requer bypass de certificado self-signed
         HttpMessageHandler handler;
-#if DEBUG && ANDROID
-        handler = new HttpClientHandler
-        {
-            ServerCertificateCustomValidationCallback = (_, _, _, _) => true
-        };
+
+#if ANDROID
+        // AndroidMessageHandler usa o stack nativo Java do Android
+        // necessário para funcionar corretamente com HTTP em redes locais
+        handler = new Xamarin.Android.Net.AndroidMessageHandler();
 #else
         handler = new HttpClientHandler();
 #endif

@@ -13,59 +13,81 @@ public partial class ListaClientesFinaisViewModel(MauiApiClientFactory factory) 
 
     [ObservableProperty] ObservableCollection<ClienteFinalResult> _itens = [];
     [ObservableProperty] string _busca = string.Empty;
-    [ObservableProperty] bool? _filtroAtivo = null;   // null = todos
+    [ObservableProperty] bool? _filtroAtivo = null;
     [ObservableProperty] int _totalRegistros;
     [ObservableProperty] int _paginaAtual = 1;
     [ObservableProperty] bool _temMaisPaginas;
     [ObservableProperty] string? _erro;
 
-    // ── Formulário de criação/edição ──────────────────────────────────────────
+    // ── Formulário ────────────────────────────────────────────────────────────
 
     [ObservableProperty] bool _exibirFormulario;
     [ObservableProperty] Guid? _idEdicao;
     [ObservableProperty] string _formRazaoSocial = string.Empty;
-    [ObservableProperty] int _formTipoInscricao = 1;           // 1=CPF, 2=CNPJ
+    [ObservableProperty] int _formTipoInscricao = 1;
     [ObservableProperty] string _formNumeroInscricao = string.Empty;
     [ObservableProperty] string _formEmail = string.Empty;
     [ObservableProperty] string _formTelefone = string.Empty;
     [ObservableProperty] string? _erroFormulario;
 
     private const int TamanhoPagina = 20;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     // ── Ciclo de vida ─────────────────────────────────────────────────────────
 
-    public override async Task OnAppearing()
+    protected override async Task OnCarregarAsync()
     {
         Titulo = "Clientes Finais";
-        await CarregarAsync();
+        await RecarregarAsync();
     }
 
-    // ── Comandos de lista ─────────────────────────────────────────────────────
+    // ── Comandos ──────────────────────────────────────────────────────────────
 
+    /// <summary>Recarga completa — limpa lista e busca página 1.</summary>
     [RelayCommand]
-    async Task CarregarAsync()
+    async Task RecarregarAsync()
     {
-        PaginaAtual = 1;
-        Itens.Clear();
-        await BuscarPaginaAsync();
+        if (!await _semaphore.WaitAsync(0)) return; // já está carregando
+        try
+        {
+            Ocupado = true;
+            Erro = null;
+            PaginaAtual = 1;
+            Itens.Clear();
+            TemMaisPaginas = false;
+            await BuscarPaginaInternaAsync();
+        }
+        finally
+        {
+            Ocupado = false;
+            _semaphore.Release();
+        }
     }
 
+    /// <summary>Carrega próxima página — só chamado pelo threshold da CollectionView.</summary>
     [RelayCommand]
     async Task CarregarMaisAsync()
     {
-        if (!TemMaisPaginas || Ocupado) return;
-        PaginaAtual++;
-        await BuscarPaginaAsync();
+        if (!TemMaisPaginas) return;
+        if (!await _semaphore.WaitAsync(0)) return;
+        try
+        {
+            Ocupado = true;
+            PaginaAtual++;
+            await BuscarPaginaInternaAsync();
+        }
+        finally
+        {
+            Ocupado = false;
+            _semaphore.Release();
+        }
     }
 
     [RelayCommand]
-    async Task BuscarAsync() => await CarregarAsync();
+    async Task BuscarAsync() => await RecarregarAsync();
 
-    private async Task BuscarPaginaAsync()
+    private async Task BuscarPaginaInternaAsync()
     {
-        Ocupado = true;
-        Erro = null;
-
         try
         {
             var resultado = await factory.ClienteFinal.ListarAsync(
@@ -77,18 +99,15 @@ public partial class ListaClientesFinaisViewModel(MauiApiClientFactory factory) 
             if (resultado is null) return;
 
             TotalRegistros = resultado.Total;
-            TemMaisPaginas = Itens.Count + resultado.Itens.Count < resultado.Total;
 
             foreach (var item in resultado.Itens)
                 Itens.Add(item);
+
+            TemMaisPaginas = Itens.Count < resultado.Total;
         }
         catch (Exception ex)
         {
             Erro = $"Erro ao carregar clientes: {ex.Message}";
-        }
-        finally
-        {
-            Ocupado = false;
         }
     }
 
@@ -98,11 +117,8 @@ public partial class ListaClientesFinaisViewModel(MauiApiClientFactory factory) 
     async Task DesativarAsync(ClienteFinalResult item)
     {
         var (sucesso, erro) = await factory.ClienteFinal.DesativarAsync(item.Id);
-
-        if (sucesso)
-            await CarregarAsync();
-        else
-            Erro = erro ?? "Erro ao desativar cliente.";
+        if (sucesso) await RecarregarAsync();
+        else Erro = erro ?? "Erro ao desativar.";
     }
 
     // ── Formulário ────────────────────────────────────────────────────────────
@@ -173,7 +189,7 @@ public partial class ListaClientesFinaisViewModel(MauiApiClientFactory factory) 
             if (sucesso)
             {
                 ExibirFormulario = false;
-                await CarregarAsync();
+                await RecarregarAsync();
             }
             else
             {

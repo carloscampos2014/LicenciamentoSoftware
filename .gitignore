@@ -484,3 +484,10 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Kiro IDE — arquivos de estado de sessão e hooks locais
+.kiro/session-state.md
+.kiro/hooks/
+
+# Override de URL para dev Android — cada dev cria localmente com seu IP
+src/LicenciamentoSoftware.Maui/Resources/Raw/appsettings.android.json
