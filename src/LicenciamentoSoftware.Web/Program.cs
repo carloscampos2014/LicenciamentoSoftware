@@ -17,6 +17,12 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri(baseAddress)
 });
 
+// HttpClient nomeado para chamadas BFF internas (ex: /bff/refresh na restauração de sessão)
+builder.Services.AddHttpClient("bff", client =>
+{
+    client.BaseAddress = new Uri(baseAddress);
+});
+
 // ApiHttpClientFactory — singleton que mantém HttpClients com token atualizado
 // Usar Singleton garante que a mesma instância (com o mesmo token) seja usada
 // em toda a vida do app no browser
@@ -40,7 +46,7 @@ builder.Services.AddSingleton(sp =>
 // à mesma ApiHttpClientFactory e atualizar os tokens
 builder.Services.AddSingleton<JwtAuthStateProvider>(sp =>
 {
-    var provider = new JwtAuthStateProvider();
+    var provider = new JwtAuthStateProvider(sp.GetRequiredService<IHttpClientFactory>());
     var factory = sp.GetRequiredService<ApiHttpClientFactory>();
     provider.SetApiFactory(factory);
     return provider;

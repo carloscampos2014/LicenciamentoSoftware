@@ -8,18 +8,27 @@ namespace LicenciamentoSoftware.Web.Services;
 /// <summary>
 /// Gerencia o estado de autenticação do Blazor WASM.
 /// O access token fica exclusivamente em memória (campo privado) — nunca toca localStorage ou cookies.
-/// O refresh é feito via BFF (/bff/refresh) que gerencia o cookie HttpOnly server-side.
+/// Na inicialização (após refresh da página), tenta restaurar a sessão via /bff/refresh usando o
+/// cookie HttpOnly gerenciado pelo BFF server-side.
 /// </summary>
 public sealed class JwtAuthStateProvider : AuthenticationStateProvider
 {
     private static readonly AuthenticationState Anonimo =
         new(new ClaimsPrincipal(new ClaimsIdentity()));
 
+    private readonly HttpClient _bffClient;
     private string? _accessToken;
     private ClaimsPrincipal _usuario = new(new ClaimsIdentity());
     private ApiHttpClientFactory? _apiFactory;
+    private bool _inicializado;
 
     public string? AccessToken => _accessToken;
+
+    public JwtAuthStateProvider(IHttpClientFactory httpClientFactory)
+    {
+        // Client simples sem handler de autenticação — usado exclusivamente para /bff/refresh
+        _bffClient = httpClientFactory.CreateClient("bff");
+    }
 
     /// <summary>
     /// Injeta a fábrica de clients após a criação para evitar dependência circular.
@@ -29,15 +38,61 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
         => _apiFactory = factory;
 
     /// <summary>
-    /// Retorna o estado atual. Chamado automaticamente pelo Blazor em cada render
-    /// e ao navegar para páginas protegidas.
+    /// Retorna o estado de autenticação atual.
+    /// Na primeira chamada (após refresh da página), tenta restaurar sessão via /bff/refresh.
     /// </summary>
-    public override Task<AuthenticationState> GetAuthenticationStateAsync()
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
-        if (string.IsNullOrEmpty(_accessToken))
-            return Task.FromResult(Anonimo);
+        // Se já tem token em memória, está autenticado
+        if (!string.IsNullOrEmpty(_accessToken))
+            return new AuthenticationState(_usuario);
 
-        return Task.FromResult(new AuthenticationState(_usuario));
+        // Na primeira chamada após inicialização/refresh, tenta restaurar via cookie
+        if (!_inicializado)
+        {
+            _inicializado = true;
+            await TentarRestaurarSessaoAsync();
+        }
+
+        if (string.IsNullOrEmpty(_accessToken))
+            return Anonimo;
+
+        return new AuthenticationState(_usuario);
+    }
+
+    /// <summary>
+    /// Tenta restaurar a sessão chamando /bff/refresh com o cookie HttpOnly.
+    /// Se o cookie for válido, restaura o access token silenciosamente.
+    /// Se não for, o usuário permanece anônimo e será redirecionado para /login.
+    /// </summary>
+    private async Task TentarRestaurarSessaoAsync()
+    {
+        try
+        {
+            var response = await _bffClient.PostAsync("/bff/refresh", null);
+            if (!response.IsSuccessStatusCode) return;
+
+            var resultado = await response.Content
+                .ReadFromJsonAsync<BffRefreshResponse>();
+
+            if (resultado?.AccessToken is null) return;
+
+            // Restaura sessão silenciosamente sem notificar (evita loop)
+            _accessToken = resultado.AccessToken;
+
+            var identity = new ClaimsIdentity(
+                claims: ParseClaimsFromJwt(resultado.AccessToken)
+                    .Append(new Claim(ClaimTypes.Name, resultado.Nome ?? string.Empty))
+                    .Append(new Claim(ClaimTypes.Role, resultado.Papel ?? string.Empty)),
+                authenticationType: "jwt");
+
+            _usuario = new ClaimsPrincipal(identity);
+            _apiFactory?.SetToken(resultado.AccessToken);
+        }
+        catch
+        {
+            // Sessão não restaurável — usuário fará login novamente
+        }
     }
 
     /// <summary>
@@ -55,8 +110,6 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
             authenticationType: "jwt");
 
         _usuario = new ClaimsPrincipal(identity);
-
-        // Atualiza o token em todos os HttpClients autenticados
         _apiFactory?.SetToken(accessToken);
 
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
@@ -71,8 +124,6 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
     {
         _accessToken = null;
         _usuario = new ClaimsPrincipal(new ClaimsIdentity());
-
-        // Remove o token de todos os HttpClients
         _apiFactory?.ClearToken();
 
         NotifyAuthenticationStateChanged(Task.FromResult(Anonimo));
@@ -109,4 +160,10 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
         }
         return Convert.FromBase64String(base64);
     }
+
+    private sealed record BffRefreshResponse(
+        string? AccessToken,
+        DateTime? Expiracao,
+        string? Nome,
+        string? Papel);
 }
