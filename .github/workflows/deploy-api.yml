@@ -1,0 +1,92 @@
+name: Deploy API
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/LicenciamentoSoftware.Api/**"
+      - "src/LicenciamentoSoftware.Application/**"
+      - "src/LicenciamentoSoftware.Infrastructure/**"
+      - "src/LicenciamentoSoftware.Domain/**"
+      - "src/LicenciamentoSoftware.Client/**"
+      - ".github/workflows/deploy-api.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-api
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Publish e Deploy API
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-
+
+      - name: Restore
+        run: dotnet restore src/LicenciamentoSoftware.Api/LicenciamentoSoftware.Api.csproj
+
+      - name: Publish API
+        run: |
+          dotnet publish src/LicenciamentoSoftware.Api/LicenciamentoSoftware.Api.csproj \
+            -c Release \
+            -r linux-x64 \
+            --self-contained false \
+            -o ./publish/api
+
+      - name: Configurar chave SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Parar serviço na VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo systemctl stop licenciamento-api || true"
+
+      - name: Enviar arquivos para VM
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+            ./publish/api/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/licenciamento/api/
+
+      - name: Ajustar permissões e iniciar serviço
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo chown -R licenciamento:licenciamento /opt/licenciamento/api && \
+               sudo systemctl enable licenciamento-api && \
+               sudo systemctl start licenciamento-api && \
+               sleep 5 && \
+               sudo systemctl is-active licenciamento-api"
+
+      - name: Health check
+        run: |
+          sleep 10
+          curl -f http://${{ secrets.SSH_HOST }}/health \
+            -H "Host: api.licensemanager.enzojb.com.br" \
+            --retry 5 --retry-delay 5 \
+            || echo "Health check falhou — verifique os logs na VM"
