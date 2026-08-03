@@ -31,23 +31,28 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
     {
         var resultado = await authService.LoginAsync(request, ct);
 
-        if (resultado is null)
+        if (!resultado.IsSuccess)
             return Unauthorized(new { Erro = "E-mail ou senha inválidos." });
 
-        if (resultado.Requer2FA)
-            return Ok(new { requer2FA = true, tokenTemporario = resultado.TokenTemporario });
+        var body = resultado.Body;
 
-        if (resultado.AccessToken is null)
+        if (body is null)
+            return Unauthorized(new { Erro = "E-mail ou senha inválidos." });
+
+        if (body.Requer2FA)
+            return Ok(new { requer2FA = true, tokenTemporario = body.TokenTemporario });
+
+        if (body.AccessToken is null)
             return Unauthorized(new { Erro = "Falha na autenticação." });
 
-        SetRefreshTokenCookie(resultado.RefreshToken!, resultado.Expiracao);
+        SetRefreshTokenCookie(body.RefreshToken!, body.Expiracao);
 
         return Ok(new
         {
-            accessToken = resultado.AccessToken,
-            expiracao = resultado.Expiracao,
-            nome = resultado.Nome,
-            papel = resultado.Papel,
+            accessToken = body.AccessToken,
+            expiracao = body.Expiracao,
+            nome = body.Nome,
+            papel = body.Papel,
         });
     }
 
@@ -66,17 +71,19 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
     {
         var resultado = await authService.VerificarTotpAsync(request, ct);
 
-        if (resultado is null || resultado.AccessToken is null)
+        if (!resultado.IsSuccess || resultado.Body?.AccessToken is null)
             return Unauthorized(new { Erro = "Código TOTP inválido ou expirado." });
 
-        SetRefreshTokenCookie(resultado.RefreshToken!, resultado.Expiracao);
+        var body = resultado.Body;
+
+        SetRefreshTokenCookie(body.RefreshToken!, body.Expiracao);
 
         return Ok(new
         {
-            accessToken = resultado.AccessToken,
-            expiracao = resultado.Expiracao,
-            nome = resultado.Nome,
-            papel = resultado.Papel,
+            accessToken = body.AccessToken,
+            expiracao = body.Expiracao,
+            nome = body.Nome,
+            papel = body.Papel,
         });
     }
 

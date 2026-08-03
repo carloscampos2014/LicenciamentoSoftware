@@ -1,7 +1,19 @@
+using System.Net;
 using System.Net.Http.Json;
 using LicenciamentoSoftware.Client.Models.Auth;
 
 namespace LicenciamentoSoftware.Client.Services;
+
+/// <summary>
+/// Resultado tipado de uma chamada de autenticação.
+/// Carrega o StatusCode HTTP junto com o body deserializado,
+/// permitindo ao chamador distinguir 401 (credenciais inválidas)
+/// de falha de rede (HttpRequestException).
+/// </summary>
+public sealed record LoginApiResult(HttpStatusCode StatusCode, LoginResponse? Body)
+{
+    public bool IsSuccess => (int)StatusCode >= 200 && (int)StatusCode < 300;
+}
 
 /// <summary>
 /// Proxy HTTP para os endpoints de autenticação da API.
@@ -10,27 +22,31 @@ namespace LicenciamentoSoftware.Client.Services;
 public sealed class AuthApiService(HttpClient http)
 {
     /// <summary>Primeira etapa do login — retorna AccessToken ou desafio 2FA.</summary>
-    public async Task<LoginResponse?> LoginAsync(
+    public async Task<LoginApiResult> LoginAsync(
         LoginRequest request,
         CancellationToken ct = default)
     {
         var response = await http.PostAsJsonAsync("auth/login", request, ct);
-        if (!response.IsSuccessStatusCode)
-            return null;
 
-        return await response.Content.ReadFromJsonAsync<LoginResponse>(ct);
+        if (!response.IsSuccessStatusCode)
+            return new LoginApiResult(response.StatusCode, null);
+
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>(ct);
+        return new LoginApiResult(response.StatusCode, body);
     }
 
     /// <summary>Segunda etapa — valida código TOTP e retorna tokens definitivos.</summary>
-    public async Task<LoginResponse?> VerificarTotpAsync(
+    public async Task<LoginApiResult> VerificarTotpAsync(
         VerificarTotpRequest request,
         CancellationToken ct = default)
     {
         var response = await http.PostAsJsonAsync("auth/verify-2fa", request, ct);
-        if (!response.IsSuccessStatusCode)
-            return null;
 
-        return await response.Content.ReadFromJsonAsync<LoginResponse>(ct);
+        if (!response.IsSuccessStatusCode)
+            return new LoginApiResult(response.StatusCode, null);
+
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>(ct);
+        return new LoginApiResult(response.StatusCode, body);
     }
 
     /// <summary>Renova o par de tokens usando o refresh token.</summary>
