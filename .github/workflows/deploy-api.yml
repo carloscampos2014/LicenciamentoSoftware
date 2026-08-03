@@ -63,9 +63,17 @@ jobs:
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
               "sudo systemctl stop licenciamento-api || true"
 
+      - name: Preparar diretório na VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo mkdir -p /opt/licenciamento/api && sudo chown ubuntu:ubuntu /opt/licenciamento/api"
+
       - name: Enviar arquivos para VM
         run: |
-          rsync -avz --delete \
+          rsync -rlptz --delete \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
             ./publish/api/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/licenciamento/api/
