@@ -276,7 +276,7 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
         const string sql = """
             SELECT l.id                  AS "IdLicenca",
                    l.id_cliente          AS "IdCliente",
-                   a.nome               AS "NomeAplicacao",
+                   a.titulo             AS "NomeAplicacao",
                    lp.data_inicio       AS "DataInicio",
                    lp.data_fim          AS "DataFim",
                    lp.renovacao_automatica AS "RenovacaoAutomatica"
@@ -299,7 +299,7 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
         const string sql = """
             SELECT l.id                  AS "IdLicenca",
                    l.id_cliente          AS "IdCliente",
-                   a.nome               AS "NomeAplicacao",
+                   a.titulo             AS "NomeAplicacao",
                    lp.data_inicio       AS "DataInicio",
                    lp.data_fim          AS "DataFim",
                    lp.renovacao_automatica AS "RenovacaoAutomatica"
@@ -336,7 +336,7 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
         const string sql = """
             SELECT l.id                  AS "IdLicenca",
                    l.id_cliente          AS "IdCliente",
-                   a.nome               AS "NomeAplicacao",
+                   a.titulo             AS "NomeAplicacao",
                    lp.data_inicio       AS "DataInicio",
                    lp.data_fim          AS "DataFim",
                    lp.renovacao_automatica AS "RenovacaoAutomatica"

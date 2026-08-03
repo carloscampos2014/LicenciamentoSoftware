@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels.Licencas"
+             x:Class="LicenciamentoSoftware.Maui.Views.Licencas.EmitirLicencaPage"
+             x:DataType="vm:EmitirLicencaViewModel"
+             Title="{Binding Titulo}"
+             BackgroundColor="{StaticResource Background}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="16">
+
+            <!-- Indicador de passos -->
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="4">
+                <!-- Passo 1 -->
+                <Border Grid.Column="0" HeightRequest="4">
+                    <Border.BackgroundColor>
+                        <Binding Path="NoPasso1">
+                            <Binding.Converter>
+                                <x:StaticResource Key="InverseBoolConverter" />
+                            </Binding.Converter>
+                        </Binding>
+                    </Border.BackgroundColor>
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding NoPasso1}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding PassoAtual}" Value="2">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding PassoAtual}" Value="3">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                </Border>
+                <!-- Passo 2 -->
+                <Border Grid.Column="1" HeightRequest="4" BackgroundColor="{StaticResource Border}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding NoPasso2}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                        <DataTrigger TargetType="Border" Binding="{Binding PassoAtual}" Value="3">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Primary}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                </Border>
+                <!-- Passo 3 -->
+                <Border Grid.Column="2" HeightRequest="4" BackgroundColor="{StaticResource Border}">
+                    <Border.Triggers>
+                        <DataTrigger TargetType="Border" Binding="{Binding NoPasso3}" Value="True">
+                            <Setter Property="BackgroundColor" Value="{StaticResource Success}" />
+                        </DataTrigger>
+                    </Border.Triggers>
+                </Border>
+            </Grid>
+
+            <!-- Erro geral -->
+            <Label Text="{Binding Erro}"
+                   Style="{StaticResource LabelErro}"
+                   IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}" />
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASSO 1 — Selecionar cliente e aplicação        -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <VerticalStackLayout IsVisible="{Binding NoPasso1}" Spacing="12">
+
+                <Label Text="Passo 1 — Seleção" Style="{StaticResource LabelSecao}" />
+
+                <Label Text="Cliente Final" Style="{StaticResource LabelCampo}" />
+                <Picker ItemsSource="{Binding ClientesFinais}"
+                        SelectedItem="{Binding ClienteFinalSelecionado}"
+                        ItemDisplayBinding="{Binding RazaoSocial}"
+                        Title="Selecione o cliente final" />
+
+                <Label Text="Aplicação" Style="{StaticResource LabelCampo}" />
+                <Picker ItemsSource="{Binding Aplicacoes}"
+                        SelectedItem="{Binding AplicacaoSelecionada}"
+                        ItemDisplayBinding="{Binding Titulo}"
+                        Title="Selecione a aplicação" />
+
+                <!-- Tipo detectado automaticamente -->
+                <Border Style="{StaticResource Card}"
+                        BackgroundColor="{StaticResource InfoLight}"
+                        IsVisible="{Binding TipoLicenca, Converter={StaticResource StringNotNullConverter}}">
+                    <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                    <Label FontSize="13" TextColor="{StaticResource Info}">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Tipo de licença: " FontAttributes="Bold" />
+                                <Span Text="{Binding TipoLicenca}" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </Border>
+
+                <Button Text="Próximo →"
+                        Style="{StaticResource BotaoPrimario}"
+                        Command="{Binding AvancarCommand}"
+                        IsEnabled="{Binding NaoOcupado}" />
+            </VerticalStackLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASSO 2 — Configurar detalhes por tipo         -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <VerticalStackLayout IsVisible="{Binding NoPasso2}" Spacing="12">
+
+                <Label Text="Passo 2 — Configuração" Style="{StaticResource LabelSecao}" />
+
+                <!-- Campos Período -->
+                <VerticalStackLayout IsVisible="{Binding EhPeriodo}" Spacing="8">
+                    <Label Text="Data de Início" Style="{StaticResource LabelCampo}" />
+                    <DatePicker Date="{Binding DataInicio}" Format="dd/MM/yyyy" />
+
+                    <Label Text="Data de Fim" Style="{StaticResource LabelCampo}" />
+                    <DatePicker Date="{Binding DataFim}" Format="dd/MM/yyyy" />
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Renovação Automática"
+                               Style="{StaticResource LabelCampo}"
+                               VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding RenovacaoAutomatica}" />
+                    </Grid>
+                </VerticalStackLayout>
+
+                <!-- Campos Usuários -->
+                <VerticalStackLayout IsVisible="{Binding EhUsuarios}" Spacing="8">
+                    <Label Text="Quantidade Máxima de Usuários" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}" Padding="12,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding QuantidadeMaximaUsuarios}"
+                               Keyboard="Numeric"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+
+                    <Label Text="Máx. Sessões por Usuário" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}" Padding="12,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding MaxSessoesPorUsuario}"
+                               Keyboard="Numeric"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+
+                    <Label Text="Tempo Limite de Sessão (horas)" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}" Padding="12,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding TempoLimiteSessaoHoras}"
+                               Keyboard="Numeric"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Campos Instalação -->
+                <VerticalStackLayout IsVisible="{Binding EhInstalacao}" Spacing="8">
+                    <Label Text="Quantidade Máxima de Instalações" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}" Padding="12,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding QuantidadeMaximaInstalacoes}"
+                               Keyboard="Numeric"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Token -->
+                <BoxView HeightRequest="1" BackgroundColor="{StaticResource Border}" Margin="0,8" />
+
+                <Grid ColumnDefinitions="*,Auto">
+                    <Label Grid.Column="0" Text="Emitir Token junto com a licença"
+                           Style="{StaticResource LabelCampo}"
+                           VerticalOptions="Center" />
+                    <Switch Grid.Column="1" IsToggled="{Binding EmitirToken}" />
+                </Grid>
+
+                <VerticalStackLayout IsVisible="{Binding EmitirToken}" Spacing="8">
+                    <Label Text="Expiração do Token (minutos)" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}" Padding="12,0">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Text="{Binding ExpiracaoTokenMinutos}"
+                               Keyboard="Numeric"
+                               Style="{StaticResource CampoTexto}" />
+                    </Border>
+                </VerticalStackLayout>
+
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,8,0,0">
+                    <Button Grid.Column="0" Text="← Voltar"
+                            Style="{StaticResource BotaoSecundario}"
+                            Command="{Binding VoltarCommand}" />
+                    <Button Grid.Column="1" Text="Emitir Licença"
+                            Style="{StaticResource BotaoPrimario}"
+                            Command="{Binding EmitirCommand}"
+                            IsEnabled="{Binding NaoOcupado}" />
+                </Grid>
+
+                <ActivityIndicator IsRunning="{Binding Ocupado}"
+                                   IsVisible="{Binding Ocupado}" />
+            </VerticalStackLayout>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!-- PASSO 3 — Resultado                            -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <VerticalStackLayout IsVisible="{Binding NoPasso3}" Spacing="16">
+
+                <Label Text="✓ Licença Emitida com Sucesso!"
+                       FontSize="18" FontAttributes="Bold"
+                       TextColor="{StaticResource Success}"
+                       HorizontalOptions="Center" />
+
+                <Border Style="{StaticResource Card}">
+                    <Border.StrokeShape>RoundRectangle 10</Border.StrokeShape>
+                    <VerticalStackLayout Spacing="8"
+                                         BindingContext="{Binding LicencaEmitida}">
+                        <Label FontSize="15" FontAttributes="Bold"
+                               Text="{Binding ClienteFinalRazaoSocial}"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <Label FontSize="13" TextColor="{StaticResource TextSecondary}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="{Binding AplicativoTitulo}" />
+                                    <Span Text=" · " />
+                                    <Span Text="{Binding TipoLicencaDescricao}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                        <Label FontSize="12" TextColor="{StaticResource TextSecondary}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="ID: " FontAttributes="Bold" />
+                                    <Span Text="{Binding Id}" />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Token gerado -->
+                <VerticalStackLayout
+                    IsVisible="{Binding TokenEmitido, Converter={StaticResource StringNotNullConverter}}"
+                    Spacing="8">
+                    <Label Text="Token HMAC Gerado" Style="{StaticResource LabelSecao}" />
+                    <Border Style="{StaticResource Card}"
+                            BackgroundColor="{StaticResource SuccessLight}">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Label Text="{Binding TokenEmitido}"
+                               FontFamily="Courier New"
+                               FontSize="11"
+                               TextColor="{StaticResource Success}"
+                               LineBreakMode="CharacterWrap" />
+                    </Border>
+                    <Label Text="Guarde este token — ele não poderá ser exibido novamente."
+                           FontSize="12" TextColor="{StaticResource Warning}"
+                           FontAttributes="Italic" />
+                </VerticalStackLayout>
+
+                <Button Text="Voltar para Licenças"
+                        Style="{StaticResource BotaoPrimario}"
+                        Command="{Binding VoltarParaListaCommand}" />
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

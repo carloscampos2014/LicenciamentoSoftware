@@ -151,11 +151,20 @@ O frontend é composto por dois projetos que trabalham juntos:
 
 ### Maui (Desktop + Mobile)
 
-- Projeto único com targets Windows e Android.
-- Consome `Client` para todas as chamadas à API.
-- Armazenamento seguro de token via `SecureStorage`.
-- UX adaptada para toque (mobile) e mouse/teclado (desktop).
-- Distribuição: instalador para Windows, Google Play para Android.
+- Projeto único (`LicenciamentoSoftware.Maui`) com targets `net10.0-windows10.0.19041.0` e `net10.0-android`.
+- **MVVM** com `CommunityToolkit.Mvvm 8.4.0` — source generators (`[ObservableProperty]`, `[RelayCommand]`).
+- `BaseViewModel`: `Ocupado`, `NaoOcupado`, `Titulo`, `OnAppearing()` com cache (não recarrega na segunda visita).
+- Consome `LicenciamentoSoftware.Client` para todas as chamadas à API — sem BFF.
+- **Autenticação:** `MauiAuthService` com `SecureStorage` (Android Keystore / Windows DPAPI). Login, TOTP, refresh silencioso e logout.
+- **Configuração em runtime:** `FileSystem.OpenAppPackageFileAsync("appsettings.json")` lê assets em runtime — não usa `GetManifestResourceStream` que leria a URL do assembly compilado.
+- **HTTP Android:** `AndroidMessageHandler` (handler nativo Java) — necessário para conectar corretamente em redes locais no Android.
+- **Shell:** flyout adaptativo — `FlyoutBehavior.Locked` em desktop (>= 900px), `Flyout` em mobile. No Android inicia com `Disabled` e muda para `Flyout` em `OnHandlerChanged` para evitar crash do `ShellFlyoutTemplatedContentRenderer`.
+- **Tema Android:** `Theme.MaterialComponents.DayNight.DarkActionBar` em `styles.xml` — obrigatório para evitar `IllegalArgumentException` do Material Components.
+- **Telas:** Login (split layout desktop/mobile), TOTP, Cadastro, Dashboard (7 métricas + alertas), Clientes Finais, Usuários, Aplicações (lista paginada + formulário overlay), Licenças (lista + detalhe), Emitir Licença (wizard 3 passos).
+- **Controls reutilizáveis:** `MetricaCardView` (BindableProperty Titulo/Valor/Subtitulo/CorValor), `ConfirmPopup` (ShowAsync retorna Task<bool>).
+- **Anti-duplicação:** `SemaphoreSlim(1,1)` com `WaitAsync(0)` em todos os ViewModels de lista — evita append duplo pelo `RemainingItemsThreshold` da CollectionView.
+- **DI:** Views/VMs do flyout como `Singleton` (preserva estado); auth e emissão como `Transient`.
+- Distribuição: instalador para Windows, APK/AAB para Android.
 
 ## Segurança
 

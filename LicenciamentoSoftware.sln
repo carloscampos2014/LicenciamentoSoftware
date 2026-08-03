@@ -50,6 +50,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenciamentoSoftware.Appli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenciamentoSoftware.IntegrationTests", "tests\LicenciamentoSoftware.IntegrationTests\LicenciamentoSoftware.IntegrationTests.csproj", "{625894FB-D46B-453B-8E4C-EA9984B28C17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LicenciamentoSoftware.Maui.Tests", "tests\LicenciamentoSoftware.Maui.Tests\LicenciamentoSoftware.Maui.Tests.csproj", "{53D6306C-6B72-4811-915C-CF8350B55F79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -192,6 +194,18 @@ Global
 		{625894FB-D46B-453B-8E4C-EA9984B28C17}.Release|x64.Build.0 = Release|Any CPU
 		{625894FB-D46B-453B-8E4C-EA9984B28C17}.Release|x86.ActiveCfg = Release|Any CPU
 		{625894FB-D46B-453B-8E4C-EA9984B28C17}.Release|x86.Build.0 = Release|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Debug|x64.Build.0 = Debug|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Debug|x86.Build.0 = Debug|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Release|x64.ActiveCfg = Release|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Release|x64.Build.0 = Release|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Release|x86.ActiveCfg = Release|Any CPU
+		{53D6306C-6B72-4811-915C-CF8350B55F79}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,5 +222,6 @@ Global
 		{353E4B6B-1046-403F-8F27-688086A619BF} = {224C1C51-0A19-44F2-AF3C-C9143037E775}
 		{7A557332-AF43-4BD8-9915-4EE09547D725} = {224C1C51-0A19-44F2-AF3C-C9143037E775}
 		{625894FB-D46B-453B-8E4C-EA9984B28C17} = {224C1C51-0A19-44F2-AF3C-C9143037E775}
+		{53D6306C-6B72-4811-915C-CF8350B55F79} = {224C1C51-0A19-44F2-AF3C-C9143037E775}
 	EndGlobalSection
 EndGlobal

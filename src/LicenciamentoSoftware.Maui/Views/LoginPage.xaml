@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels"
+             x:Class="LicenciamentoSoftware.Maui.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <!--
+        Layout split igual ao Blazor:
+        - Coluna esquerda: painel roxo com branding (oculto em telas estreitas)
+        - Coluna direita: formulário centralizado
+        OnSizeChanged no code-behind colapsa para uma coluna em mobile
+    -->
+    <Grid x:Name="RootGrid"
+          ColumnDefinitions="3*,7*"
+          ColumnSpacing="0">
+
+        <!-- ── Painel esquerdo — branding roxo ── -->
+        <Grid x:Name="PainelBranding"
+              Grid.Column="0"
+              BackgroundColor="{StaticResource Primary}">
+
+            <VerticalStackLayout VerticalOptions="Center"
+                                 HorizontalOptions="Center"
+                                 Padding="32"
+                                 Spacing="0">
+
+                <!-- Logo -->
+                <Border BackgroundColor="#ffffff22"
+                        WidthRequest="52" HeightRequest="52"
+                        HorizontalOptions="Start"
+                        Margin="0,0,0,32">
+                    <Border.StrokeShape>RoundRectangle 14</Border.StrokeShape>
+                    <Label Text="LS" FontSize="20" FontAttributes="Bold"
+                           TextColor="White"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+                </Border>
+
+                <Label Text="Gerencie suas licenças com segurança e eficiência"
+                       FontSize="22" FontAttributes="Bold"
+                       TextColor="White"
+                       LineBreakMode="WordWrap"
+                       Margin="0,0,0,24" />
+
+                <Label TextColor="#ffffffcc" FontSize="13" LineBreakMode="WordWrap"
+                       Text="Controle completo sobre suas licenças de software. Gerencie clientes, aplicações e tokens HMAC em uma única plataforma." />
+
+            </VerticalStackLayout>
+
+            <!-- Rodapé branding -->
+            <Label Text="© 2026 LicenseManager"
+                   TextColor="#ffffff66" FontSize="12"
+                   VerticalOptions="End" HorizontalOptions="Center"
+                   Margin="0,0,0,24" />
+        </Grid>
+
+        <!-- ── Painel direito — formulário ── -->
+        <Grid Grid.Column="1"
+              BackgroundColor="{StaticResource Background}">
+
+            <ScrollView HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        MaximumWidthRequest="400">
+
+                <VerticalStackLayout Padding="48,0" Spacing="0">
+
+                    <Label Text="Bem-vindo"
+                           FontSize="26" FontAttributes="Bold"
+                           TextColor="{StaticResource TextPrimary}"
+                           Margin="0,0,0,8" />
+
+                    <Label Text="Entre na sua conta para continuar"
+                           FontSize="14"
+                           TextColor="{StaticResource TextSecondary}"
+                           Margin="0,0,0,32" />
+
+                    <!-- E-mail -->
+                    <Label Text="E-mail" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}"
+                            Padding="12,0" Margin="0,0,0,16">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Style="{StaticResource CampoTexto}"
+                               Text="{Binding Email}"
+                               Keyboard="Email"
+                               Placeholder="seu@email.com"
+                               ReturnType="Next" />
+                    </Border>
+
+                    <!-- Senha -->
+                    <Label Text="Senha" Style="{StaticResource LabelCampo}" />
+                    <Border Style="{StaticResource Card}"
+                            Padding="12,0" Margin="0,0,0,8">
+                        <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
+                        <Entry Style="{StaticResource CampoTexto}"
+                               Text="{Binding Senha}"
+                               IsPassword="True"
+                               Placeholder="••••••••"
+                               ReturnType="Go"
+                               ReturnCommand="{Binding LoginCommand}" />
+                    </Border>
+
+                    <!-- Erro -->
+                    <Label Text="{Binding Erro}"
+                           Style="{StaticResource LabelErro}"
+                           IsVisible="{Binding Erro, Converter={StaticResource StringNotNullConverter}}"
+                           Margin="0,4,0,8" />
+
+                    <!-- Botão Entrar -->
+                    <Button Text="Entrar"
+                            Style="{StaticResource BotaoPrimario}"
+                            Command="{Binding LoginCommand}"
+                            IsEnabled="{Binding NaoOcupado}"
+                            Margin="0,8,0,0" />
+
+                    <ActivityIndicator IsRunning="{Binding Ocupado}"
+                                       IsVisible="{Binding Ocupado}"
+                                       Color="{StaticResource Primary}"
+                                       Margin="0,8,0,0" />
+
+                    <!-- Separador -->
+                    <BoxView HeightRequest="1"
+                             BackgroundColor="{StaticResource Border}"
+                             Margin="0,24,0,16" />
+
+                    <!-- Link cadastro -->
+                    <HorizontalStackLayout HorizontalOptions="Center" Spacing="4">
+                        <Label Text="Ainda não tem conta?"
+                               TextColor="{StaticResource TextSecondary}"
+                               FontSize="14" />
+                        <Label Text="Cadastre-se"
+                               TextColor="{StaticResource Primary}"
+                               FontAttributes="Bold"
+                               FontSize="14">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding IrParaCadastroCommand}" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </HorizontalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </Grid>
+
+    </Grid>
+</ContentPage>

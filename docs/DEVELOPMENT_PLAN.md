@@ -214,20 +214,18 @@ Requisitos transversais:
 
 ---
 
-## Fase 10 — MAUI Desktop e Mobile
+## Fase 10 — MAUI Desktop e Mobile ✅ Concluída
 
 **Objetivo:** aplicativo MAUI com paridade funcional ao Blazor Web, para Windows e Android.
 
-1. Configurar projeto MAUI consumindo `LicenciamentoSoftware.Client`.
-2. Implementar fluxo de login + 2FA com `SecureStorage` para tokens.
-3. Criar Shell com navegação e guarda de rotas por papel.
-4. Implementar telas equivalentes às do Blazor, adaptadas para toque (mobile) e mouse/teclado (desktop).
-5. Configurar targets Windows (instalador) e Android (APK para Google Play).
-6. Escrever testes de UI nos fluxos críticos: login, emissão de licença, encerramento de sessão.
+1. ✅ **[#24]** Configurar projeto MAUI com `CommunityToolkit.Mvvm 8.4.0`, `MauiApiClientFactory`, `MauiAuthService` (SecureStorage), Shell com flyout, guard de rotas, Views de autenticação (Login, TOTP, Cadastro) e Converters.
+2. ✅ **[#25]** Implementar telas de gestão com paridade ao Blazor: Dashboard (7 métricas + alertas), Clientes Finais, Usuários, Aplicações (lista paginada + formulário overlay), Licenças (lista + detalhe), Emitir Licença (wizard 3 passos), Controls reutilizáveis (MetricaCardView, ConfirmPopup).
+3. ✅ Build aprovado: Windows (0 erros) e Android (0 erros, 1 warning pré-existente).
+4. ✅ Projeto de testes `LicenciamentoSoftware.Maui.Tests` com 46 testes aprovados.
 
-**Testes mínimos:** login com 2FA funciona no emulador Android e no Windows; rota protegida redireciona; token armazenado no `SecureStorage` não vaza em logs.
+**Resultado:** 253 testes aprovados (207 backend + 46 MAUI). Paridade funcional completa com o portal Web. Targets: `net10.0-windows10.0.19041.0` e `net10.0-android`.
 
-**Demo:** mesmo fluxo da Fase 9 executado no app Android — login, emitir licença, encerrar sessão manualmente.
+**Demo:** login com 2FA → dashboard com métricas do tenant → emitir licença via wizard → ver sessões ativas → encerrar sessão → renovar token HMAC.
 
 ---
 

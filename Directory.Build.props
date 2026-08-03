@@ -38,7 +38,7 @@
     Suprime warnings específicos do MAUI que não são controlados pelo código da solução.
   -->
   <PropertyGroup Condition="$(MSBuildProjectName.EndsWith('.Maui'))">
-    <NoWarn>$(NoWarn);CS1591;NU1803</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;NU1803;MVVMTK0045</NoWarn>
   </PropertyGroup>
 
   <!--

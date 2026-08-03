@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LicenciamentoSoftware.Maui.Views.LoadingPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource Background}">
+
+    <Grid>
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="16">
+
+            <Border BackgroundColor="{StaticResource Primary}"
+                    WidthRequest="64" HeightRequest="64"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape>RoundRectangle 16</Border.StrokeShape>
+                <Label Text="LS" FontSize="22" FontAttributes="Bold"
+                       TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+
+            <Label Text="LicenseManager"
+                   FontSize="18" FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalOptions="Center" />
+
+            <ActivityIndicator IsRunning="True"
+                               Color="{StaticResource Primary}"
+                               HorizontalOptions="Center" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="LicenciamentoSoftware.Maui.Controls.MetricaCardView">
+
+    <Border Style="{StaticResource Card}" Padding="16">
+        <Border.StrokeShape>RoundRectangle 10</Border.StrokeShape>
+        <VerticalStackLayout Spacing="4">
+
+            <Label Text="{Binding Titulo, Source={RelativeSource AncestorType={x:Type ContentView}}}"
+                   FontSize="12"
+                   TextColor="{StaticResource TextSecondary}"
+                   LineBreakMode="WordWrap" />
+
+            <Label Text="{Binding Valor, Source={RelativeSource AncestorType={x:Type ContentView}}}"
+                   FontSize="26"
+                   FontAttributes="Bold"
+                   TextColor="{Binding CorValor, Source={RelativeSource AncestorType={x:Type ContentView}}}" />
+
+            <Label Text="{Binding Subtitulo, Source={RelativeSource AncestorType={x:Type ContentView}}}"
+                   FontSize="11"
+                   TextColor="{StaticResource TextSecondary}"
+                   IsVisible="{Binding Subtitulo,
+                       Source={RelativeSource AncestorType={x:Type ContentView}},
+                       Converter={StaticResource StringNotNullConverter}}" />
+
+        </VerticalStackLayout>
+    </Border>
+</ContentView>
