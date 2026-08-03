@@ -1,3 +1,4 @@
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Commands;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Queries;
@@ -30,6 +31,8 @@ public sealed class LicencaController : ControllerBase
     private readonly EncerrarSessaoHandler _encerrarSessaoHandler;
     private readonly LiberarInstalacaoHandler _liberarInstalacaoHandler;
 
+    private readonly ICurrentUser _currentUser;
+
     public LicencaController(
         EmitirTokenLicencaHandler emitirTokenHandler,
         RenovarTokenLicencaHandler renovarTokenHandler,
@@ -39,7 +42,8 @@ public sealed class LicencaController : ControllerBase
         DesativarLicencaHandler desativarHandler,
         RenovarPeriodoHandler renovarPeriodoHandler,
         EncerrarSessaoHandler encerrarSessaoHandler,
-        LiberarInstalacaoHandler liberarInstalacaoHandler)
+        LiberarInstalacaoHandler liberarInstalacaoHandler,
+        ICurrentUser currentUser)
     {
         _emitirTokenHandler       = emitirTokenHandler;
         _renovarTokenHandler      = renovarTokenHandler;
@@ -50,17 +54,17 @@ public sealed class LicencaController : ControllerBase
         _renovarPeriodoHandler    = renovarPeriodoHandler;
         _encerrarSessaoHandler    = encerrarSessaoHandler;
         _liberarInstalacaoHandler = liberarInstalacaoHandler;
+        _currentUser              = currentUser;
     }
 
     // =========================================================================
     // CRUD de licença (Fase 6)
     // =========================================================================
 
-    /// <summary>Lista licenças com filtros e paginação.</summary>
+    /// <summary>Lista licenças com filtros e paginação. IdCliente sempre vem do JWT.</summary>
     [HttpGet]
     [Authorize(Policy = "Leitor")]
     public async Task<IActionResult> Listar(
-        [FromQuery] Guid? idCliente,
         [FromQuery] Guid? idClienteFinal,
         [FromQuery] Guid? idAplicativo,
         [FromQuery] bool? ativo,
@@ -68,23 +72,32 @@ public sealed class LicencaController : ControllerBase
         [FromQuery] int tamanhoPagina = 20,
         CancellationToken ct = default)
     {
+        // IdCliente SEMPRE vem do JWT — nunca da query string
         var resultado = await _listarHandler.HandleAsync(
             new ListarLicencasQuery
             {
-                IdCliente = idCliente, IdClienteFinal = idClienteFinal,
-                IdAplicativo = idAplicativo, Ativo = ativo,
-                Pagina = pagina, TamanhoPagina = tamanhoPagina,
+                IdCliente = _currentUser.IdCliente,
+                IdClienteFinal = idClienteFinal,
+                IdAplicativo = idAplicativo,
+                Ativo = ativo,
+                Pagina = pagina,
+                TamanhoPagina = tamanhoPagina,
             }, ct);
         return Ok(resultado);
     }
 
-    /// <summary>Busca uma licença pelo ID.</summary>
+    /// <summary>Busca uma licença pelo ID. Retorna 404 se não pertencer ao tenant do usuário.</summary>
     [HttpGet("{id:guid}")]
     [Authorize(Policy = "Leitor")]
     public async Task<IActionResult> BuscarPorId(Guid id, CancellationToken ct)
     {
         var resultado = await _buscarHandler.HandleAsync(id, ct);
-        return resultado is null ? NotFound() : Ok(resultado);
+
+        // Garante isolamento de tenant — nunca retorna licença de outro cliente
+        if (resultado is null || resultado.IdCliente != _currentUser.IdCliente)
+            return NotFound();
+
+        return Ok(resultado);
     }
 
     /// <summary>
