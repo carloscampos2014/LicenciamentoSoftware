@@ -80,7 +80,9 @@ else
         {
             <div class="form-group">
                 <label class="form-label">Senha *</label>
-                <input class="form-control" type="password" @bind="_form.Senha" />
+                <PasswordInput @bind-Value="_form.SenhaInput"
+                               Autocomplete="new-password"
+                               MostrarForca="true" />
             </div>
         }
         <ApiError Erro="@_formErro" Erros="@_formErros" />
@@ -171,7 +173,8 @@ else
     {
         public string Nome { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string? Senha { get; set; }
-        public void Reset() { Nome = string.Empty; Email = string.Empty; Senha = null; }
+        public string SenhaInput { get; set; } = string.Empty;
+        public string? Senha => string.IsNullOrEmpty(SenhaInput) ? null : SenhaInput;
+        public void Reset() { Nome = string.Empty; Email = string.Empty; SenhaInput = string.Empty; }
     }
 }

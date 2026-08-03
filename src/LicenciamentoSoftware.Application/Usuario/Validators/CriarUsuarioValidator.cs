@@ -1,4 +1,5 @@
 using FluentValidation;
+using LicenciamentoSoftware.Application.Common;
 using LicenciamentoSoftware.Application.Usuario.Commands;
 
 namespace LicenciamentoSoftware.Application.Usuario.Validators;
@@ -24,7 +25,7 @@ public sealed class CriarUsuarioValidator : AbstractValidator<CriarUsuarioComman
 
         RuleFor(x => x.Senha)
             .NotEmpty().WithMessage("Senha é obrigatória.")
-            .MinimumLength(8).WithMessage("Senha deve ter pelo menos 8 caracteres.");
+            .Must(PasswordRules.IsSenhaForte).WithMessage(PasswordRules.MensagemErro);
 
         RuleFor(x => x.Papel)
             .Must(p => PapeisValidos.Contains(p))

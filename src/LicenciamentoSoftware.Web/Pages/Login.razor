@@ -54,9 +54,9 @@
 
             <div class="form-group">
                 <label class="form-label">Senha</label>
-                <input class="form-control" type="password" @bind="_senha"
-                       placeholder="••••••••" autocomplete="current-password"
-                       @onkeyup="HandleEnter" />
+                <PasswordInput @bind-Value="_senha"
+                               Placeholder="••••••••"
+                               Autocomplete="current-password" />
             </div>
 
             @if (_erro is not null)
