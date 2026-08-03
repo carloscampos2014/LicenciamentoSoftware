@@ -99,3 +99,12 @@ jobs:
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
               "curl -f -H 'Host: licensemanager.enzojb.com.br' http://localhost:5017/health || \
                (sudo systemctl status licenciamento-web && exit 1)"
+
+      - name: Purgar cache do Cloudflare
+        run: |
+          curl -s -X POST \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}' \
+            | grep -q '"success":true' && echo "Cache purgado com sucesso" || echo "Aviso: purge pode ter falhado"
