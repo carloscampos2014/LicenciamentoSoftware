@@ -115,13 +115,16 @@
                 <div class="form-grid-2">
                     <div class="form-group">
                         <label class="form-label">Senha *</label>
-                        <input class="form-control" type="password" @bind="_model.Senha"
-                               autocomplete="new-password" />
+                        <PasswordInput @bind-Value="_model.Senha"
+                                       Placeholder="••••••••"
+                                       Autocomplete="new-password"
+                                       MostrarForca="true" />
                     </div>
                     <div class="form-group">
                         <label class="form-label">Confirmar senha *</label>
-                        <input class="form-control" type="password" @bind="_model.ConfirmarSenha"
-                               autocomplete="new-password" />
+                        <PasswordInput @bind-Value="_model.ConfirmarSenha"
+                                       Placeholder="••••••••"
+                                       Autocomplete="new-password" />
                     </div>
                 </div>
 

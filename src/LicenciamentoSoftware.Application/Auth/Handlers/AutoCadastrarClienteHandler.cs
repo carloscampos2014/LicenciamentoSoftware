@@ -3,6 +3,7 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Results;
 using LicenciamentoSoftware.Application.Cliente.Abstractions;
+using LicenciamentoSoftware.Application.Common;
 using LicenciamentoSoftware.Domain.Enums;
 using LicenciamentoSoftware.Domain.ValueObjects;
 
@@ -128,8 +129,8 @@ public sealed class AutoCadastrarClienteHandler
         if (string.IsNullOrWhiteSpace(c.EmailResponsavel))
             erros.Add("E-mail do responsável é obrigatório.");
 
-        if (string.IsNullOrWhiteSpace(c.Senha) || c.Senha.Length < 8)
-            erros.Add("Senha deve ter no mínimo 8 caracteres.");
+        if (string.IsNullOrWhiteSpace(c.Senha) || !PasswordRules.IsSenhaForte(c.Senha))
+            erros.Add(PasswordRules.MensagemErro);
 
         return erros;
     }
