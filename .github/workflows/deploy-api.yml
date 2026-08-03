@@ -92,6 +92,7 @@ jobs:
           JwtSettings__Emissor=LicenciamentoSoftware
           JwtSettings__Audiencia=LicenciamentoSoftware
           JwtSettings__AccessTokenMinutos=60
+          HmacSettings__Secret=${{ secrets.HMAC_SECRET }}
           ENVEOF
           sudo chmod 600 /etc/licenciamento/env
           sudo chown root:root /etc/licenciamento/env
