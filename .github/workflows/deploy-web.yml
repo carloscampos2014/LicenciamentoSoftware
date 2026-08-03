@@ -57,9 +57,17 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p ${{ secrets.SSH_PORT }} ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
 
+      - name: Preparar diretório na VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo mkdir -p /var/www/licensemanager && sudo chown -R ${{ secrets.SSH_USER }}:${{ secrets.SSH_USER }} /var/www/licensemanager"
+
       - name: Enviar arquivos para VM
         run: |
-          rsync -avz --delete \
+          rsync -rlptz --delete \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
             ./publish/web/wwwroot/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/licensemanager/
