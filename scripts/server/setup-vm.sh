@@ -170,6 +170,7 @@ server {
     client_max_body_size 10M;
 
     # ── Cabeçalhos de segurança HTTP ──────────────────────────────────────────
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header X-Frame-Options           "SAMEORIGIN"                         always;
     add_header X-Content-Type-Options    "nosniff"                            always;
     add_header Referrer-Policy           "strict-origin-when-cross-origin"    always;
@@ -203,6 +204,7 @@ server {
     # ── Cabeçalhos de segurança HTTP ──────────────────────────────────────────
     # CSP permissivo para Blazor WASM: carrega scripts, estilos inline e
     # conecta com a API downstream
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header X-Frame-Options           "SAMEORIGIN"                         always;
     add_header X-Content-Type-Options    "nosniff"                            always;
     add_header Referrer-Policy           "strict-origin-when-cross-origin"    always;
