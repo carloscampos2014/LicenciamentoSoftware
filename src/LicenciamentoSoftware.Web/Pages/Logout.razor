@@ -8,6 +8,8 @@
     {
         await Http.PostAsync("/bff/logout", null);
         AuthProvider.MarcarDesautenticado();
-        Nav.NavigateTo("/login", forceLoad: false);
+        // forceLoad: true garante que o app reinicia do zero,
+        // limpando qualquer estado em memória e impedindo restauração de sessão
+        Nav.NavigateTo("/login", forceLoad: true);
     }
 }

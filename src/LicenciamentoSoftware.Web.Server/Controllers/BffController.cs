@@ -137,7 +137,14 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
         if (!string.IsNullOrEmpty(refreshToken))
             await authService.LogoutAsync(refreshToken, ct);
 
-        Response.Cookies.Delete(RefreshTokenCookie);
+        // Path deve coincidir com o usado na criação do cookie
+        Response.Cookies.Delete(RefreshTokenCookie, new CookieOptions
+        {
+            Path = "/bff",
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+        });
         return NoContent();
     }
 
