@@ -169,6 +169,13 @@ server {
     # Cloudflare faz o TLS — aqui só HTTP
     client_max_body_size 10M;
 
+    # ── Cabeçalhos de segurança HTTP ──────────────────────────────────────────
+    add_header X-Frame-Options           "SAMEORIGIN"                         always;
+    add_header X-Content-Type-Options    "nosniff"                            always;
+    add_header Referrer-Policy           "strict-origin-when-cross-origin"    always;
+    add_header Permissions-Policy        "camera=(), microphone=(), geolocation=()" always;
+    add_header Content-Security-Policy   "default-src 'self'; frame-ancestors 'none';" always;
+
     location / {
         proxy_pass         http://localhost:$API_PORT;
         proxy_http_version 1.1;
@@ -192,6 +199,15 @@ server {
 
     # Cloudflare faz o TLS — Nginx só recebe HTTP
     # O BFF (ASP.NET Core) serve o WASM estático e processa /bff/*
+
+    # ── Cabeçalhos de segurança HTTP ──────────────────────────────────────────
+    # CSP permissivo para Blazor WASM: carrega scripts, estilos inline e
+    # conecta com a API downstream
+    add_header X-Frame-Options           "SAMEORIGIN"                         always;
+    add_header X-Content-Type-Options    "nosniff"                            always;
+    add_header Referrer-Policy           "strict-origin-when-cross-origin"    always;
+    add_header Permissions-Policy        "camera=(), microphone=(), geolocation=()" always;
+    add_header Content-Security-Policy   "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://$API_DOMAIN;" always;
 
     location / {
         proxy_pass         http://localhost:$WEB_PORT;
