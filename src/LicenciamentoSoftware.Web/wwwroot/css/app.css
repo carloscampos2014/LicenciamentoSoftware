@@ -210,7 +210,17 @@ html, body {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+    gap: .75rem;
     margin-bottom: .75rem;
+}
+
+.item-card-header > *:first-child {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.item-card-header > .badge-pill {
+    flex-shrink: 0;
 }
 
 .item-card-title {
