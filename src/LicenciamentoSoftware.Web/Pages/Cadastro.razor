@@ -141,7 +141,22 @@
                     </div>
                 }
 
-                <button class="btn btn-primary w-100 py-2" @onclick="HandleCadastro" disabled="@_carregando">
+                <!-- LGPD — Art. 7 e 8: consentimento obrigatório -->
+                <div class="form-group mb-3">
+                    <div class="d-flex align-items-start gap-2">
+                        <input type="checkbox" id="lgpd-aceite" class="form-check-input mt-1 flex-shrink-0"
+                               @bind="_model.AceiteLgpd" />
+                        <label for="lgpd-aceite" class="form-check-label" style="font-size:.875rem;cursor:pointer">
+                            Li e aceito os
+                            <a href="/termos" target="_blank" style="color:#6c63ff">Termos de Uso</a>
+                            e a
+                            <a href="/privacidade" target="_blank" style="color:#6c63ff">Política de Privacidade</a>
+                        </label>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary w-100 py-2" @onclick="HandleCadastro"
+                        disabled="@(_carregando || !_model.AceiteLgpd)">
                     @if (_carregando) { <span class="spinner-border spinner-border-sm me-2"></span> }
                     Criar conta
                 </button>
@@ -149,6 +164,11 @@
                 <p class="text-center text-muted mt-3 mb-0" style="font-size:.875rem">
                     Já tem conta?
                     <a href="/login" style="color:#6c63ff;font-weight:600;text-decoration:none">Entrar</a>
+                </p>
+                <p class="text-center text-muted mt-2 mb-0" style="font-size:.75rem">
+                    <a href="/privacidade" style="color:#adb5bd">Política de Privacidade</a>
+                    ·
+                    <a href="/termos" style="color:#adb5bd">Termos de Uso</a>
                 </p>
             }
         </div>
@@ -179,6 +199,7 @@
                 EmailCliente = _model.EmailCliente, _model.Telefone,
                 _model.NomeResponsavel, EmailResponsavel = _model.EmailResponsavel,
                 _model.Senha,
+                AceiteLgpd = _model.AceiteLgpd,
             });
 
             if (response.IsSuccessStatusCode) { _sucesso = true; return; }
@@ -216,5 +237,6 @@
         public string EmailResponsavel { get; set; } = string.Empty;
         public string Senha { get; set; } = string.Empty;
         public string ConfirmarSenha { get; set; } = string.Empty;
+        public bool AceiteLgpd { get; set; }
     }
 }

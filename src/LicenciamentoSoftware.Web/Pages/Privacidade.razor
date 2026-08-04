@@ -1,0 +1,122 @@
+@page "/privacidade"
+@layout Layout.PublicLayout
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+
+<PageTitle>Política de Privacidade — LicenseManager</PageTitle>
+
+<div style="min-height:100vh;background:#f8f9fa;padding:2rem 1rem">
+    <div style="max-width:760px;margin:0 auto;background:white;border-radius:12px;padding:2.5rem;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+
+        <a href="/login" style="color:#6c63ff;font-size:.875rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;margin-bottom:1.5rem">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Voltar
+        </a>
+
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:2rem">
+            <div style="width:44px;height:44px;background:#6c63ff;border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:1rem;color:white;flex-shrink:0">LS</div>
+            <div>
+                <div style="font-weight:700;font-size:1.1rem">LicenseManager</div>
+                <div style="color:#6c757d;font-size:.8rem">Sistema de Licenças de Software</div>
+            </div>
+        </div>
+
+        <h1 style="font-size:1.5rem;font-weight:700;color:#212529;margin-bottom:.5rem">Política de Privacidade</h1>
+        <p style="color:#6c757d;font-size:.875rem;margin-bottom:2rem">
+            Última atualização: agosto de 2026. Versão 1.0.
+        </p>
+
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Esta Política de Privacidade descreve como o <strong>LicenseManager</strong> coleta, utiliza
+            e protege os dados pessoais dos seus usuários, em conformidade com a
+            <strong>Lei Geral de Proteção de Dados (LGPD — Lei 13.709/2018)</strong>.
+        </p>
+
+        <hr style="border-color:#e9ecef;margin:1.5rem 0" />
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">1. Dados coletados</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:.75rem">
+            Coletamos apenas os dados necessários para a prestação do serviço:
+        </p>
+        <ul style="font-size:.9375rem;color:#495057;line-height:1.9;padding-left:1.5rem;margin-bottom:1.5rem">
+            <li><strong>Dados da empresa:</strong> razão social, CPF/CNPJ, e-mail e telefone.</li>
+            <li><strong>Dados do responsável:</strong> nome completo e e-mail de acesso.</li>
+            <li><strong>Dados de acesso:</strong> hash da senha (não armazenamos a senha em texto claro), segredo TOTP (para 2FA).</li>
+            <li><strong>Dados de consentimento (LGPD):</strong> data, hora e endereço IP do aceite dos termos.</li>
+            <li><strong>Logs de auditoria:</strong> registro de operações realizadas no sistema (sem dados pessoais no corpo do log).</li>
+        </ul>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">2. Finalidade do tratamento</h2>
+        <ul style="font-size:.9375rem;color:#495057;line-height:1.9;padding-left:1.5rem;margin-bottom:1.5rem">
+            <li>Prestação do serviço de gerenciamento de licenças de software.</li>
+            <li>Autenticação e controle de acesso ao sistema.</li>
+            <li>Emissão e validação de tokens de licença.</li>
+            <li>Comunicação operacional sobre licenças próximas do vencimento.</li>
+            <li>Cumprimento de obrigações legais e regulatórias.</li>
+        </ul>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">3. Base legal</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            O tratamento dos dados é realizado com base no <strong>consentimento do titular</strong> (Art. 7, I da LGPD),
+            registrado no momento do cadastro, e no <strong>legítimo interesse</strong> para fins operacionais
+            e de segurança do sistema (Art. 7, IX da LGPD).
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">4. Proteção dos dados</h2>
+        <ul style="font-size:.9375rem;color:#495057;line-height:1.9;padding-left:1.5rem;margin-bottom:1.5rem">
+            <li>Senhas armazenadas com hash BCrypt (sem reversibilidade).</li>
+            <li>Comunicação criptografada via HTTPS/TLS em todas as requisições.</li>
+            <li>Tokens de licença assinados com HMAC-SHA256.</li>
+            <li>Autenticação de dois fatores (2FA TOTP) disponível para todas as contas.</li>
+            <li>Isolamento de dados por tenant — cada empresa acessa somente seus próprios dados.</li>
+            <li>Logs de auditoria de todas as operações de escrita.</li>
+        </ul>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">5. Compartilhamento de dados</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Não compartilhamos dados pessoais com terceiros, exceto quando exigido por obrigação legal
+            ou ordem judicial.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">6. Prazo de retenção</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Os dados pessoais são mantidos pelo período em que a conta estiver ativa.
+            Logs de auditoria são retidos por no mínimo 5 anos, conforme exigências legais.
+            Após a exclusão da conta, os dados pessoais identificáveis são anonimizados;
+            os registros de auditoria são preservados de forma anonimizada.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">7. Direitos do titular</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:.75rem">
+            Em conformidade com o Art. 18 da LGPD, você tem direito a:
+        </p>
+        <ul style="font-size:.9375rem;color:#495057;line-height:1.9;padding-left:1.5rem;margin-bottom:1.5rem">
+            <li><strong>Confirmação e acesso:</strong> saber quais dados seus estão armazenados.</li>
+            <li><strong>Correção:</strong> atualizar dados incompletos, inexatos ou desatualizados.</li>
+            <li><strong>Anonimização ou exclusão:</strong> solicitar a remoção dos seus dados pessoais através da opção "Excluir minha conta" nas configurações do sistema.</li>
+            <li><strong>Revogação do consentimento:</strong> a qualquer momento, o que resultará no encerramento do acesso ao serviço.</li>
+            <li><strong>Portabilidade:</strong> mediante solicitação ao DPO.</li>
+        </ul>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">8. Contato do responsável (DPO)</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:2rem">
+            Para exercer seus direitos ou esclarecer dúvidas sobre o tratamento dos seus dados,
+            entre em contato com nosso Encarregado de Proteção de Dados (DPO):
+        </p>
+        <div style="background:#f8f9fa;border-radius:8px;padding:1rem 1.25rem;font-size:.9rem;color:#495057;margin-bottom:2rem">
+            <strong>LicenseManager — Encarregado de Dados</strong><br />
+            E-mail: <a href="mailto:privacidade@licensemanager.enzojb.com.br" style="color:#6c63ff">privacidade@licensemanager.enzojb.com.br</a>
+        </div>
+
+        <hr style="border-color:#e9ecef;margin:1.5rem 0" />
+
+        <p class="text-center" style="font-size:.8rem;color:#adb5bd">
+            <a href="/termos" style="color:#adb5bd">Termos de Uso</a>
+            ·
+            <a href="/login" style="color:#adb5bd">Voltar ao login</a>
+        </p>
+    </div>
+</div>

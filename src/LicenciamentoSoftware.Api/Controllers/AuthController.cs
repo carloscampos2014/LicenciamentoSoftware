@@ -176,6 +176,8 @@ public sealed class AuthController : ControllerBase
         [FromBody] AutoCadastrarRequest request,
         CancellationToken cancellationToken)
     {
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? string.Empty;
+
         var resultado = await _autoCadastrarHandler.HandleAsync(
             new AutoCadastrarClienteCommand(
                 request.RazaoSocial,
@@ -185,7 +187,9 @@ public sealed class AuthController : ControllerBase
                 request.Telefone,
                 request.NomeResponsavel,
                 request.EmailResponsavel,
-                request.Senha),
+                request.Senha,
+                request.AceiteLgpd,
+                ip),
             cancellationToken);
 
         return resultado switch
@@ -219,4 +223,5 @@ public sealed record AutoCadastrarRequest(
     string? Telefone,
     string NomeResponsavel,
     string EmailResponsavel,
-    string Senha);
+    string Senha,
+    bool AceiteLgpd = false);

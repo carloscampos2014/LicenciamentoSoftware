@@ -107,8 +107,10 @@ public sealed class UsuarioRepository : IUsuarioRepository
         Usuario usuario, string papel, CancellationToken cancellationToken = default)
     {
         const string sqlUsuario = """
-            INSERT INTO usuario (id, id_cliente, nome, email, senha_hash, totp_secret_hash, ativo)
-            VALUES (@Id, @IdCliente, @Nome, @Email, @SenhaHash, @TotpSecretHash, @Ativo)
+            INSERT INTO usuario (id, id_cliente, nome, email, senha_hash, totp_secret_hash, ativo,
+                                 lgpd_aceito, lgpd_aceito_em, lgpd_ip_origem)
+            VALUES (@Id, @IdCliente, @Nome, @Email, @SenhaHash, @TotpSecretHash, @Ativo,
+                    @LgpdAceito, @LgpdAceitoEm, @LgpdIpOrigem)
             """;
 
         const string sqlPapel = """
@@ -127,6 +129,9 @@ public sealed class UsuarioRepository : IUsuarioRepository
                     usuario.SenhaHash,
                     usuario.TotpSecretHash,
                     usuario.Ativo,
+                    usuario.LgpdAceito,
+                    usuario.LgpdAceitoEm,
+                    usuario.LgpdIpOrigem,
                 },
                 transaction: _uow.Transaction,
                 cancellationToken: cancellationToken));
@@ -215,5 +220,81 @@ public sealed class UsuarioRepository : IUsuarioRepository
         return await conn.QueryFirstOrDefaultAsync<Application.Jobs.AdminClienteInfo>(
             new CommandDefinition(sql, new { IdCliente = idCliente },
                 cancellationToken: cancellationToken));
+    }
+
+    // -------------------------------------------------------------------------
+    // LGPD Art. 18 — anonimização de dados pessoais
+    // -------------------------------------------------------------------------
+
+    public async Task AnonimizarAsync(
+        Guid idUsuario, string nomeSubstituto, string emailSubstituto,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE usuario
+            SET nome             = @Nome,
+                email            = @Email,
+                senha_hash       = '',
+                totp_secret_hash = NULL
+            WHERE id = @Id
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { Id = idUsuario, Nome = nomeSubstituto, Email = emailSubstituto },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task RevogarTodosRefreshTokensAsync(
+        Guid idUsuario, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE refresh_token
+            SET revogado = TRUE
+            WHERE id_usuario = @IdUsuario
+              AND revogado   = FALSE
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { IdUsuario = idUsuario },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task DesativarUsuarioAsync(
+        Guid idUsuario, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE usuario SET ativo = FALSE WHERE id = @Id
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { Id = idUsuario },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task<bool> ExisteOutroAdminAsync(
+        Guid idCliente, Guid idUsuarioExcluindo, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT COUNT(1) FROM usuario u
+            INNER JOIN usuario_papel up ON up.id_usuario = u.id
+            WHERE u.id_cliente = @IdCliente
+              AND up.papel     = 'AdministradorCliente'
+              AND u.ativo      = TRUE
+              AND u.id        <> @IdUsuarioExcluindo
+            """;
+
+        using var conn = _factory.CreateConnection();
+        var count = await conn.ExecuteScalarAsync<int>(
+            new CommandDefinition(sql,
+                new { IdCliente = idCliente, IdUsuarioExcluindo = idUsuarioExcluindo },
+                cancellationToken: cancellationToken));
+
+        return count > 0;
     }
 }

@@ -74,6 +74,10 @@ public sealed class AutoCadastrarClienteHandler
             usuario = Domain.Entities.Usuario.Criar(
                 cliente.Id, command.NomeResponsavel,
                 senhaHash, command.EmailResponsavel);
+
+            // LGPD Art. 7 e 8 — registrar consentimento
+            if (command.AceiteLgpd)
+                usuario.RegistrarConsentimento(DateTime.UtcNow, command.IpOrigem);
         }
         catch (Domain.Exceptions.DomainException ex)
         {
@@ -131,6 +135,9 @@ public sealed class AutoCadastrarClienteHandler
 
         if (string.IsNullOrWhiteSpace(c.Senha) || !PasswordRules.IsSenhaForte(c.Senha))
             erros.Add(PasswordRules.MensagemErro);
+
+        if (!c.AceiteLgpd)
+            erros.Add("É necessário aceitar os Termos de Uso e a Política de Privacidade.");
 
         return erros;
     }

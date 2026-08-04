@@ -8,4 +8,5 @@ public sealed record AutoCadastroRequest(
     string? Telefone,
     string NomeResponsavel,
     string EmailResponsavel,
-    string Senha);
+    string Senha,
+    bool AceiteLgpd = false);

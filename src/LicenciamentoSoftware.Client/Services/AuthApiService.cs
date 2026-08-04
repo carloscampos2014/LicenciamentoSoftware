@@ -91,5 +91,39 @@ public sealed class AuthApiService(HttpClient http)
         return (false, "Erro inesperado. Tente novamente.", null);
     }
 
+    /// <summary>
+    /// LGPD Art. 18 — proxy para POST /usuarios/minha-conta/excluir.
+    /// Encaminha o access token do usuário no header Authorization.
+    /// </summary>
+    public async Task<(bool Sucesso, string? Erro)> ExcluirContaAsync(
+        string accessToken,
+        string senhaAtual,
+        CancellationToken ct = default)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post, "usuarios/minha-conta/excluir");
+        request.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+        request.Content = System.Net.Http.Json.JsonContent.Create(
+            new { SenhaAtual = senhaAtual });
+
+        var response = await http.SendAsync(request, ct);
+
+        if (response.IsSuccessStatusCode) return (true, null);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            return (false, "Senha incorreta.");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            var body = await response.Content
+                .ReadFromJsonAsync<ErroSimplesResponse>(ct);
+            return (false, body?.Erro ?? "Operação não permitida.");
+        }
+
+        return (false, "Erro inesperado. Tente novamente.");
+    }
+
     private sealed record ErrosResponse(IReadOnlyList<string> Erros);
+    private sealed record ErroSimplesResponse(string Erro);
 }

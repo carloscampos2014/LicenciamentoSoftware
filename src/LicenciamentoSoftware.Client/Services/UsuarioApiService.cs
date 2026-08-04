@@ -54,6 +54,33 @@ public sealed class UsuarioApiService(HttpClient http)
         return (false, "Erro inesperado.");
     }
 
+    /// <summary>
+    /// LGPD Art. 18 — solicita a exclusão/anonimização dos próprios dados pessoais.
+    /// Requer confirmação da senha atual.
+    /// </summary>
+    public async Task<(bool Sucesso, string? Erro)> ExcluirContaAsync(
+        string senhaAtual,
+        CancellationToken ct = default)
+    {
+        var response = await http.PostAsJsonAsync(
+            "usuarios/minha-conta/excluir",
+            new { SenhaAtual = senhaAtual },
+            ct);
+
+        if (response.IsSuccessStatusCode) return (true, null);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            return (false, "Senha incorreta.");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+        {
+            var body = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
+            return (false, body?.Erro ?? "Operação não permitida.");
+        }
+
+        return (false, "Erro inesperado. Tente novamente.");
+    }
+
     private static async Task<(bool Sucesso, T? Result, string? Erro, IReadOnlyList<string>? Erros)>
         ParseWriteResponseAsync<T>(HttpResponseMessage response, CancellationToken ct)
     {
