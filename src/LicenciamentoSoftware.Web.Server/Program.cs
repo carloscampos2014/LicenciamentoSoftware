@@ -44,7 +44,26 @@ else
 
 app.UseHttpsRedirection();
 app.UseBlazorFrameworkFiles();
-app.UseStaticFiles();
+
+// Arquivos estáticos — CSS/JS com versionamento não deve ser cacheado agressivamente
+// pelo CDN para evitar que versões antigas sejam servidas após deploy.
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        var path = ctx.File.Name;
+        // Arquivos com hash no nome (Blazor framework files) podem cachear por muito tempo.
+        // Arquivos sem hash (app.css, app.js) não devem ser cacheados pelo CDN.
+        if (path.Equals("app.css", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("app.js", StringComparison.OrdinalIgnoreCase) ||
+            path.Equals("index.html", StringComparison.OrdinalIgnoreCase))
+        {
+            ctx.Context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+            ctx.Context.Response.Headers.Pragma = "no-cache";
+            ctx.Context.Response.Headers.Expires = "0";
+        }
+    }
+});
 
 app.UseRouting();
 
