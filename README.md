@@ -59,6 +59,7 @@ tests/
 | 13 | Instaladores — MSIX Windows, APK/AAB Android (distribuição direta) | 🔜 Planejada |
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript | 🔜 Planejada |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
+| 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | 🔜 Planejada |
 
 **Testes:** 381 aprovados, 0 falhas (333 backend + 48 MAUI).
 

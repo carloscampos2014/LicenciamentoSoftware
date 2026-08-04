@@ -323,3 +323,16 @@ Cada SDK implementa:
 1. **[#112]** SDK Delphi — biblioteca nativa para sistemas Delphi/Pascal.
 2. **[#113]** SDK PHP — pacote Composer/Packagist. Suporte PHP 8.0+.
 3. **[#114]** SDK VB6 — DLL COM feita em C# expondo os métodos de validação para chamada via referência ActiveX no VB6.
+
+---
+
+## Fase 16 — Painel de Administração da Plataforma
+
+**Objetivo:** painel de monitoramento acessível via SSH tunnel para o operador da plataforma monitorar o sistema em tempo real, sem exposição pública.
+
+Acesso: `ssh -L 16000:localhost:5020 <vm>` → `http://localhost:16000`
+
+1. **[#116]** Projeto `LicenciamentoSoftware.Admin` — aplicação ASP.NET Core leve na porta `5020` (`localhost` only, nunca exposta pelo Nginx). HTTP Basic Auth. Página HTML com Bootstrap e atualização automática a cada 30 segundos. Consulta o banco diretamente via Dapper.
+2. **[#117]** Métricas globais da plataforma — total de clientes, usuários ativos, sessões abertas, licenças ativas/inativas, validações nas últimas 24h e 7 dias, erros por motivo, últimos logins (hora + IP), tamanho do banco, status dos serviços (API/BFF up/down), último horário de execução dos jobs.
+3. **[#120]** Monitoramento e backup do banco — script `setup-backup.sh` com cron diário às 2h (`pg_dump + gzip`, retenção de 7 dias em `/opt/backups/`). Painel exibe data/hora do último backup, tamanho, status (vermelho se mais de 24h sem backup) e botão para disparar backup manual.
+4. **[#121]** Configurar SSH tunnel — documentar acesso ao painel via SSH tunnel no README. Garantir que a porta `5020` não é exposta pelo Nginx nem pelo `ufw`.
