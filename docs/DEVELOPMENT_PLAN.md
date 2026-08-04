@@ -296,7 +296,6 @@ Requisitos transversais:
 
 1. **[#101]** Instalador MSIX para Windows — pacote assinado com certificado autoassinado para distribuição direta. Incluir instruções de instalação do certificado.
 2. **[#102]** APK/AAB assinado para Android — keystore guardado como GitHub Secret, APK pronto para distribuição direta.
-3. **[#103]** Publicação na Google Play Store — gerar AAB, documentar requisitos da ficha do app (conta de desenvolvedor Google Play necessária — taxa única USD 25).
 
 ---
 
