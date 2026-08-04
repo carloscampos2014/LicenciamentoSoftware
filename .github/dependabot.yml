@@ -1,0 +1,52 @@
+version: 2
+
+updates:
+  # Varredura de dependencias NuGet (.csproj e Directory.Build.props)
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "nuget"
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      # Agrupar patches e minor de pacotes de teste juntos
+      test-dependencies:
+        patterns:
+          - "xunit*"
+          - "FluentAssertions*"
+          - "Testcontainers*"
+          - "Microsoft.NET.Test.Sdk"
+          - "coverlet*"
+        update-types:
+          - "minor"
+          - "patch"
+      # Agrupar patches e minor de pacotes Microsoft juntos
+      microsoft-dependencies:
+        patterns:
+          - "Microsoft.*"
+          - "System.*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # Varredura de GitHub Actions (.github/workflows/*.yml)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(actions)"
