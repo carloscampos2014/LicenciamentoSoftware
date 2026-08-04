@@ -117,6 +117,10 @@ public partial class AppShell : Shell
 
     private async void OnLogoutTapped(object? sender, EventArgs e)
     {
+        // Fecha e desabilita o flyout antes de navegar — evita sidebar visível na tela de login
+        FlyoutIsPresented = false;
+        FlyoutBehavior = FlyoutBehavior.Disabled;
+
         await _authService.LogoutAsync();
         await GoToAsync("//login");
     }
