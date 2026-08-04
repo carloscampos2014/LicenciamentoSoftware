@@ -275,3 +275,52 @@ Requisitos transversais:
 - **Paginação cursor-based** para listagens de alto volume
 - **Fila de e-mails com retry automático** — para garantia de entrega em caso de falha SMTP
 - **Múltiplos provedores de e-mail** — SendGrid, Amazon SES, além de SMTP genérico
+
+---
+
+## Fase 12 — Melhorias do portal e adequações legais
+
+**Objetivo:** adequações legais, funcionalidades de perfil e qualidade de testes.
+
+1. **[#95]** CNPJ alfanumérico — atualizar `Inscricao.cs` para aceitar letras nas 8 primeiras posições conforme IN RFB 2.229/2024. Algoritmo de validação atualizado (A=10...Z=35). Máscara do frontend atualizada. Testes de domínio com casos alfanuméricos.
+2. **[#96]** Setup e gerenciamento de 2FA TOTP no portal Web — seção em `/minha-conta` para ativar/desativar autenticador, exibir QR code e confirmar primeiro código.
+3. **[#97]** Setup e gerenciamento de 2FA TOTP no app MAUI — mesma funcionalidade do item anterior, adaptada para Windows e Android.
+4. **[#98]** Tela de perfil da empresa — seção "Minha Empresa" em `/minha-conta` para editar razão social, e-mail e telefone do cliente. Endpoint `PUT /clientes/{id}` já existe no backend.
+5. **[#100]** Habilitar testes de integração no CI — adicionar etapa no `ci.yml` com Testcontainers + PostgreSQL e garantir que falha bloqueia o merge.
+
+---
+
+## Fase 13 — Instaladores
+
+**Objetivo:** distribuição do app MAUI para Windows e Android sem dependência de lojas.
+
+1. **[#101]** Instalador MSIX para Windows — pacote assinado com certificado autoassinado para distribuição direta. Incluir instruções de instalação do certificado.
+2. **[#102]** APK/AAB assinado para Android — keystore guardado como GitHub Secret, APK pronto para distribuição direta.
+3. **[#103]** Publicação na Google Play Store — gerar AAB, documentar requisitos da ficha do app (conta de desenvolvedor Google Play necessária — taxa única USD 25).
+
+---
+
+## Fase 14 — SDKs cliente (linguagens principais)
+
+**Objetivo:** bibliotecas prontas para uso nas linguagens mais relevantes do mercado, encapsulando a autenticação HMAC e os endpoints de validação.
+
+Cada SDK implementa:
+- Geração de HMAC-SHA256 com timestamp, nonce e assinatura
+- Chamadas aos 4 endpoints de validação (login, heartbeat, logout, instalação)
+- Retry automático em falhas de rede
+- Modelos de resposta tipados
+
+1. **[#108]** SDK C#/.NET — pacote NuGet. Targets: `net6.0`, `net8.0`, `net10.0`.
+2. **[#109]** SDK Java/Kotlin — pacote Maven/Gradle.
+3. **[#110]** SDK Python — pacote PyPI. Suporte Python 3.9+.
+4. **[#111]** SDK JavaScript + TypeScript — pacote npm com tipagem completa. Suporte Node.js e browser.
+
+---
+
+## Fase 15 — SDKs cliente (linguagens secundárias)
+
+**Objetivo:** atender sistemas legados e outras linguagens relevantes no mercado brasileiro.
+
+1. **[#112]** SDK Delphi — biblioteca nativa para sistemas Delphi/Pascal.
+2. **[#113]** SDK PHP — pacote Composer/Packagist. Suporte PHP 8.0+.
+3. **[#114]** SDK VB6 — DLL COM feita em C# expondo os métodos de validação para chamada via referência ActiveX no VB6.

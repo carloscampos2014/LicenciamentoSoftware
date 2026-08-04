@@ -55,6 +55,10 @@ tests/
 | 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
 | 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | ✅ Concluída |
 | — | LGPD — consentimento no cadastro, páginas públicas, exclusão de conta | ✅ Concluída |
+| 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup, perfil da empresa, testes de integração | 🔜 Planejada |
+| 13 | Instaladores — MSIX Windows, APK/AAB Android, Google Play Store | 🔜 Planejada |
+| 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript | 🔜 Planejada |
+| 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
 
 **Testes:** 381 aprovados, 0 falhas (333 backend + 48 MAUI).
 
