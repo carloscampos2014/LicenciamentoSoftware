@@ -192,6 +192,8 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<LogoutHandler>();
         services.AddScoped<RegistrarUsuarioHandler>();
         services.AddScoped<ConfigurarTotpHandler>();
+        services.AddScoped<ConfirmarTotpHandler>();
+        services.AddScoped<DesativarTotpHandler>();
         services.AddScoped<AutoCadastrarClienteHandler>();
 
         // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration

@@ -1,6 +1,7 @@
 using LicenciamentoSoftware.Client.Models.Auth;
 using LicenciamentoSoftware.Client.Services;
 using Microsoft.AspNetCore.Mvc;
+using QRCoder;
 
 namespace LicenciamentoSoftware.Web.Server.Controllers;
 

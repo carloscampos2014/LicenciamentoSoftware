@@ -19,6 +19,9 @@ public static class ServiceCollectionExtensions
         services.AddHttpClient<AplicacaoApiService>();
         services.AddHttpClient<TipoLicencaApiService>();
         services.AddHttpClient<LicencaApiService>();
+        services.AddHttpClient<TotpApiService>();
+        services.AddHttpClient<DashboardApiService>();
+        services.AddHttpClient<ClienteApiService>();
 
         return services;
     }

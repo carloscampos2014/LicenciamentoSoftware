@@ -17,6 +17,8 @@ public sealed class ApiHttpClientFactory
     public TipoLicencaApiService TipoLicenca { get; }
     public LicencaApiService Licenca { get; }
     public DashboardApiService Dashboard { get; }
+    public TotpApiService Totp { get; }
+    public ClienteApiService Cliente { get; }
 
     // Mantém referência para atualizar o token em todos os clients
     private readonly List<HttpClient> _authenticatedClients = [];
@@ -31,6 +33,8 @@ public sealed class ApiHttpClientFactory
         TipoLicenca  = CriarService(apiBase, c => new TipoLicencaApiService(c));
         Licenca      = CriarService(apiBase, c => new LicencaApiService(c));
         Dashboard    = CriarService(apiBase, c => new DashboardApiService(c));
+        Totp         = CriarService(apiBase, c => new TotpApiService(c));
+        Cliente      = CriarService(apiBase, c => new ClienteApiService(c));
 
         _baseClient = new HttpClient { BaseAddress = new Uri(baseAddress) };
     }

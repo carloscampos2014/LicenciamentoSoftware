@@ -1,3 +1,4 @@
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Handlers;
 using LicenciamentoSoftware.Application.Auth.Results;
@@ -20,7 +21,10 @@ public sealed class AuthController : ControllerBase
     private readonly LogoutHandler _logoutHandler;
     private readonly RegistrarUsuarioHandler _registrarHandler;
     private readonly ConfigurarTotpHandler _configurarTotpHandler;
+    private readonly ConfirmarTotpHandler _confirmarTotpHandler;
+    private readonly DesativarTotpHandler _desativarTotpHandler;
     private readonly AutoCadastrarClienteHandler _autoCadastrarHandler;
+    private readonly ICurrentUser _currentUser;
 
     public AuthController(
         LoginHandler loginHandler,
@@ -29,7 +33,10 @@ public sealed class AuthController : ControllerBase
         LogoutHandler logoutHandler,
         RegistrarUsuarioHandler registrarHandler,
         ConfigurarTotpHandler configurarTotpHandler,
-        AutoCadastrarClienteHandler autoCadastrarHandler)
+        ConfirmarTotpHandler confirmarTotpHandler,
+        DesativarTotpHandler desativarTotpHandler,
+        AutoCadastrarClienteHandler autoCadastrarHandler,
+        ICurrentUser currentUser)
     {
         _loginHandler = loginHandler;
         _totpHandler = totpHandler;
@@ -37,7 +44,10 @@ public sealed class AuthController : ControllerBase
         _logoutHandler = logoutHandler;
         _registrarHandler = registrarHandler;
         _configurarTotpHandler = configurarTotpHandler;
+        _confirmarTotpHandler = confirmarTotpHandler;
+        _desativarTotpHandler = desativarTotpHandler;
         _autoCadastrarHandler = autoCadastrarHandler;
+        _currentUser = currentUser;
     }
 
     /// <summary>Registra um novo usuário vinculado a um cliente.</summary>
@@ -167,6 +177,65 @@ public sealed class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Confirma que o autenticador foi configurado corretamente
+    /// validando o primeiro código TOTP gerado pelo app do usuário.
+    /// </summary>
+    [HttpPost("totp/confirmar")]
+    [Authorize]
+    public async Task<IActionResult> ConfirmarTotp(
+        [FromBody] ConfirmarTotpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await _confirmarTotpHandler.HandleAsync(
+            new ConfirmarTotpCommand(_currentUser.Id, request.Codigo),
+            cancellationToken);
+
+        return resultado switch
+        {
+            ConfirmarTotpResult.Sucesso       => Ok(new { Mensagem = "2FA confirmado e ativo." }),
+            ConfirmarTotpResult.CodigoInvalido => Unauthorized(new { Erro = "Código TOTP inválido ou expirado." }),
+            ConfirmarTotpResult.NaoEncontrado  => NotFound(new { Erro = "Usuário não encontrado ou 2FA não configurado." }),
+            _                                  => StatusCode(500),
+        };
+    }
+
+    /// <summary>
+    /// Desativa o 2FA TOTP após confirmação com o código atual.
+    /// </summary>
+    [HttpDelete("totp")]
+    [Authorize]
+    public async Task<IActionResult> DesativarTotp(
+        [FromBody] DesativarTotpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await _desativarTotpHandler.HandleAsync(
+            new DesativarTotpCommand(_currentUser.Id, request.CodigoAtual),
+            cancellationToken);
+
+        return resultado switch
+        {
+            DesativarTotpResult.Sucesso        => NoContent(),
+            DesativarTotpResult.CodigoInvalido => Unauthorized(new { Erro = "Código TOTP inválido." }),
+            DesativarTotpResult.NaoEncontrado  => NotFound(new { Erro = "2FA não está ativo para este usuário." }),
+            _                                  => StatusCode(500),
+        };
+    }
+
+    /// <summary>
+    /// Retorna o status do 2FA do usuário autenticado.
+    /// </summary>
+    [HttpGet("totp/status")]
+    [Authorize]
+    public async Task<IActionResult> StatusTotp(
+        [FromServices] IUsuarioRepository usuarioRepository,
+        CancellationToken cancellationToken)
+    {
+        var usuario = await usuarioRepository.BuscarPorIdAsync(_currentUser.Id, cancellationToken);
+        if (usuario is null) return NotFound();
+        return Ok(new { Ativo = usuario.TotpSecretHash is not null });
+    }
+
+    /// <summary>
     /// Auto-cadastro público: cria Cliente + primeiro Usuário (AdministradorCliente) em uma transação.
     /// Não requer autenticação.
     /// </summary>
@@ -215,6 +284,8 @@ public sealed record RefreshTokenRequest(string RefreshToken);
 public sealed record LogoutRequest(string RefreshToken);
 public sealed record RegistrarUsuarioRequest(Guid IdCliente, string Nome, string Email, string Senha);
 public sealed record ConfigurarTotpRequest(Guid IdUsuario, string Email);
+public sealed record ConfirmarTotpRequest(string Codigo);
+public sealed record DesativarTotpRequest(string CodigoAtual);
 public sealed record AutoCadastrarRequest(
     string RazaoSocial,
     int TipoInscricao,

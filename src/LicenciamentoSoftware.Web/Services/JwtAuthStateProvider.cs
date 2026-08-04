@@ -135,6 +135,23 @@ public sealed class JwtAuthStateProvider : AuthenticationStateProvider
     public string? ObterNome()
         => _usuario.FindFirst(ClaimTypes.Name)?.Value;
 
+    public string? ObterEmail()
+        => _usuario.FindFirst("email")?.Value
+        ?? _usuario.FindFirst(ClaimTypes.Email)?.Value;
+
+    public Guid? ObterIdUsuario()
+    {
+        var sub = _usuario.FindFirst("sub")?.Value
+               ?? _usuario.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        return Guid.TryParse(sub, out var id) ? id : null;
+    }
+
+    public Guid? ObterIdCliente()
+    {
+        var val = _usuario.FindFirst("id_cliente")?.Value;
+        return Guid.TryParse(val, out var id) ? id : null;
+    }
+
     // -------------------------------------------------------------------------
     // Parseia claims do payload JWT (base64url, sem verificação de assinatura —
     // a assinatura já foi verificada pela API antes de emitir o token)
