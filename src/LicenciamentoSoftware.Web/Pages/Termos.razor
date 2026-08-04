@@ -1,0 +1,118 @@
+@page "/termos"
+@layout Layout.PublicLayout
+@attribute [Microsoft.AspNetCore.Authorization.AllowAnonymous]
+
+<PageTitle>Termos de Uso — LicenseManager</PageTitle>
+
+<div style="min-height:100vh;background:#f8f9fa;padding:2rem 1rem">
+    <div style="max-width:760px;margin:0 auto;background:white;border-radius:12px;padding:2.5rem;box-shadow:0 1px 3px rgba(0,0,0,.08)">
+
+        <a href="/login" style="color:#6c63ff;font-size:.875rem;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem;margin-bottom:1.5rem">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Voltar
+        </a>
+
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:2rem">
+            <div style="width:44px;height:44px;background:#6c63ff;border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:1rem;color:white;flex-shrink:0">LS</div>
+            <div>
+                <div style="font-weight:700;font-size:1.1rem">LicenseManager</div>
+                <div style="color:#6c757d;font-size:.8rem">Sistema de Licenças de Software</div>
+            </div>
+        </div>
+
+        <h1 style="font-size:1.5rem;font-weight:700;color:#212529;margin-bottom:.5rem">Termos de Uso</h1>
+        <p style="color:#6c757d;font-size:.875rem;margin-bottom:2rem">
+            Última atualização: agosto de 2026. Versão 1.0.
+        </p>
+
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Ao criar uma conta e utilizar o <strong>LicenseManager</strong>, você concorda com os
+            presentes Termos de Uso. Leia-os com atenção antes de prosseguir.
+        </p>
+
+        <hr style="border-color:#e9ecef;margin:1.5rem 0" />
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">1. Descrição do serviço</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            O LicenseManager é uma plataforma para gerenciamento de licenças de software, permitindo
+            a emissão, controle e validação de licenças para aplicações de terceiros. O serviço é
+            destinado a empresas e profissionais que desenvolvem ou distribuem software.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">2. Elegibilidade</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            O uso do serviço é permitido para pessoas jurídicas ou pessoas físicas maiores de 18 anos
+            com capacidade legal para firmar contratos. Ao se cadastrar, você declara que as informações
+            fornecidas são verdadeiras e que possui autorização para representar a empresa indicada.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">3. Responsabilidades do usuário</h2>
+        <ul style="font-size:.9375rem;color:#495057;line-height:1.9;padding-left:1.5rem;margin-bottom:1.5rem">
+            <li>Manter a confidencialidade das credenciais de acesso (senha e código 2FA).</li>
+            <li>Utilizar o sistema exclusivamente para fins lícitos e legítimos.</li>
+            <li>Não tentar contornar mecanismos de segurança ou limites de licença.</li>
+            <li>Não compartilhar tokens de licença de forma contrária às condições acordadas com seus próprios clientes.</li>
+            <li>Notificar imediatamente em caso de suspeita de acesso não autorizado.</li>
+        </ul>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">4. Uso aceitável</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            É expressamente proibido usar o LicenseManager para distribuir, controlar ou monetizar
+            software ilegal, malicioso ou que viole direitos de terceiros. Reservamo-nos o direito
+            de suspender contas que violem esta política sem aviso prévio.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">5. Disponibilidade do serviço</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Nos esforçamos para manter o serviço disponível continuamente, mas não garantimos
+            disponibilidade ininterrupta. Manutenções programadas serão comunicadas com antecedência
+            sempre que possível.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">6. Propriedade intelectual</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Todo o código, design e conteúdo do LicenseManager são de propriedade de seus
+            desenvolvedores. Nenhuma parte pode ser reproduzida ou distribuída sem autorização expressa.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">7. Limitação de responsabilidade</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            O LicenseManager é fornecido "no estado em que se encontra". Não nos responsabilizamos
+            por danos indiretos, perda de dados ou interrupção de negócios decorrentes do uso ou
+            impossibilidade de uso do serviço.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">8. Alterações nos termos</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Podemos atualizar estes Termos periodicamente. Notificaremos os usuários ativos por e-mail
+            sobre mudanças relevantes. O uso continuado do serviço após a notificação implica
+            aceitação dos novos termos.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">9. Encerramento de conta</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:1.5rem">
+            Você pode encerrar sua conta a qualquer momento através da opção "Excluir minha conta"
+            no portal. Os dados pessoais serão anonimizados conforme nossa
+            <a href="/privacidade" style="color:#6c63ff">Política de Privacidade</a>.
+        </p>
+
+        <h2 style="font-size:1.1rem;font-weight:700;color:#212529;margin-bottom:.75rem">10. Lei aplicável</h2>
+        <p style="font-size:.9375rem;color:#495057;line-height:1.7;margin-bottom:2rem">
+            Estes Termos são regidos pelas leis brasileiras, em especial o Código Civil, o Marco Civil
+            da Internet (Lei 12.965/2014) e a LGPD (Lei 13.709/2018). Quaisquer disputas serão
+            dirimidas no foro da comarca de domicílio do usuário.
+        </p>
+
+        <hr style="border-color:#e9ecef;margin:1.5rem 0" />
+
+        <p class="text-center" style="font-size:.8rem;color:#adb5bd">
+            <a href="/privacidade" style="color:#adb5bd">Política de Privacidade</a>
+            ·
+            <a href="/login" style="color:#adb5bd">Voltar ao login</a>
+        </p>
+    </div>
+</div>

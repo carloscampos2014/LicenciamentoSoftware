@@ -1,0 +1,159 @@
+@page "/minha-conta"
+@inject HttpClient Http
+@inject JwtAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+
+<PageTitle>Minha Conta — LicenseManager</PageTitle>
+
+<div class="page-header">
+    <h1 class="page-title">Minha Conta</h1>
+    <p class="page-subtitle">Gerencie suas preferências e dados pessoais.</p>
+</div>
+
+<div style="max-width:600px">
+    <!-- Seção LGPD -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 style="font-size:1rem;font-weight:700;color:#212529;margin-bottom:.25rem">
+                Privacidade e dados pessoais
+            </h2>
+            <p class="text-muted mb-3" style="font-size:.875rem">
+                Em conformidade com a LGPD (Art. 18), você pode solicitar a exclusão dos seus dados pessoais.
+            </p>
+
+            <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:.875rem 1rem;font-size:.875rem;color:#856404;margin-bottom:1rem">
+                <strong>Atenção:</strong> esta ação é irreversível. Seus dados pessoais (nome e e-mail)
+                serão anonimizados e você perderá o acesso ao sistema com estas credenciais.
+            </div>
+
+            <button class="btn btn-outline-danger" @onclick="AbrirModalExcluir">
+                <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="me-2">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Excluir minha conta
+            </button>
+
+            <p class="mt-2 mb-0" style="font-size:.8rem;color:#adb5bd">
+                Leia nossa <a href="/privacidade" target="_blank" style="color:#6c63ff">Política de Privacidade</a>
+                para entender como tratamos seus dados.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão -->
+@if (_modalExcluirAberto)
+{
+    <div class="modal-backdrop" @onclick="FecharModal"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" style="color:#dc3545">Excluir minha conta</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size:.9rem;color:#495057">
+                        Para confirmar, digite sua senha atual. Esta ação não pode ser desfeita.
+                    </p>
+
+                    <div class="form-group">
+                        <label class="form-label">Senha atual *</label>
+                        <PasswordInput @bind-Value="_senhaConfirmacao"
+                                       Placeholder="••••••••"
+                                       Autocomplete="current-password" />
+                    </div>
+
+                    @if (_erroExcluir is not null)
+                    {
+                        <div class="alert alert-danger py-2 px-3" style="font-size:.875rem">@_erroExcluir</div>
+                    }
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-outline-secondary" @onclick="FecharModal" disabled="@_excluindo">
+                        Cancelar
+                    </button>
+                    <button class="btn btn-danger" @onclick="ConfirmarExclusao" disabled="@(_excluindo || string.IsNullOrWhiteSpace(_senhaConfirmacao))">
+                        @if (_excluindo)
+                        {
+                            <span class="spinner-border spinner-border-sm me-2"></span>
+                        }
+                        Confirmar exclusão
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _modalExcluirAberto;
+    private string _senhaConfirmacao = string.Empty;
+    private string? _erroExcluir;
+    private bool _excluindo;
+
+    private void AbrirModalExcluir()
+    {
+        _senhaConfirmacao = string.Empty;
+        _erroExcluir = null;
+        _modalExcluirAberto = true;
+    }
+
+    private void FecharModal()
+    {
+        if (_excluindo) return;
+        _modalExcluirAberto = false;
+        _senhaConfirmacao = string.Empty;
+        _erroExcluir = null;
+    }
+
+    private async Task ConfirmarExclusao()
+    {
+        if (string.IsNullOrWhiteSpace(_senhaConfirmacao)) return;
+
+        _excluindo = true;
+        _erroExcluir = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                "/bff/minha-conta/excluir",
+                new { SenhaAtual = _senhaConfirmacao });
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Dados anonimizados — fazer logout e redirecionar
+                await Http.PostAsync("/bff/logout", null);
+                AuthProvider.MarcarDesautenticado();
+                Nav.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                _erroExcluir = "Senha incorreta. Tente novamente.";
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                var body = await response.Content.ReadFromJsonAsync<ErroResponse>();
+                _erroExcluir = body?.Erro ?? "Operação não permitida.";
+                return;
+            }
+
+            _erroExcluir = "Erro inesperado. Tente novamente.";
+        }
+        catch
+        {
+            _erroExcluir = "Não foi possível conectar ao servidor.";
+        }
+        finally
+        {
+            _excluindo = false;
+        }
+    }
+
+    private sealed record ErroResponse(string Erro);
+}

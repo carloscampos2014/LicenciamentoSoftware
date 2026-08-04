@@ -21,4 +21,28 @@ public interface IUsuarioRepository
     /// </summary>
     Task<Jobs.AdminClienteInfo?> BuscarEmailAdminPorClienteAsync(
         Guid idCliente, CancellationToken cancellationToken = default);
+
+    // -------------------------------------------------------------------------
+    // LGPD Art. 18 — exclusão e anonimização de dados pessoais
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Anonimiza os dados pessoais do usuário: nome, email, senha_hash e totp_secret_hash.
+    /// Mantém o registro para preservar integridade referencial e logs de auditoria.
+    /// </summary>
+    Task AnonimizarAsync(Guid idUsuario, string nomeSubstituto, string emailSubstituto,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Revoga todos os refresh tokens ativos do usuário.</summary>
+    Task RevogarTodosRefreshTokensAsync(Guid idUsuario, CancellationToken cancellationToken = default);
+
+    /// <summary>Desativa a conta do usuário (ativo = false).</summary>
+    Task DesativarUsuarioAsync(Guid idUsuario, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Verifica se existe outro AdministradorCliente ativo no mesmo tenant,
+    /// excluindo o usuário indicado. Usado para impedir que o último admin se exclua.
+    /// </summary>
+    Task<bool> ExisteOutroAdminAsync(Guid idCliente, Guid idUsuarioExcluindo,
+        CancellationToken cancellationToken = default);
 }

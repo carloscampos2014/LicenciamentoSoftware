@@ -12,6 +12,11 @@ public sealed class Usuario
     public string? TotpSecretHash { get; private set; }
     public bool Ativo { get; private set; }
 
+    // LGPD — Art. 7 e 8: registro de consentimento
+    public bool LgpdAceito { get; private set; }
+    public DateTime? LgpdAceitoEm { get; private set; }
+    public string? LgpdIpOrigem { get; private set; }
+
     private Usuario() { }
 
     public static Usuario Criar(Guid idCliente, string nome, string senhaHash, string email = "")
@@ -68,6 +73,29 @@ public sealed class Usuario
     }
 
     public void RemoverTotpSecret() => TotpSecretHash = null;
+
+    public void RegistrarConsentimento(DateTime aceiteEm, string ipOrigem)
+    {
+        if (string.IsNullOrWhiteSpace(ipOrigem))
+            throw new DomainException("IP de origem é obrigatório para o registro de consentimento.");
+
+        LgpdAceito = true;
+        LgpdAceitoEm = aceiteEm.ToUniversalTime();
+        LgpdIpOrigem = ipOrigem.Trim();
+    }
+
+    /// <summary>
+    /// LGPD Art. 18 — Anonimiza dados pessoais do titular.
+    /// Substitui nome e email pelos dados da empresa (para AdministradorCliente)
+    /// ou por valores genéricos (para demais papéis), e apaga credenciais.
+    /// </summary>
+    public void AnonimizarDados(string nomeSubstituto, string emailSubstituto)
+    {
+        Nome = nomeSubstituto;
+        Email = emailSubstituto;
+        SenhaHash = string.Empty;
+        TotpSecretHash = null;
+    }
 
     public void Desativar()
     {

@@ -149,6 +149,7 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
     /// Proxy para POST /auth/cadastrar da API.
     /// O Blazor WASM chama este endpoint do BFF em vez da API diretamente,
     /// evitando necessidade de CORS entre origens diferentes.
+    /// IP do cliente é capturado aqui e enviado para a API via AutoCadastroRequest.
     /// </summary>
     [HttpPost("cadastrar")]
     public async Task<IActionResult> Cadastrar(
@@ -168,8 +169,31 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
     }
 
     // =========================================================================
-    // Auxiliar
+    // Minha Conta — proxy para a API (requer autenticação via JWT no header)
     // =========================================================================
+
+    /// <summary>
+    /// Proxy para POST /usuarios/minha-conta/excluir.
+    /// O access token é enviado pelo WASM no header Authorization.
+    /// </summary>
+    [HttpPost("minha-conta/excluir")]
+    public async Task<IActionResult> ExcluirMinhaConta(
+        [FromBody] ExcluirContaBffRequest request,
+        CancellationToken ct)
+    {
+        var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        if (string.IsNullOrEmpty(accessToken))
+            return Unauthorized();
+
+        var (sucesso, erro) = await authService.ExcluirContaAsync(accessToken, request.SenhaAtual, ct);
+
+        if (sucesso) return NoContent();
+
+        if (erro == "Senha incorreta.")
+            return Unauthorized(new { Erro = erro });
+
+        return Conflict(new { Erro = erro });
+    }
 
     private void SetRefreshTokenCookie(string refreshToken, DateTime? expiracao)
     {
@@ -185,3 +209,5 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
         });
     }
 }
+
+public sealed record ExcluirContaBffRequest(string SenhaAtual);

@@ -239,6 +239,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<DesativarUsuarioHandler>();
         services.AddScoped<BuscarUsuarioPorIdHandler>();
         services.AddScoped<ListarUsuariosHandler>();
+        services.AddScoped<ExcluirContaHandler>();
         // ClienteFinal
         services.AddScoped<CriarClienteFinalHandler>();
         services.AddScoped<AtualizarClienteFinalHandler>();

@@ -2,6 +2,7 @@ using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Usuario.Commands;
 using LicenciamentoSoftware.Application.Usuario.Handlers;
 using LicenciamentoSoftware.Application.Usuario.Queries;
+using LicenciamentoSoftware.Application.Usuario.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,6 +18,7 @@ public sealed class UsuariosController : ControllerBase
     private readonly DesativarUsuarioHandler _desativarHandler;
     private readonly BuscarUsuarioPorIdHandler _buscarHandler;
     private readonly ListarUsuariosHandler _listarHandler;
+    private readonly ExcluirContaHandler _excluirContaHandler;
     private readonly ICurrentUser _currentUser;
 
     public UsuariosController(
@@ -25,14 +27,16 @@ public sealed class UsuariosController : ControllerBase
         DesativarUsuarioHandler desativarHandler,
         BuscarUsuarioPorIdHandler buscarHandler,
         ListarUsuariosHandler listarHandler,
+        ExcluirContaHandler excluirContaHandler,
         ICurrentUser currentUser)
     {
-        _criarHandler     = criarHandler;
-        _atualizarHandler = atualizarHandler;
-        _desativarHandler = desativarHandler;
-        _buscarHandler    = buscarHandler;
-        _listarHandler    = listarHandler;
-        _currentUser      = currentUser;
+        _criarHandler        = criarHandler;
+        _atualizarHandler    = atualizarHandler;
+        _desativarHandler    = desativarHandler;
+        _buscarHandler       = buscarHandler;
+        _listarHandler       = listarHandler;
+        _excluirContaHandler = excluirContaHandler;
+        _currentUser         = currentUser;
     }
 
     [HttpGet]
@@ -114,7 +118,37 @@ public sealed class UsuariosController : ControllerBase
             _                                    => StatusCode(500),
         };
     }
+
+    /// <summary>
+    /// LGPD Art. 18 — o próprio usuário autenticado solicita a exclusão/anonimização
+    /// dos seus dados pessoais. Requer confirmação da senha atual.
+    /// </summary>
+    [HttpPost("minha-conta/excluir")]
+    [Authorize(Policy = "Leitor")] // qualquer usuário autenticado
+    public async Task<IActionResult> ExcluirMinhaConta(
+        [FromBody] ExcluirContaRequest request,
+        CancellationToken ct)
+    {
+        var resultado = await _excluirContaHandler.HandleAsync(
+            new ExcluirContaCommand(
+                _currentUser.Id,
+                _currentUser.IdCliente,
+                request.SenhaAtual), ct);
+
+        return resultado switch
+        {
+            ExcluirContaResult.Sucesso            => NoContent(),
+            ExcluirContaResult.SenhaInvalida      => Unauthorized(new { Erro = "Senha incorreta." }),
+            ExcluirContaResult.NaoEncontrado      => NotFound(),
+            ExcluirContaResult.UltimoAdministrador => Conflict(new
+            {
+                Erro = "Você é o único administrador ativo. Transfira a administração para outro usuário antes de excluir a conta."
+            }),
+            _ => StatusCode(500),
+        };
+    }
 }
 
 public sealed record CriarUsuarioRequest(string Nome, string Email, string Senha, string? Papel);
 public sealed record AtualizarUsuarioRequest(string Nome, string Email);
+public sealed record ExcluirContaRequest(string SenhaAtual);

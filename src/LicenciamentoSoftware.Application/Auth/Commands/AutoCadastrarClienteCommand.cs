@@ -8,4 +8,6 @@ public sealed record AutoCadastrarClienteCommand(
     string? Telefone,
     string NomeResponsavel,
     string EmailResponsavel,
-    string Senha);
+    string Senha,
+    bool AceiteLgpd = false,
+    string IpOrigem = "");
