@@ -63,10 +63,19 @@ public sealed class MauiAuthService(MauiApiClientFactory factory)
     {
         try
         {
-            var response = await factory.Auth.LoginAsync(new LoginRequest(email, senha));
+            var resultado = await factory.Auth.LoginAsync(new LoginRequest(email, senha));
+
+            if (!resultado.IsSuccess)
+            {
+                return resultado.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                    ? new LoginResultado.Erro("E-mail ou senha inválidos.")
+                    : new LoginResultado.Erro("Erro ao autenticar. Tente novamente.");
+            }
+
+            var response = resultado.Body;
 
             if (response is null)
-                return new LoginResultado.Erro("Não foi possível conectar ao servidor.");
+                return new LoginResultado.Erro("Resposta inesperada do servidor.");
 
             if (response.Requer2FA)
                 return new LoginResultado.Requer2FA(response.TokenTemporario ?? string.Empty);
@@ -81,9 +90,17 @@ public sealed class MauiAuthService(MauiApiClientFactory factory)
 
             return new LoginResultado.Sucesso();
         }
+        catch (HttpRequestException)
+        {
+            return new LoginResultado.Erro("Não foi possível conectar ao servidor.");
+        }
+        catch (TaskCanceledException)
+        {
+            return new LoginResultado.Erro("Tempo de conexão esgotado. Verifique sua internet.");
+        }
         catch (Exception ex)
         {
-            return new LoginResultado.Erro(ex.Message);
+            return new LoginResultado.Erro($"Erro inesperado: {ex.Message}");
         }
     }
 
@@ -93,8 +110,17 @@ public sealed class MauiAuthService(MauiApiClientFactory factory)
     {
         try
         {
-            var response = await factory.Auth.VerificarTotpAsync(
+            var resultado = await factory.Auth.VerificarTotpAsync(
                 new VerificarTotpRequest(tokenTemporario, codigo));
+
+            if (!resultado.IsSuccess)
+            {
+                return resultado.StatusCode == System.Net.HttpStatusCode.Unauthorized
+                    ? new LoginResultado.Erro("Código inválido ou expirado.")
+                    : new LoginResultado.Erro("Erro ao validar código. Tente novamente.");
+            }
+
+            var response = resultado.Body;
 
             if (response?.AccessToken is null)
                 return new LoginResultado.Erro("Código inválido ou expirado.");
@@ -106,9 +132,17 @@ public sealed class MauiAuthService(MauiApiClientFactory factory)
 
             return new LoginResultado.Sucesso();
         }
+        catch (HttpRequestException)
+        {
+            return new LoginResultado.Erro("Não foi possível conectar ao servidor.");
+        }
+        catch (TaskCanceledException)
+        {
+            return new LoginResultado.Erro("Tempo de conexão esgotado. Verifique sua internet.");
+        }
         catch (Exception ex)
         {
-            return new LoginResultado.Erro(ex.Message);
+            return new LoginResultado.Erro($"Erro inesperado: {ex.Message}");
         }
     }
 
