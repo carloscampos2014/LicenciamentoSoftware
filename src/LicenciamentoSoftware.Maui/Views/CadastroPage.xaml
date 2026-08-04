@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels"
+             xmlns:controls="clr-namespace:LicenciamentoSoftware.Maui.Controls"
              x:Class="LicenciamentoSoftware.Maui.Views.CadastroPage"
              x:DataType="vm:CadastroViewModel"
              Shell.NavBarIsVisible="False"
@@ -120,19 +121,19 @@
                         </Border>
 
                         <Label Text="Senha *" Style="{StaticResource LabelCampo}" />
-                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,12">
+                        <Border Style="{StaticResource Card}" Padding="4,0" Margin="0,0,0,12">
                             <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                            <Entry Style="{StaticResource CampoTexto}"
-                                   Text="{Binding Senha}"
-                                   IsPassword="True" />
+                            <controls:PasswordEntryControl
+                                Value="{Binding Senha}"
+                                Placeholder="••••••••" />
                         </Border>
 
                         <Label Text="Confirmar senha *" Style="{StaticResource LabelCampo}" />
-                        <Border Style="{StaticResource Card}" Padding="12,0" Margin="0,0,0,8">
+                        <Border Style="{StaticResource Card}" Padding="4,0" Margin="0,0,0,8">
                             <Border.StrokeShape>RoundRectangle 8</Border.StrokeShape>
-                            <Entry Style="{StaticResource CampoTexto}"
-                                   Text="{Binding ConfirmarSenha}"
-                                   IsPassword="True" />
+                            <controls:PasswordEntryControl
+                                Value="{Binding ConfirmarSenha}"
+                                Placeholder="••••••••" />
                         </Border>
 
                         <Label Text="{Binding Erro}"

@@ -49,23 +49,23 @@
                   ContentTemplate="{DataTemplate views:CadastroPage}" />
 
     <!-- ── Área autenticada ── -->
-    <FlyoutItem Title="Dashboard" Icon="home.png" Route="dashboard">
+    <FlyoutItem Title="Dashboard" Icon="home.svg" Route="dashboard">
         <ShellContent ContentTemplate="{DataTemplate views:DashboardPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Clientes" Icon="clientes.png" Route="clientes">
+    <FlyoutItem Title="Clientes" Icon="clientes.svg" Route="clientes">
         <ShellContent ContentTemplate="{DataTemplate clientes:ListaClientesFinaisPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Aplicações" Icon="aplicacoes.png" Route="aplicacoes">
+    <FlyoutItem Title="Aplicações" Icon="aplicacoes.svg" Route="aplicacoes">
         <ShellContent ContentTemplate="{DataTemplate aplicacoes:ListaAplicacoesPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Licenças" Icon="licencas.png" Route="licencas">
+    <FlyoutItem Title="Licenças" Icon="licencas.svg" Route="licencas">
         <ShellContent ContentTemplate="{DataTemplate licencas:ListaLicencasPage}" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Usuários" Icon="usuarios.png" Route="usuarios">
+    <FlyoutItem Title="Usuários" Icon="usuarios.svg" Route="usuarios">
         <ShellContent ContentTemplate="{DataTemplate usuarios:ListaUsuariosPage}" />
     </FlyoutItem>
 

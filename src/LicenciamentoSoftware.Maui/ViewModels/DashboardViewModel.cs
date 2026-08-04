@@ -89,6 +89,14 @@ public partial class DashboardViewModel(
     async Task LogoutAsync()
     {
         await authService.LogoutAsync();
+
+        // Fecha e desabilita o flyout antes de navegar — evita sidebar visível na tela de login
+        if (Shell.Current is AppShell appShell)
+        {
+            appShell.FlyoutIsPresented = false;
+            appShell.FlyoutBehavior = FlyoutBehavior.Disabled;
+        }
+
         await Shell.Current.GoToAsync("//login");
     }
 
