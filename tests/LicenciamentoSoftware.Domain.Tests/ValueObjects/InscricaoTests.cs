@@ -16,9 +16,10 @@ public class InscricaoTests
     private const string CnpjValidoDigitos = "11222333000181";
 
     // CNPJ alfanumérico válido — IN RFB 2.229/2024
-    // Raiz alfanumérica "B3LH8F120001", verificadores calculados: 80
-    private const string CnpjAlfanumericoValido        = "B3.LH8.F12/0001-80";
-    private const string CnpjAlfanumericoValidoNumero  = "B3LH8F12000180";
+    // Algoritmo oficial RFB: valor = ASCII(char) - 48
+    // Raiz "B3LH8F120001", verificadores calculados: 39
+    private const string CnpjAlfanumericoValido        = "B3.LH8.F12/0001-39";
+    private const string CnpjAlfanumericoValidoNumero  = "B3LH8F12000139";
 
     // -------------------------------------------------------------------------
     // CPF
@@ -103,7 +104,7 @@ public class InscricaoTests
     [Fact]
     public void Construtor_CnpjAlfanumericoMinusculo_NormalizaParaMaiusculo()
     {
-        // "b3lh8f12/0001-80" deve ser normalizado para "B3LH8F12000180"
+        // "b3lh8f12/0001-39" deve ser normalizado para "B3LH8F12000139"
         var inscricao = new Inscricao(TipoInscricao.PessoaJuridica,
             CnpjAlfanumericoValido.ToLowerInvariant());
         inscricao.Numero.Should().Be(CnpjAlfanumericoValidoNumero);

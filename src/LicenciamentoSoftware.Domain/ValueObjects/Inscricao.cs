@@ -99,10 +99,11 @@ public sealed record Inscricao
 
     /// <summary>
     /// Converte um caractere para seu valor numérico no algoritmo CNPJ alfanumérico.
-    /// Dígitos: valor direto. Letras A-Z: A=10, B=11, ..., Z=35.
+    /// Conforme documentação técnica da Receita Federal: valor = ASCII(char) - 48.
+    /// Dígitos '0'-'9': 0-9. Letras 'A'-'Z': A=17, B=18, ..., Z=42.
     /// </summary>
     private static int ValorChar(char c)
-        => char.IsDigit(c) ? c - '0' : c - 'A' + 10;
+        => (int)c - 48;
 
     public override string ToString() => Numero;
 }
