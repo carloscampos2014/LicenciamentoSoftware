@@ -230,7 +230,13 @@ public sealed class AuthController : ControllerBase
         [FromServices] IUsuarioRepository usuarioRepository,
         CancellationToken cancellationToken)
     {
-        var usuario = await usuarioRepository.BuscarPorIdAsync(_currentUser.Id, cancellationToken);
+        var sub = User.FindFirst("sub")?.Value
+               ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+        if (!Guid.TryParse(sub, out var idUsuario))
+            return Unauthorized();
+
+        var usuario = await usuarioRepository.BuscarPorIdAsync(idUsuario, cancellationToken);
         if (usuario is null) return NotFound();
         return Ok(new { Ativo = usuario.TotpSecretHash is not null });
     }
