@@ -15,7 +15,7 @@ Sistema de licenciamento de software construído com .NET 10, Clean Architecture
 | Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256, cookie HttpOnly (BFF) |
 | Jobs | BackgroundService + PeriodicTimer (interface IScheduledJob) |
 | E-mail | MailKit (SMTP) com templates HTML embarcados |
-| Mobile/Desktop | .NET MAUI (Android + Windows), CommunityToolkit.Mvvm 8.4.0 |
+| Mobile/Desktop | .NET MAUI (Android + Windows), CommunityToolkit.Mvvm 8.4.2 |
 | Testes | xUnit, FluentAssertions, NSubstitute, NetArchTest |
 
 ## Estrutura de projetos
@@ -53,24 +53,25 @@ tests/
 | 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
 | 9.1 | Dashboard Web + instrumentação de métricas e alertas | ✅ Concluída |
 | 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
-| 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | 🔄 Em andamento |
+| 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | ✅ Concluída |
+| — | LGPD — consentimento no cadastro, páginas públicas, exclusão de conta | ✅ Concluída |
 
-**Testes:** 253 aprovados, 0 falhas (207 backend + 46 MAUI).
+**Testes:** 381 aprovados, 0 falhas (333 backend + 48 MAUI).
 
 ## Infraestrutura de Produção
 
 | Componente | URL | Hospedagem |
 |---|---|---|
-| API | `https://licensemanager-api.enzojb.com.br` | Oracle Cloud VM — porta 5016 (systemd) |
-| Web (Blazor WASM + BFF) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM — porta 5017 (systemd) |
-| Banco de dados | `localhost:5432` (mesmo servidor da API) | Oracle Cloud VM (PostgreSQL local) |
+| API | `https://licensemanager-api.enzojb.com.br` | Oracle Cloud VM (systemd) |
+| Web (Blazor WASM + BFF) | `https://licensemanager.enzojb.com.br` | Oracle Cloud VM — Nginx estático |
+| Banco de dados | PostgreSQL local na VM | Oracle Cloud VM |
 | DNS / SSL / CDN | Cloudflare (enzojb.com.br) | Cloudflare |
 
 ### Deploy manual (primeiro setup)
 
 ```bash
-# 1. Conectar na VM
-ssh -i C:\Dev\ssh-key-2026-01-17.key -p 22022 ubuntu@137.131.209.235
+# 1. Conectar na VM (usar credenciais do GitHub Secret SSH_HOST / SSH_KEY)
+ssh -i <chave> -p <porta> <usuario>@<host>
 
 # 2. Rodar script de setup (uma vez)
 bash scripts/server/setup-vm.sh
@@ -94,8 +95,8 @@ Configurar os secrets antes do primeiro deploy:
 
 | Tipo | Nome | Destino | Proxy |
 |---|---|---|---|
-| A | `licensemanager` | `137.131.209.235` | ✅ Proxied |
-| A | `licensemanager-api` | `137.131.209.235` | ✅ Proxied |
+| A | `licensemanager` | `<IP da VM — configurado via GitHub Secret>` | ✅ Proxied |
+| A | `licensemanager-api` | `<IP da VM — configurado via GitHub Secret>` | ✅ Proxied |
 
 ## Como rodar localmente
 
