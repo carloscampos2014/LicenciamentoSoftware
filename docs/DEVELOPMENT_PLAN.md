@@ -229,22 +229,7 @@ Requisitos transversais:
 
 ---
 
-## Fase 11 — CI/CD e infraestrutura
-
-**Objetivo:** pipeline completo e deploy automatizado para todos os componentes.
-
-1. Configurar GitHub Actions: restore → build → testes unitários → testes de integração (Testcontainers) → análise estática.
-2. Deploy da API + BFF (Web.Server) em servidor (Oracle Cloud VM, Railway ou Render).
-3. Configurar HTTPS com Let's Encrypt na VM.
-4. Garantir que nenhum segredo está no repositório; usar GitHub Secrets para credenciais de deploy.
-
-**Testes mínimos:** pipeline falha se qualquer teste falhar; deploy não ocorre com build quebrado.
-
-**Demo:** push em `main` → pipeline verde → API + BFF deployados no servidor automaticamente.
-
----
-
-## Fase 11 — CI/CD e Infraestrutura 🔄 Em andamento
+## Fase 11 — CI/CD e Infraestrutura ✅ Concluída
 
 **Objetivo:** pipeline completo de CI/CD e deploy automatizado para todos os componentes.
 
@@ -254,15 +239,31 @@ Requisitos transversais:
 4. ✅ `appsettings.Production.json` — CORS apontando para `licensemanager.enzojb.com.br`, logs em `/var/log/licenciamento/`, jobs com intervalos de produção.
 5. ✅ Script `setup-vm.sh` — configura VM do zero: instala .NET 10, Nginx, cria usuário de service, cria systemd unit, configura ufw.
 6. ✅ Script `setup-github-secrets.ps1` — cria todos os secrets necessários via GitHub CLI.
-7. DNS via Cloudflare: `licensemanager.enzojb.com.br` e `licensemanager-api.enzojb.com.br` → `137.131.209.235` (Proxied — SSL e CDN automáticos).
+7. ✅ DNS via Cloudflare: `licensemanager.enzojb.com.br` e `licensemanager-api.enzojb.com.br` apontando para a VM (Proxied — SSL e CDN automáticos).
+8. ✅ **[#65]** Cabeçalhos de segurança HTTP no Nginx — `X-Frame-Options`, `X-Content-Type-Options`, `X-XSS-Protection`, `Referrer-Policy`, `Content-Security-Policy`, `HSTS`.
+9. ✅ **[#66]** Dependabot habilitado — varredura semanal de NuGet e GitHub Actions, PRs automáticos agrupados.
 
 **Infraestrutura:**
-- API: Oracle Cloud VM `137.131.209.235:22022` (Ubuntu 24.04, .NET 10, systemd)
+- API: Oracle Cloud VM (Ubuntu 24.04, .NET 10, systemd)
 - Web: Oracle Cloud VM Nginx estático
 - Banco: PostgreSQL local na Oracle Cloud VM (`localhost:5432`)
 - DNS/SSL/CDN: Cloudflare
 
 **GitHub Secrets necessários:** `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_KEY`, `DB_CONNECTION_STRING`, `JWT_SECRET`, `HMAC_SECRET`
+
+**Resultado:** pipeline CI/CD completo, deploy automático em produção a cada push no `master`, infraestrutura segura com cabeçalhos HTTP e varredura automática de vulnerabilidades.
+
+---
+
+## LGPD — Conformidade ✅ Concluída
+
+**Objetivo:** adequar o sistema à Lei Geral de Proteção de Dados (Lei 13.709/2018).
+
+1. ✅ **[#60]** Registro de consentimento no cadastro (Art. 7 e 8) — checkbox obrigatório na tela de cadastro; campos `lgpd_aceito`, `lgpd_aceito_em`, `lgpd_ip_origem` na tabela `usuario` (migration V005); IP do titular registrado automaticamente.
+2. ✅ **[#61]** Páginas públicas de Política de Privacidade (`/privacidade`) e Termos de Uso (`/termos`) — acessíveis sem autenticação, com conteúdo exigido pelo Art. 9; links no rodapé de login e cadastro.
+3. ✅ **[#62]** Mecanismo de exclusão e anonimização de conta (Art. 18) — `POST /usuarios/minha-conta/excluir` com confirmação de senha; `AdministradorCliente` tem dados substituídos pelos dados da empresa; demais papéis têm conta desativada e dados anonimizados; refresh tokens revogados; page `/minha-conta` com modal de confirmação.
+
+**Resultado:** 381 testes aprovados (107 Domain + 226 Application + 48 MAUI). Dados pessoais protegidos conforme LGPD.
 
 ---
 
