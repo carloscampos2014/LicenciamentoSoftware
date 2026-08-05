@@ -1,4 +1,5 @@
 using LicenciamentoSoftware.Client.Models.Auth;
+using LicenciamentoSoftware.Client.Models.Clientes;
 using LicenciamentoSoftware.Client.Services;
 using Microsoft.AspNetCore.Mvc;
 using QRCoder;
@@ -12,7 +13,7 @@ namespace LicenciamentoSoftware.Web.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("bff")]
-public sealed class BffController(AuthApiService authService) : ControllerBase
+public sealed class BffController(AuthApiService authService, ClienteApiService clienteService) : ControllerBase
 {
     private const string RefreshTokenCookie = "X-Refresh-Token";
 
@@ -224,6 +225,41 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
         return File(bytes, "image/png");
     }
 
+    // =========================================================================
+    // Minha Empresa — encerramento de conta
+    // =========================================================================
+
+    /// <summary>
+    /// Proxy para POST /clientes/{id}/encerrar.
+    /// O access token é enviado pelo WASM no header Authorization e propagado para a API.
+    /// </summary>
+    [HttpPost("minha-empresa/encerrar/{id:guid}")]
+    public async Task<IActionResult> EncerrarContaEmpresa(
+        Guid id,
+        [FromBody] EncerrarContaEmpresaRequest request,
+        CancellationToken ct)
+    {
+        var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        if (string.IsNullOrEmpty(accessToken))
+            return Unauthorized();
+
+        var (sucesso, erro) = await clienteService.EncerrarContaAsync(
+            id,
+            new EncerrarContaRequest(request.SenhaAtual, request.ExclusaoImediata),
+            accessToken,
+            ct);
+
+        if (sucesso) return NoContent();
+
+        if (erro == "Senha incorreta.")
+            return Unauthorized(new { Erro = erro });
+
+        if (erro == "Acesso negado.")
+            return Forbid();
+
+        return Conflict(new { Erro = erro ?? "Erro ao encerrar conta." });
+    }
+
     private void SetRefreshTokenCookie(string refreshToken, DateTime? expiracao)
     {
         Response.Cookies.Append(RefreshTokenCookie, refreshToken, new CookieOptions
@@ -240,3 +276,4 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
 }
 
 public sealed record ExcluirContaBffRequest(string SenhaAtual);
+public sealed record EncerrarContaEmpresaRequest(string SenhaAtual, bool ExclusaoImediata = false);

@@ -36,6 +36,12 @@ public interface IUsuarioRepository
     /// <summary>Revoga todos os refresh tokens ativos do usuário.</summary>
     Task RevogarTodosRefreshTokensAsync(Guid idUsuario, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Revoga todos os refresh tokens ativos de todos os usuários de um tenant.
+    /// Usado no encerramento de conta de empresa.
+    /// </summary>
+    Task RevogarTodosRefreshTokensPorClienteAsync(Guid idCliente, CancellationToken cancellationToken = default);
+
     /// <summary>Desativa a conta do usuário (ativo = false).</summary>
     Task DesativarUsuarioAsync(Guid idUsuario, CancellationToken cancellationToken = default);
 

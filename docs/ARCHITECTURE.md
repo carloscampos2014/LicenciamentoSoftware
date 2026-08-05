@@ -160,7 +160,7 @@ O frontend é composto por dois projetos que trabalham juntos:
 - **HTTP Android:** `AndroidMessageHandler` (handler nativo Java) — necessário para conectar corretamente em redes locais no Android.
 - **Shell:** flyout adaptativo — `FlyoutBehavior.Locked` em desktop (>= 900px), `Flyout` em mobile. No Android inicia com `Disabled` e muda para `Flyout` em `OnHandlerChanged` para evitar crash do `ShellFlyoutTemplatedContentRenderer`.
 - **Tema Android:** `Theme.MaterialComponents.DayNight.DarkActionBar` em `styles.xml` — obrigatório para evitar `IllegalArgumentException` do Material Components.
-- **Telas:** Login (split layout desktop/mobile), TOTP, Cadastro, Dashboard (7 métricas + alertas), Clientes Finais, Usuários, Aplicações (lista paginada + formulário overlay), Licenças (lista + detalhe), Emitir Licença (wizard 3 passos).
+- **Telas:** Login (split layout desktop/mobile), TOTP, Cadastro, Dashboard (7 métricas + alertas), Clientes Finais, Usuários, Aplicações (lista paginada + formulário overlay), Licenças (lista + detalhe), Emitir Licença (wizard 3 passos), **Minha Conta** (dados da empresa, 2FA TOTP, encerrar conta).
 - **Controls reutilizáveis:** `MetricaCardView` (BindableProperty Titulo/Valor/Subtitulo/CorValor), `ConfirmPopup` (ShowAsync retorna Task<bool>).
 - **Anti-duplicação:** `SemaphoreSlim(1,1)` com `WaitAsync(0)` em todos os ViewModels de lista — evita append duplo pelo `RemainingItemsThreshold` da CollectionView.
 - **DI:** Views/VMs do flyout como `Singleton` (preserva estado); auth e emissão como `Transient`.
@@ -227,6 +227,7 @@ As operações abaixo têm endpoints próprios, confirmação na interface, audi
 | Renovar licença por período | Atualiza `DataFim` quando renovação não é automática. |
 | Desabilitar licença | Marca licença como inativa e impede novas validações. |
 | Renovar token de licença | Gera novo token HMAC, invalida o anterior imediatamente. |
+| **Encerrar conta de empresa** | **Desativa o tenant inteiro, revoga todas as sessões e tokens, agenda exclusão em 90 dias (ou imediata via checkbox). Bloqueia a API de validação para licenças do tenant.** |
 
 As telas de manutenção mostram histórico de sessões, instalações e alterações; nunca apagam registros físicos.
 
@@ -234,10 +235,11 @@ As telas de manutenção mostram histórico de sessões, instalações e altera�
 
 - Auditoria é porta da aplicação, persistida de forma transacional junto da alteração.
 - Jobs rodam como `BackgroundService` com `PeriodicTimer` individual por job. A interface `IScheduledJob` permite migração futura para Hangfire/Quartz sem impacto no domínio.
-- **Jobs implementados:** `EncerrarSessoesInativasJob`, `ExpirarLicencasPeriodoJob`, `RenovarLicencasAutomaticasJob`, `RotacionarTokensLicencaJob`, `NotificarExpiracaoJob`.
+- **Jobs implementados:** `EncerrarSessoesInativasJob`, `ExpirarLicencasPeriodoJob`, `RenovarLicencasAutomaticasJob`, `RotacionarTokensLicencaJob`, `NotificarExpiracaoJob`, `ExcluirEmpresasEncerradasJob`.
 - `JobScheduler` (BackgroundService) orquestra todos os jobs via `PeriodicTimer` independente por job, com escopo de DI criado por execução.
 - Intervalos e limites configuráveis via seção `JobSettings` no `appsettings.json`.
 - Notificações por e-mail via MailKit (SMTP). Templates HTML embarcados no assembly como `EmbeddedResource`. `IEmailService` e `IEmailTemplateRenderer` são portas da Application; `SmtpEmailService` e `TemplateRenderer` são implementações da Infrastructure.
+- Templates de e-mail: `LicencaExpirando`, `TokenExpirando`, `TokenRenovado`, `EmpresaEncerrada`.
 - Envio de e-mail desabilitado por padrão (`EmailSettings:Habilitado = false`); ativado via secrets ou variáveis de ambiente.
 
 ## Estratégia de testes

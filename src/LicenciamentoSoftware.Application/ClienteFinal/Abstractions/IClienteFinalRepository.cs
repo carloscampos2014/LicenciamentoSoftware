@@ -12,4 +12,19 @@ public interface IClienteFinalRepository
     Task<Guid> InserirAsync(Domain.Entities.ClienteFinal clienteFinal, CancellationToken ct = default);
     Task AtualizarAsync(AtualizarClienteFinalCommand command, CancellationToken ct = default);
     Task DesativarAsync(Guid id, CancellationToken ct = default);
+
+    // -------------------------------------------------------------------------
+    // Fase 12.1 — Notificação de encerramento de conta
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Retorna e-mails e nomes dos clientes finais ativos vinculados ao tenant.
+    /// Usado para envio de notificação de encerramento de conta.
+    /// </summary>
+    Task<IReadOnlyList<ClienteFinalEmailInfo>> ListarEmailsAtivosPorClienteAsync(
+        Guid idCliente,
+        CancellationToken ct = default);
 }
+
+/// <summary>Projeção mínima para notificação por e-mail ao cliente final.</summary>
+public sealed record ClienteFinalEmailInfo(string RazaoSocial, string Email);

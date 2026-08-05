@@ -1,0 +1,274 @@
+@page "/minha-empresa"
+@attribute [Authorize(Roles = "AdministradorCliente")]
+@inject ApiHttpClientFactory ApiFactory
+@inject JwtAuthStateProvider AuthProvider
+@inject NavigationManager Nav
+@using LicenciamentoSoftware.Client.Models.Clientes
+@using LicenciamentoSoftware.Web.Services
+
+<PageTitle>Minha Empresa — LicenseManager</PageTitle>
+
+<div class="page-header">
+    <h1 class="page-title">Minha Empresa</h1>
+    <p class="page-subtitle">Gerencie os dados cadastrais e o ciclo de vida da sua conta.</p>
+</div>
+
+<div style="max-width:640px">
+
+    <!-- ── Dados da empresa ─────────────────────────────────────────────────── -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 style="font-size:1rem;font-weight:700;color:#212529;margin-bottom:.25rem">Dados cadastrais</h2>
+            <p class="text-muted mb-3" style="font-size:.875rem">Atualize razão social, e-mail e telefone.</p>
+
+            @if (_carregando)
+            {
+                <div class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                </div>
+            }
+            else if (_empresa is not null)
+            {
+                <div class="form-group">
+                    <label class="form-label">Razão Social *</label>
+                    <input class="form-control" @bind="_form.RazaoSocial" />
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <input class="form-control" value="@(_empresa.TipoInscricao == 1 ? "CPF" : "CNPJ")" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(_empresa.TipoInscricao == 1 ? "CPF" : "CNPJ")</label>
+                        <input class="form-control" value="@_empresa.NumeroInscricao" disabled />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-mail *</label>
+                    <input class="form-control" type="email" @bind="_form.Email" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefone</label>
+                    <input class="form-control" @bind="_form.Telefone" placeholder="(00) 00000-0000" />
+                </div>
+
+                @if (_erroSalvar is not null)
+                {
+                    <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erroSalvar</div>
+                }
+                @if (_sucessoSalvar)
+                {
+                    <div class="alert alert-success py-2 px-3 mb-3" style="font-size:.875rem">
+                        Dados atualizados com sucesso.
+                    </div>
+                }
+
+                <button class="btn btn-primary btn-sm" @onclick="SalvarAsync" disabled="@_salvando">
+                    @if (_salvando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    Salvar alterações
+                </button>
+            }
+            else
+            {
+                <p class="text-muted" style="font-size:.875rem">Não foi possível carregar os dados da empresa.</p>
+            }
+        </div>
+    </div>
+
+    <!-- ── Zona de perigo — Encerrar conta ──────────────────────────────────── -->
+    <div class="card mb-4" style="border-color:#dc3545">
+        <div class="card-body">
+            <h2 style="font-size:1rem;font-weight:700;color:#dc3545;margin-bottom:.25rem">Encerrar conta</h2>
+            <p class="text-muted mb-3" style="font-size:.875rem">
+                Encerrando a conta, todos os acessos serão bloqueados imediatamente.
+                Os dados serão excluídos em 90 dias, a menos que você opte pela exclusão imediata.
+            </p>
+
+            <button class="btn btn-outline-danger btn-sm" @onclick="AbrirModalEncerrar">
+                Encerrar conta da empresa
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ── Modal de encerramento ────────────────────────────────────────────────── -->
+@if (_modalEncerrarAberto)
+{
+    <div class="modal-backdrop" @onclick="FecharModalEncerrar"></div>
+    <div class="modal d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title" style="color:#dc3545">Encerrar conta da empresa</h5>
+                    <button type="button" class="btn-close" @onclick="FecharModalEncerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <p style="font-size:.9rem;color:#495057;margin-bottom:1rem">
+                        Esta ação encerrará a conta da empresa <strong>@_empresa?.RazaoSocial</strong>
+                        e bloqueará todos os acessos imediatamente.
+                    </p>
+
+                    <div class="form-group mb-3">
+                        <label class="form-label">Confirme sua senha *</label>
+                        <PasswordInput @bind-Value="_senhaConfirmacao"
+                                       Placeholder="••••••••"
+                                       Autocomplete="current-password" />
+                    </div>
+
+                    <!-- Checkbox exclusão imediata -->
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="chkExclusaoImediata"
+                               @bind="_exclusaoImediata" />
+                        <label class="form-check-label" for="chkExclusaoImediata"
+                               style="font-size:.875rem;cursor:pointer">
+                            Excluir todos os dados imediatamente
+                        </label>
+                    </div>
+
+                    @if (_exclusaoImediata)
+                    {
+                        <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:.75rem 1rem;font-size:.825rem;color:#856404;margin-bottom:.5rem">
+                            ⚠️ <strong>Atenção:</strong> seus dados serão excluídos permanentemente na próxima limpeza
+                            automática (em até 24h). <strong>Esta ação é irreversível.</strong>
+                        </div>
+                    }
+                    else
+                    {
+                        <p style="font-size:.8rem;color:#6c757d;margin-bottom:.25rem">
+                            Se não marcado, os dados serão excluídos automaticamente em <strong>90 dias</strong>.
+                        </p>
+                    }
+
+                    @if (_erroEncerrar is not null)
+                    {
+                        <div class="alert alert-danger py-2 px-3 mt-2" style="font-size:.875rem">@_erroEncerrar</div>
+                    }
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button class="btn btn-outline-secondary" @onclick="FecharModalEncerrar" disabled="@_encerrando">
+                        Cancelar
+                    </button>
+                    <button class="btn @(_exclusaoImediata ? "btn-danger" : "btn-outline-danger")"
+                            @onclick="ConfirmarEncerrarAsync"
+                            disabled="@(_encerrando || string.IsNullOrWhiteSpace(_senhaConfirmacao))">
+                        @if (_encerrando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                        @(_exclusaoImediata ? "Encerrar e excluir dados" : "Encerrar conta")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private ClienteResult? _empresa;
+    private bool _carregando = true;
+    private bool _salvando;
+    private bool _sucessoSalvar;
+    private string? _erroSalvar;
+    private readonly EmpresaFormModel _form = new();
+
+    private bool _modalEncerrarAberto;
+    private string _senhaConfirmacao = string.Empty;
+    private bool _exclusaoImediata;
+    private bool _encerrando;
+    private string? _erroEncerrar;
+
+    protected override async Task OnInitializedAsync()
+        => await CarregarAsync();
+
+    private async Task CarregarAsync()
+    {
+        _carregando = true;
+        try
+        {
+            var idCliente = AuthProvider.ObterIdCliente();
+            if (idCliente is null) return;
+
+            _empresa = await ApiFactory.Cliente.BuscarPorIdAsync(idCliente.Value);
+            if (_empresa is not null)
+            {
+                _form.RazaoSocial = _empresa.RazaoSocial;
+                _form.Email       = _empresa.Email;
+                _form.Telefone    = _empresa.Telefone;
+            }
+        }
+        catch { /* falha silenciosa */ }
+        finally { _carregando = false; }
+    }
+
+    private async Task SalvarAsync()
+    {
+        _salvando     = true;
+        _erroSalvar   = null;
+        _sucessoSalvar = false;
+        try
+        {
+            var idCliente = AuthProvider.ObterIdCliente();
+            if (idCliente is null) { _erroSalvar = "Sessão inválida."; return; }
+
+            var (sucesso, erro) = await ApiFactory.Cliente.AtualizarAsync(
+                idCliente.Value,
+                new AtualizarClienteRequest(_form.RazaoSocial, _form.Email,
+                    string.IsNullOrWhiteSpace(_form.Telefone) ? null : _form.Telefone));
+
+            if (sucesso)
+            {
+                _sucessoSalvar = true;
+                _empresa = await ApiFactory.Cliente.BuscarPorIdAsync(idCliente.Value);
+            }
+            else
+            {
+                _erroSalvar = erro;
+            }
+        }
+        finally { _salvando = false; }
+    }
+
+    private void AbrirModalEncerrar()
+    {
+        _senhaConfirmacao = string.Empty;
+        _exclusaoImediata = false;
+        _erroEncerrar     = null;
+        _modalEncerrarAberto = true;
+    }
+
+    private void FecharModalEncerrar()
+    {
+        if (_encerrando) return;
+        _modalEncerrarAberto = false;
+    }
+
+    private async Task ConfirmarEncerrarAsync()
+    {
+        _encerrando   = true;
+        _erroEncerrar = null;
+        try
+        {
+            var idCliente = AuthProvider.ObterIdCliente();
+            if (idCliente is null) { _erroEncerrar = "Sessão inválida."; return; }
+
+            var (sucesso, erro) = await ApiFactory.Cliente.EncerrarContaAsync(
+                idCliente.Value,
+                new EncerrarContaRequest(_senhaConfirmacao, _exclusaoImediata));
+
+            if (sucesso)
+            {
+                // Redireciona para logout — conta encerrada, sessão deve ser encerrada
+                Nav.NavigateTo("/logout", forceLoad: true);
+            }
+            else
+            {
+                _erroEncerrar = erro ?? "Erro ao encerrar conta.";
+            }
+        }
+        finally { _encerrando = false; }
+    }
+
+    private sealed class EmpresaFormModel
+    {
+        public string RazaoSocial { get; set; } = string.Empty;
+        public string Email       { get; set; } = string.Empty;
+        public string? Telefone   { get; set; }
+    }
+}

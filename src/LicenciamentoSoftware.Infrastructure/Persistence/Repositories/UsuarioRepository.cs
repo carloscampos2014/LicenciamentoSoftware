@@ -263,6 +263,27 @@ public sealed class UsuarioRepository : IUsuarioRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task RevogarTodosRefreshTokensPorClienteAsync(
+        Guid idCliente, CancellationToken cancellationToken = default)
+    {
+        // Revoga todos os refresh tokens ativos de todos os usuários do tenant.
+        // Usado no encerramento de conta de empresa para bloquear qualquer renovação de sessão.
+        const string sql = """
+            UPDATE refresh_token rt
+               SET revogado = TRUE
+              FROM usuario u
+             WHERE rt.id_usuario = u.id
+               AND u.id_cliente  = @IdCliente
+               AND rt.revogado   = FALSE
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { IdCliente = idCliente },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
     public async Task DesativarUsuarioAsync(
         Guid idUsuario, CancellationToken cancellationToken = default)
     {
