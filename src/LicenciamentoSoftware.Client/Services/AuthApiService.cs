@@ -124,6 +124,27 @@ public sealed class AuthApiService(HttpClient http)
         return (false, "Erro inesperado. Tente novamente.");
     }
 
+    /// <summary>
+    /// Define senha inicial para conta anonimizada após exclusão LGPD.
+    /// Retorna tokens completos em caso de sucesso (usuário fica autenticado).
+    /// </summary>
+    public async Task<LoginApiResult> DefinirSenhaInicialAsync(
+        string tokenTemporario,
+        string novaSenha,
+        CancellationToken ct = default)
+    {
+        var response = await http.PostAsJsonAsync(
+            "auth/definir-senha",
+            new { TokenTemporario = tokenTemporario, NovaSenha = novaSenha },
+            ct);
+
+        if (!response.IsSuccessStatusCode)
+            return new LoginApiResult(response.StatusCode, null);
+
+        var body = await response.Content.ReadFromJsonAsync<LoginResponse>(ct);
+        return new LoginApiResult(response.StatusCode, body);
+    }
+
     private sealed record ErrosResponse(IReadOnlyList<string> Erros);
     private sealed record ErroSimplesResponse(string Erro);
 }

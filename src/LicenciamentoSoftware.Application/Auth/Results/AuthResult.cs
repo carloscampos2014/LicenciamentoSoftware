@@ -20,6 +20,13 @@ public abstract record AuthResult
     /// <summary>Credenciais inválidas ou usuário inativo.</summary>
     public sealed record Negado(string Motivo) : AuthResult;
 
+    /// <summary>
+    /// Email válido mas conta sem senha (anonimização LGPD).
+    /// O portal deve oferecer criação de nova senha.
+    /// Contém um token temporário com o ID do usuário para autorizar a definição de senha.
+    /// </summary>
+    public sealed record SemSenha(string TokenTemporario) : AuthResult;
+
     /// <summary>Token TOTP inválido ou expirado.</summary>
     public sealed record TotpInvalido(string Motivo) : AuthResult;
 

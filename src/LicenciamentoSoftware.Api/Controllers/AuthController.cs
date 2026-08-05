@@ -1,8 +1,7 @@
 using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Handlers;
-using LicenciamentoSoftware.Application.Auth.Results;
-using Microsoft.AspNetCore.Authorization;
+using LicenciamentoSoftware.Application.Auth.Results;using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LicenciamentoSoftware.Api.Controllers;
@@ -24,6 +23,7 @@ public sealed class AuthController : ControllerBase
     private readonly ConfirmarTotpHandler _confirmarTotpHandler;
     private readonly DesativarTotpHandler _desativarTotpHandler;
     private readonly AutoCadastrarClienteHandler _autoCadastrarHandler;
+    private readonly DefinirSenhaInicialHandler _definirSenhaHandler;
     private readonly ICurrentUser _currentUser;
 
     public AuthController(
@@ -36,6 +36,7 @@ public sealed class AuthController : ControllerBase
         ConfirmarTotpHandler confirmarTotpHandler,
         DesativarTotpHandler desativarTotpHandler,
         AutoCadastrarClienteHandler autoCadastrarHandler,
+        DefinirSenhaInicialHandler definirSenhaHandler,
         ICurrentUser currentUser)
     {
         _loginHandler = loginHandler;
@@ -47,6 +48,7 @@ public sealed class AuthController : ControllerBase
         _confirmarTotpHandler = confirmarTotpHandler;
         _desativarTotpHandler = desativarTotpHandler;
         _autoCadastrarHandler = autoCadastrarHandler;
+        _definirSenhaHandler = definirSenhaHandler;
         _currentUser = currentUser;
     }
 
@@ -94,6 +96,10 @@ public sealed class AuthController : ControllerBase
             AuthResult.Requer2FA r => Ok(new
             {
                 Requer2FA = true, TokenTemporario = r.TokenTemporario,
+            }),
+            AuthResult.SemSenha sp => Ok(new
+            {
+                SemSenha = true, TokenTemporario = sp.TokenTemporario,
             }),
             AuthResult.Negado n => Unauthorized(new { Erro = n.Motivo }),
             _ => StatusCode(500),
@@ -242,10 +248,37 @@ public sealed class AuthController : ControllerBase
     }
 
     /// <summary>
+    /// Define a senha inicial para uma conta anonimizada (sem senha após exclusão LGPD).
+    /// Requer o token temporário de papel "DefinirSenha" retornado pelo login quando a conta não tem senha.
+    /// Após sucesso, o usuário está autenticado e recebe JWT completo.
+    /// </summary>
+    [HttpPost("definir-senha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DefinirSenhaInicial(
+        [FromBody] DefinirSenhaInicialRequest request,
+        CancellationToken cancellationToken)
+    {
+        var resultado = await _definirSenhaHandler.HandleAsync(
+            new DefinirSenhaInicialCommand(request.TokenTemporario, request.NovaSenha),
+            cancellationToken);
+
+        return resultado switch
+        {
+            AuthResult.Sucesso s => Ok(new
+            {
+                s.AccessToken, s.RefreshToken,
+                Expiracao = s.Expiracao, s.Nome, s.Papel,
+            }),
+            AuthResult.TokenInvalido t => Unauthorized(new { Erro = t.Motivo }),
+            AuthResult.Negado n        => UnprocessableEntity(new { Erro = n.Motivo }),
+            _                          => StatusCode(500),
+        };
+    }
+
+    /// <summary>
     /// Auto-cadastro público: cria Cliente + primeiro Usuário (AdministradorCliente) em uma transação.
     /// Não requer autenticação.
-    /// </summary>
-    [HttpPost("cadastrar")]
+    /// </summary>    [HttpPost("cadastrar")]
     [AllowAnonymous]
     public async Task<IActionResult> AutoCadastrar(
         [FromBody] AutoCadastrarRequest request,
@@ -292,6 +325,7 @@ public sealed record RegistrarUsuarioRequest(Guid IdCliente, string Nome, string
 public sealed record ConfigurarTotpRequest(Guid IdUsuario, string Email);
 public sealed record ConfirmarTotpRequest(string Codigo);
 public sealed record DesativarTotpRequest(string CodigoAtual);
+public sealed record DefinirSenhaInicialRequest(string TokenTemporario, string NovaSenha);
 public sealed record AutoCadastrarRequest(
     string RazaoSocial,
     int TipoInscricao,

@@ -43,6 +43,14 @@ public sealed class LoginHandler
         if (usuario is null || !usuario.Ativo)
             return new AuthResult.Negado("Credenciais inválidas.");
 
+        // Conta anonimizada (LGPD): senha_hash vazia — oferece criação de nova senha
+        if (string.IsNullOrEmpty(usuario.SenhaHash))
+        {
+            var tokenTemp = _jwtService.GerarTokenPar(
+                usuario.Id, usuario.IdCliente, usuario.Nome, "DefinirSenha", usuario.Email);
+            return new AuthResult.SemSenha(tokenTemp.AccessToken);
+        }
+
         if (!_passwordHasher.Verificar(command.Senha, usuario.SenhaHash))
             return new AuthResult.Negado("Credenciais inválidas.");
 

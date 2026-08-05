@@ -204,6 +204,41 @@ public sealed class BffController(AuthApiService authService, ClienteApiService 
         return Conflict(new { Erro = erro });
     }
 
+    /// <summary>
+    /// Proxy para POST /auth/definir-senha.
+    /// Define senha inicial para conta anonimizada e retorna tokens completos.
+    /// </summary>
+    [HttpPost("definir-senha")]
+    public async Task<IActionResult> DefinirSenha(
+        [FromBody] DefinirSenhaBffRequest request,
+        CancellationToken ct)
+    {
+        var resultado = await authService.DefinirSenhaInicialAsync(
+            request.TokenTemporario, request.NovaSenha, ct);
+
+        if (!resultado.IsSuccess)
+        {
+            if (resultado.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                return Unauthorized(new { Erro = "Token inválido ou expirado. Faça login novamente." });
+            if (resultado.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
+                return UnprocessableEntity(new { Erro = "Senha inválida. Use no mínimo 8 caracteres." });
+            return StatusCode(500);
+        }
+
+        var body = resultado.Body;
+        if (body?.AccessToken is null) return StatusCode(500);
+
+        SetRefreshTokenCookie(body.RefreshToken!, body.Expiracao);
+
+        return Ok(new
+        {
+            accessToken = body.AccessToken,
+            expiracao   = body.Expiracao,
+            nome        = body.Nome,
+            papel       = body.Papel,
+        });
+    }
+
     // =========================================================================
     // TOTP — QR code gerado server-side (sem dependência de CDN externo)
     // =========================================================================
@@ -277,3 +312,4 @@ public sealed class BffController(AuthApiService authService, ClienteApiService 
 
 public sealed record ExcluirContaBffRequest(string SenhaAtual);
 public sealed record EncerrarContaEmpresaRequest(string SenhaAtual, bool ExclusaoImediata = false);
+public sealed record DefinirSenhaBffRequest(string TokenTemporario, string NovaSenha);

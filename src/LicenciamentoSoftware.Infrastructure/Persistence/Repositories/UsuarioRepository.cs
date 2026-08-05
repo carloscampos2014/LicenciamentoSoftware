@@ -316,6 +316,22 @@ public sealed class UsuarioRepository : IUsuarioRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task DefinirSenhaAsync(
+        Guid idUsuario, string senhaHash, CancellationToken cancellationToken = default)
+    {
+        // Define nova senha sem exigir a anterior.
+        // Usado no fluxo de recuperação após anonimização LGPD.
+        const string sql = """
+            UPDATE usuario SET senha_hash = @SenhaHash WHERE id = @Id
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { Id = idUsuario, SenhaHash = senhaHash },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
     public async Task SalvarTotpPendenteAsync(
         Guid idUsuario, string segredo, CancellationToken cancellationToken = default)
     {
