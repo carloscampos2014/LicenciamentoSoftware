@@ -42,49 +42,95 @@
                 <div class="text-muted" style="font-size:.75rem">Sistema de Licenças</div>
             </div>
 
-            <h1 style="font-size:1.5rem;font-weight:700;color:#212529;margin-bottom:.25rem">Bem-vindo</h1>
-            <p class="text-muted mb-4" style="font-size:.875rem">Entre com suas credenciais para continuar</p>
-
-            <div class="form-group">
-                <label class="form-label">E-mail</label>
-                <input class="form-control" type="email" @bind="_email"
-                       placeholder="seu@email.com" autocomplete="email"
-                       @onkeyup="HandleEnter" @ref="_emailInput" />
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Senha</label>
-                <PasswordInput @bind-Value="_senha"
-                               Placeholder="••••••••"
-                               Autocomplete="current-password" />
-            </div>
-
-            @if (_erro is not null)
+            @if (!_modoCriarSenha)
             {
-                <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erro</div>
-            }
+                <!-- ── Formulário de login normal ── -->
+                <h1 style="font-size:1.5rem;font-weight:700;color:#212529;margin-bottom:.25rem">Bem-vindo</h1>
+                <p class="text-muted mb-4" style="font-size:.875rem">Entre com suas credenciais para continuar</p>
 
-            <button class="btn btn-primary w-100 py-2" @onclick="HandleLogin" disabled="@_carregando">
-                @if (_carregando)
+                <div class="form-group">
+                    <label class="form-label">E-mail</label>
+                    <input class="form-control" type="email" @bind="_email"
+                           placeholder="seu@email.com" autocomplete="email"
+                           @onkeyup="HandleEnter" @ref="_emailInput" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Senha</label>
+                    <PasswordInput @bind-Value="_senha"
+                                   Placeholder="••••••••"
+                                   Autocomplete="current-password" />
+                </div>
+
+                @if (_erro is not null)
                 {
-                    <span class="spinner-border spinner-border-sm me-2"></span>
+                    <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erro</div>
                 }
-                Entrar
-            </button>
 
-            <hr class="my-4" />
+                <button class="btn btn-primary w-100 py-2" @onclick="HandleLogin" disabled="@_carregando">
+                    @if (_carregando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    Entrar
+                </button>
 
-            <p class="text-center text-muted mb-0" style="font-size:.875rem">
-                Ainda não tem conta?
-                <a href="/cadastro" style="color:#6c63ff;font-weight:600;text-decoration:none">
-                    Cadastre-se gratuitamente
-                </a>
-            </p>
-            <p class="text-center text-muted mt-2 mb-0" style="font-size:.75rem">
-                <a href="/privacidade" style="color:#adb5bd">Política de Privacidade</a>
-                ·
-                <a href="/termos" style="color:#adb5bd">Termos de Uso</a>
-            </p>
+                <hr class="my-4" />
+
+                <p class="text-center text-muted mb-0" style="font-size:.875rem">
+                    Ainda não tem conta?
+                    <a href="/cadastro" style="color:#6c63ff;font-weight:600;text-decoration:none">
+                        Cadastre-se gratuitamente
+                    </a>
+                </p>
+                <p class="text-center text-muted mt-2 mb-0" style="font-size:.75rem">
+                    <a href="/privacidade" style="color:#adb5bd">Política de Privacidade</a>
+                    ·
+                    <a href="/termos" style="color:#adb5bd">Termos de Uso</a>
+                </p>
+            }
+            else
+            {
+                <!-- ── Fluxo de criar nova senha (conta anonimizada LGPD) ── -->
+                <div style="text-align:center;margin-bottom:1.5rem">
+                    <div style="width:56px;height:56px;background:#f0eeff;border-radius:50%;
+                                display:flex;align-items:center;justify-content:center;margin:0 auto .75rem">
+                        <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#6c63ff">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                        </svg>
+                    </div>
+                    <h1 style="font-size:1.4rem;font-weight:700;color:#212529;margin-bottom:.25rem">
+                        Criar nova senha
+                    </h1>
+                    <p class="text-muted" style="font-size:.875rem">
+                        Seus dados foram removidos conforme solicitado.<br />
+                        Defina uma nova senha para recuperar o acesso.
+                    </p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Nova senha *</label>
+                    <PasswordInput @bind-Value="_novaSenha"
+                                   Placeholder="Mínimo 8 caracteres"
+                                   Autocomplete="new-password"
+                                   MostrarForca="true" />
+                </div>
+
+                @if (_erro is not null)
+                {
+                    <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erro</div>
+                }
+
+                <button class="btn btn-primary w-100 py-2" @onclick="HandleDefinirSenha" disabled="@_carregando">
+                    @if (_carregando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    Definir senha e entrar
+                </button>
+
+                <div class="text-center mt-3">
+                    <button class="btn btn-link btn-sm text-muted" @onclick="VoltarParaLogin"
+                            style="font-size:.8rem;text-decoration:none">
+                        ← Voltar ao login
+                    </button>
+                </div>
+            }
         </div>
     </div>
 </div>
@@ -95,6 +141,11 @@
     private string? _erro;
     private bool _carregando;
     private ElementReference _emailInput;
+
+    // Fluxo de criar nova senha
+    private bool _modoCriarSenha;
+    private string _novaSenha = string.Empty;
+    private string? _tokenTemporario;
 
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
@@ -139,6 +190,14 @@
             var body = await response.Content.ReadFromJsonAsync<BffLoginResponse>();
             if (body is null) { _erro = "Resposta inválida do servidor."; return; }
 
+            // Conta sem senha — fluxo de redefinição
+            if (body.SemSenha)
+            {
+                _tokenTemporario = body.TokenTemporario;
+                _modoCriarSenha = true;
+                return;
+            }
+
             if (body.Requer2FA)
             {
                 Nav.NavigateTo($"/totp?token={Uri.EscapeDataString(body.TokenTemporario ?? "")}");
@@ -155,7 +214,58 @@
         finally { _carregando = false; }
     }
 
+    private async Task HandleDefinirSenha()
+    {
+        if (string.IsNullOrWhiteSpace(_novaSenha) || _novaSenha.Length < 8)
+        {
+            _erro = "A senha deve ter no mínimo 8 caracteres.";
+            return;
+        }
+
+        _carregando = true; _erro = null;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("/bff/definir-senha",
+                new { TokenTemporario = _tokenTemporario, NovaSenha = _novaSenha });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    _erro = "Link expirado. Faça login novamente para obter um novo link.";
+                else if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
+                {
+                    var err = await response.Content.ReadFromJsonAsync<ErroResponse>();
+                    _erro = err?.Erro ?? "Senha inválida.";
+                }
+                else
+                    _erro = "Erro inesperado. Tente novamente.";
+                return;
+            }
+
+            var body = await response.Content.ReadFromJsonAsync<BffLoginResponse>();
+            if (body?.AccessToken is null) { _erro = "Erro ao autenticar. Tente fazer login novamente."; return; }
+
+            AuthProvider.MarcarAutenticado(body.AccessToken, body.Nome ?? string.Empty, body.Papel ?? string.Empty);
+            Nav.NavigateTo(ReturnUrl ?? "/");
+        }
+        catch
+        {
+            _erro = "Não foi possível conectar ao servidor. Tente novamente.";
+        }
+        finally { _carregando = false; }
+    }
+
+    private void VoltarParaLogin()
+    {
+        _modoCriarSenha = false;
+        _novaSenha = string.Empty;
+        _tokenTemporario = null;
+        _erro = null;
+    }
+
     private sealed record BffLoginResponse(
         string? AccessToken, DateTime? Expiracao, string? Nome, string? Papel,
-        bool Requer2FA = false, string? TokenTemporario = null);
+        bool Requer2FA = false, bool SemSenha = false, string? TokenTemporario = null);
+
+    private sealed record ErroResponse(string Erro);
 }

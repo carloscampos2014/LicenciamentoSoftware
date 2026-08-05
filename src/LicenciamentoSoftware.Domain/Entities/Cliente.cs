@@ -12,6 +12,15 @@ public sealed class Cliente
     public Telefone? Telefone { get; private set; }
     public bool Ativo { get; private set; }
 
+    /// <summary>Data/hora UTC em que a conta foi encerrada. Nulo enquanto ativa.</summary>
+    public DateTime? EncerradoEm { get; private set; }
+
+    /// <summary>
+    /// Data/hora UTC agendada para exclusão física dos dados.
+    /// Nulo enquanto ativa. Preenchida no encerramento.
+    /// </summary>
+    public DateTime? ExclusaoProgramadaEm { get; private set; }
+
     private Cliente() { }
 
     public static Cliente Criar(
@@ -56,5 +65,26 @@ public sealed class Cliente
             throw new DomainException("Cliente já está inativo.");
 
         Ativo = false;
+    }
+
+    /// <summary>
+    /// Encerra a conta da empresa: desativa o cliente e agenda exclusão física.
+    /// </summary>
+    /// <param name="exclusaoImediata">
+    /// Se verdadeiro, <see cref="ExclusaoProgramadaEm"/> = <paramref name="agora"/>;
+    /// o job diário excluirá os dados na próxima execução.
+    /// Se falso, a exclusão é agendada para <paramref name="agora"/> + 90 dias.
+    /// </param>
+    /// <param name="agora">Data/hora UTC atual (injetada para testabilidade).</param>
+    public void EncerrarConta(bool exclusaoImediata, DateTime agora)
+    {
+        if (!Ativo)
+            throw new DomainException("Cliente já está inativo.");
+
+        Ativo                = false;
+        EncerradoEm          = agora;
+        ExclusaoProgramadaEm = exclusaoImediata
+            ? agora
+            : agora.AddDays(90);
     }
 }

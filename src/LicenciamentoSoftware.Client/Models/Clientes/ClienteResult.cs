@@ -7,4 +7,5 @@ public sealed record ClienteResult(
     string NumeroInscricao,
     string Email,
     string? Telefone,
-    bool Ativo);
+    bool Ativo,
+    DateTime? EncerradoEm = null);

@@ -137,14 +137,10 @@ public sealed class UsuariosController : ControllerBase
 
         return resultado switch
         {
-            ExcluirContaResult.Sucesso            => NoContent(),
-            ExcluirContaResult.SenhaInvalida      => Unauthorized(new { Erro = "Senha incorreta." }),
-            ExcluirContaResult.NaoEncontrado      => NotFound(),
-            ExcluirContaResult.UltimoAdministrador => Conflict(new
-            {
-                Erro = "Você é o único administrador ativo. Transfira a administração para outro usuário antes de excluir a conta."
-            }),
-            _ => StatusCode(500),
+            ExcluirContaResult.Sucesso       => NoContent(),
+            ExcluirContaResult.SenhaInvalida => Unauthorized(new { Erro = "Senha incorreta." }),
+            ExcluirContaResult.NaoEncontrado => NotFound(),
+            _                               => StatusCode(500),
         };
     }
 }

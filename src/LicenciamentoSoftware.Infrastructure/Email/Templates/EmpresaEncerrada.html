@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Encerramento de conta</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; color: #333; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background-color: #dc3545; padding: 32px 40px; text-align: center; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .header p { margin: 8px 0 0; color: #ffd0d4; font-size: 13px; }
+    .body { padding: 40px; }
+    .body p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #444; }
+    .alert-box { background-color: #fff3cd; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 16px 20px; margin: 24px 0; }
+    .alert-box p { margin: 0; font-size: 15px; color: #92400e; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .details-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .details-table td:first-child { color: #888; width: 40%; }
+    .details-table td:last-child { font-weight: 600; color: #222; }
+    .footer { background-color: #f8f9fb; padding: 24px 40px; text-align: center; border-top: 1px solid #eee; }
+    .footer p { margin: 0; font-size: 12px; color: #aaa; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>🔒 Encerramento de conta</h1>
+      <p>LicenciamentoSoftware — Aviso automático</p>
+    </div>
+    <div class="body">
+      <p>Olá, <strong>{{NomeClienteFinal}}</strong>.</p>
+      <p>Informamos que a empresa <strong>{{NomeEmpresa}}</strong> encerrou sua conta na plataforma LicenciamentoSoftware.</p>
+
+      <div class="alert-box">
+        <p>⚠️ A partir de <strong>{{DataEncerramento}}</strong>, as licenças de software gerenciadas por esta empresa não estarão mais disponíveis.</p>
+      </div>
+
+      <table class="details-table">
+        <tr>
+          <td>Empresa</td>
+          <td>{{NomeEmpresa}}</td>
+        </tr>
+        <tr>
+          <td>Data de encerramento</td>
+          <td>{{DataEncerramento}}</td>
+        </tr>
+      </table>
+
+      <p>Se você acredita que este encerramento foi feito por engano ou precisa de mais informações, entre em contato diretamente com a empresa responsável.</p>
+    </div>
+    <div class="footer">
+      <p>Este é um e-mail automático. Não responda a esta mensagem.<br/>LicenciamentoSoftware &copy; {{AnoAtual}}</p>
+    </div>
+  </div>
+</body>
+</html>

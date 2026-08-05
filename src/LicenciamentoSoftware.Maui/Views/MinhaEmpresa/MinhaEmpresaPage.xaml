@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:LicenciamentoSoftware.Maui.ViewModels.MinhaEmpresa"
+             x:Class="LicenciamentoSoftware.Maui.Views.MinhaEmpresa.MinhaEmpresaPage"
+             x:DataType="vm:MinhaEmpresaViewModel"
+             Title="{Binding Titulo}">
+
+    <Grid RowDefinitions="*,Auto">
+
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="20,16" Spacing="0">
+
+                <!-- ── Dados da empresa ─────────────────────────────────── -->
+                <Border BackgroundColor="{StaticResource Surface}"
+                        Stroke="{StaticResource Border}" StrokeThickness="1"
+                        Padding="20,16" Margin="0,0,0,16">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="12">
+                        <Label Text="Dados cadastrais"
+                               FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}" />
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource Border}" Margin="0,0,0,4" />
+
+                        <Label Text="Razão Social *" Style="{StaticResource LabelCampo}" />
+                        <Border BackgroundColor="{StaticResource Surface}"
+                                Stroke="{StaticResource Border}" StrokeThickness="1" Padding="12,0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <Entry Text="{Binding FormRazaoSocial}" Placeholder="Razão social"
+                                   TextColor="{StaticResource TextPrimary}" FontSize="14" HeightRequest="44" />
+                        </Border>
+
+                        <Label Text="E-mail *" Style="{StaticResource LabelCampo}" />
+                        <Border BackgroundColor="{StaticResource Surface}"
+                                Stroke="{StaticResource Border}" StrokeThickness="1" Padding="12,0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <Entry Text="{Binding FormEmail}" Keyboard="Email"
+                                   TextColor="{StaticResource TextPrimary}" FontSize="14" HeightRequest="44" />
+                        </Border>
+
+                        <Label Text="Telefone" Style="{StaticResource LabelCampo}" />
+                        <Border BackgroundColor="{StaticResource Surface}"
+                                Stroke="{StaticResource Border}" StrokeThickness="1" Padding="12,0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <Entry Text="{Binding FormTelefone}" Keyboard="Telephone"
+                                   Placeholder="(00) 00000-0000"
+                                   TextColor="{StaticResource TextPrimary}" FontSize="14" HeightRequest="44" />
+                        </Border>
+
+                        <Border IsVisible="{Binding ErroSalvar, Converter={StaticResource StringNotNullConverter}}"
+                                BackgroundColor="{StaticResource DangerLight}" Stroke="{StaticResource Danger}"
+                                StrokeThickness="1" Padding="10,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                            <Label Text="{Binding ErroSalvar}" TextColor="{StaticResource Danger}" FontSize="13" />
+                        </Border>
+                        <Border IsVisible="{Binding SucessoSalvar}"
+                                BackgroundColor="#d1fae5" Stroke="#10b981" StrokeThickness="1" Padding="10,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                            <Label Text="Dados atualizados com sucesso." TextColor="#065f46" FontSize="13" />
+                        </Border>
+
+                        <Button Text="Salvar alterações"
+                                BackgroundColor="{StaticResource Primary}" TextColor="White"
+                                CornerRadius="8" HeightRequest="44" FontAttributes="Bold"
+                                Command="{Binding SalvarEmpresaCommand}"
+                                IsEnabled="{Binding NaoOcupado}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Autenticação 2FA ──────────────────────────────────── -->
+                <Border BackgroundColor="{StaticResource Surface}"
+                        Stroke="{StaticResource Border}" StrokeThickness="1"
+                        Padding="20,16" Margin="0,0,0,16">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="12">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" Text="Autenticação de dois fatores"
+                                   FontSize="16" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}" VerticalOptions="Center" />
+                            <Border Grid.Column="1" Padding="10,4" StrokeThickness="1"
+                                    IsVisible="{Binding TotpAtivo, Converter={StaticResource StringNotNullConverter}}">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                                <Border.Triggers>
+                                    <DataTrigger TargetType="Border" Binding="{Binding TotpAtivo}" Value="True">
+                                        <Setter Property="BackgroundColor" Value="#d1fae5" />
+                                        <Setter Property="Stroke" Value="#10b981" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Border" Binding="{Binding TotpAtivo}" Value="False">
+                                        <Setter Property="BackgroundColor" Value="{StaticResource DangerLight}" />
+                                        <Setter Property="Stroke" Value="{StaticResource Danger}" />
+                                    </DataTrigger>
+                                </Border.Triggers>
+                                <Label FontSize="11" FontAttributes="Bold">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding TotpAtivo}" Value="True">
+                                            <Setter Property="Text" Value="Ativo" />
+                                            <Setter Property="TextColor" Value="#065f46" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding TotpAtivo}" Value="False">
+                                            <Setter Property="Text" Value="Inativo" />
+                                            <Setter Property="TextColor" Value="{StaticResource Danger}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </Border>
+                        </Grid>
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource Border}" Margin="0,0,0,4" />
+                        <Label Text="Adiciona uma camada extra de segurança ao seu login."
+                               FontSize="13" TextColor="{StaticResource TextSecondary}" />
+
+                        <!-- Mensagens 2FA -->
+                        <Border IsVisible="{Binding ErroTotp, Converter={StaticResource StringNotNullConverter}}"
+                                BackgroundColor="{StaticResource DangerLight}" Stroke="{StaticResource Danger}"
+                                StrokeThickness="1" Padding="10,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                            <Label Text="{Binding ErroTotp}" TextColor="{StaticResource Danger}" FontSize="13" />
+                        </Border>
+                        <Border IsVisible="{Binding SucessoTotp, Converter={StaticResource StringNotNullConverter}}"
+                                BackgroundColor="#d1fae5" Stroke="#10b981" StrokeThickness="1" Padding="10,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                            <Label Text="{Binding SucessoTotp}" TextColor="#065f46" FontSize="13" />
+                        </Border>
+
+                        <!-- Botão Ativar 2FA (visível quando TotpAtivo = false e setup não aberto) -->
+                        <Button Text="Ativar 2FA"
+                                BackgroundColor="{StaticResource Primary}" TextColor="White"
+                                CornerRadius="8" HeightRequest="44"
+                                Command="{Binding IniciarSetup2FACommand}"
+                                IsEnabled="{Binding NaoOcupado}"
+                                IsVisible="False">
+                            <Button.Triggers>
+                                <MultiTrigger TargetType="Button">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding TotpAtivo}" Value="False" />
+                                        <BindingCondition Binding="{Binding ExibirSetup2FA}" Value="False" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="IsVisible" Value="True" />
+                                </MultiTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <!-- Botão Desativar 2FA (visível quando TotpAtivo = true e desativar não aberto) -->
+                        <Button Text="Desativar 2FA"
+                                BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
+                                BorderColor="{StaticResource Danger}" BorderWidth="1"
+                                CornerRadius="8" HeightRequest="44"
+                                Command="{Binding MostrarDesativar2FACommand}"
+                                IsEnabled="{Binding NaoOcupado}"
+                                IsVisible="False">
+                            <Button.Triggers>
+                                <MultiTrigger TargetType="Button">
+                                    <MultiTrigger.Conditions>
+                                        <BindingCondition Binding="{Binding TotpAtivo}" Value="True" />
+                                        <BindingCondition Binding="{Binding ExibirDesativar2FA}" Value="False" />
+                                    </MultiTrigger.Conditions>
+                                    <Setter Property="IsVisible" Value="True" />
+                                </MultiTrigger>
+                            </Button.Triggers>
+                        </Button>
+
+                        <!-- Setup 2FA inline -->
+                        <VerticalStackLayout IsVisible="{Binding ExibirSetup2FA}" Spacing="10"
+                                             BackgroundColor="#f8f9fa" Padding="12">
+                            <Label Text="Passo 1: Copie o código e adicione manualmente no Google Authenticator ou Authy."
+                                   FontSize="13" TextColor="{StaticResource TextSecondary}" />
+                            <Border BackgroundColor="#1a1a2e" Stroke="{StaticResource Border}"
+                                    StrokeThickness="1" Padding="12,10">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding SegredoTotp}"
+                                           FontSize="13" TextColor="#00ff88"
+                                           VerticalOptions="Center" LineBreakMode="WordWrap" />
+                                    <Button Grid.Column="1" Text="Copiar"
+                                            BackgroundColor="{StaticResource Primary}" TextColor="White"
+                                            CornerRadius="6" HeightRequest="36" Padding="12,0"
+                                            Command="{Binding CopiarSegredoCommand}" />
+                                </Grid>
+                            </Border>
+                            <Label Text="Passo 2: Digite o código gerado pelo autenticador para confirmar."
+                                   FontSize="13" TextColor="{StaticResource TextSecondary}" />
+                            <Border BackgroundColor="{StaticResource Surface}"
+                                    Stroke="{StaticResource Border}" StrokeThickness="1" Padding="12,0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                                <Entry Text="{Binding CodigoConfirmacaoTotp}"
+                                       Placeholder="000000" MaxLength="6" Keyboard="Numeric"
+                                       HorizontalTextAlignment="Center" FontSize="18"
+                                       TextColor="{StaticResource TextPrimary}" HeightRequest="52" />
+                            </Border>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Button Grid.Column="0" Text="Cancelar"
+                                        BackgroundColor="{StaticResource Surface}"
+                                        TextColor="{StaticResource TextPrimary}"
+                                        BorderColor="{StaticResource Border}" BorderWidth="1"
+                                        CornerRadius="8" HeightRequest="44"
+                                        Command="{Binding CancelarSetup2FACommand}" />
+                                <Button Grid.Column="1" Text="Confirmar"
+                                        BackgroundColor="{StaticResource Primary}" TextColor="White"
+                                        CornerRadius="8" HeightRequest="44" FontAttributes="Bold"
+                                        Command="{Binding ConfirmarSetup2FACommand}"
+                                        IsEnabled="{Binding NaoOcupado}" />
+                            </Grid>
+                        </VerticalStackLayout>
+
+                        <!-- Desativar 2FA inline -->
+                        <VerticalStackLayout IsVisible="{Binding ExibirDesativar2FA}" Spacing="10"
+                                             BackgroundColor="#fff8e1" Padding="12">
+                            <Label Text="Digite o código do autenticador para confirmar a desativação."
+                                   FontSize="13" TextColor="#856404" />
+                            <Border BackgroundColor="{StaticResource Surface}"
+                                    Stroke="{StaticResource Border}" StrokeThickness="1" Padding="12,0">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                                <Entry Text="{Binding CodigoDesativarTotp}"
+                                       Placeholder="000000" MaxLength="6" Keyboard="Numeric"
+                                       HorizontalTextAlignment="Center" FontSize="18"
+                                       TextColor="{StaticResource TextPrimary}" HeightRequest="52" />
+                            </Border>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                                <Button Grid.Column="0" Text="Cancelar"
+                                        BackgroundColor="{StaticResource Surface}"
+                                        TextColor="{StaticResource TextPrimary}"
+                                        BorderColor="{StaticResource Border}" BorderWidth="1"
+                                        CornerRadius="8" HeightRequest="44"
+                                        Command="{Binding CancelarDesativar2FACommand}" />
+                                <Button Grid.Column="1" Text="Desativar"
+                                        BackgroundColor="{StaticResource Danger}" TextColor="White"
+                                        CornerRadius="8" HeightRequest="44" FontAttributes="Bold"
+                                        Command="{Binding ConfirmarDesativar2FACommand}"
+                                        IsEnabled="{Binding NaoOcupado}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- ── Zona de perigo — Encerrar conta ──────────────────── -->
+                <Border Stroke="{StaticResource Danger}" StrokeThickness="1"
+                        BackgroundColor="{StaticResource Surface}"
+                        Padding="20,16" Margin="0,0,0,24">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12" /></Border.StrokeShape>
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Encerrar conta" FontSize="16" FontAttributes="Bold"
+                               TextColor="{StaticResource Danger}" />
+                        <Label Text="Encerrando a conta, todos os acessos são bloqueados imediatamente. Os dados serão excluídos em 90 dias, a menos que opte pela exclusão imediata."
+                               FontSize="13" TextColor="{StaticResource TextSecondary}" />
+                        <Button Text="Encerrar conta da empresa"
+                                BackgroundColor="Transparent" TextColor="{StaticResource Danger}"
+                                BorderColor="{StaticResource Danger}" BorderWidth="1"
+                                CornerRadius="8" HeightRequest="44"
+                                Command="{Binding AbrirModalEncerrarCommand}" />
+                    </VerticalStackLayout>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- ── Overlay: modal de encerramento ──────────────────────────── -->
+        <Grid Grid.RowSpan="2" IsVisible="{Binding ExibirModalEncerrar}" BackgroundColor="#88000000">
+            <Border BackgroundColor="{StaticResource Surface}"
+                    Stroke="{StaticResource Border}" StrokeThickness="1"
+                    Margin="24" Padding="24,20"
+                    VerticalOptions="Center" MaximumWidthRequest="480"
+                    HorizontalOptions="Center">
+                <Border.StrokeShape><RoundRectangle CornerRadius="14" /></Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="#000000" Offset="0,8" Radius="24" Opacity="0.15" />
+                </Border.Shadow>
+                <ScrollView>
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Encerrar conta da empresa"
+                               FontSize="18" FontAttributes="Bold"
+                               TextColor="{StaticResource Danger}" />
+                        <BoxView HeightRequest="1" BackgroundColor="{StaticResource Border}" Margin="0,0,0,4" />
+
+                        <Label FontSize="13" TextColor="{StaticResource TextSecondary}">
+                            <Label.FormattedText>
+                                <FormattedString>
+                                    <Span Text="Esta ação encerrará a conta de " />
+                                    <Span Text="{Binding Empresa.RazaoSocial}" FontAttributes="Bold"
+                                          TextColor="{StaticResource TextPrimary}" />
+                                    <Span Text=" e bloqueará todos os acessos imediatamente." />
+                                </FormattedString>
+                            </Label.FormattedText>
+                        </Label>
+
+                        <Label Text="Confirme sua senha *" Style="{StaticResource LabelCampo}" />
+                        <Border BackgroundColor="{StaticResource Surface}"
+                                Stroke="{StaticResource Border}" StrokeThickness="1" Padding="12,0">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="8" /></Border.StrokeShape>
+                            <Entry Text="{Binding SenhaConfirmacao}" IsPassword="True"
+                                   Placeholder="••••••••"
+                                   TextColor="{StaticResource TextPrimary}" FontSize="14" HeightRequest="44" />
+                        </Border>
+
+                        <!-- Checkbox exclusão imediata -->
+                        <HorizontalStackLayout Spacing="10">
+                            <CheckBox IsChecked="{Binding ExclusaoImediata}"
+                                      Color="{StaticResource Danger}" />
+                            <Label Text="Excluir todos os dados imediatamente"
+                                   FontSize="14" TextColor="{StaticResource TextPrimary}"
+                                   VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+
+                        <!-- Aviso quando exclusão imediata marcada -->
+                        <Border IsVisible="{Binding ExclusaoImediata}"
+                                BackgroundColor="#fff8e1" Stroke="#ffc107" StrokeThickness="1" Padding="12,10">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                            <Label Text="⚠️ Seus dados serão excluídos permanentemente na próxima limpeza automática (em até 24h). Esta ação é irreversível."
+                                   FontSize="12" TextColor="#856404" />
+                        </Border>
+                        <Label IsVisible="{Binding ExclusaoImediata, Converter={StaticResource InverseBoolConverter}}"
+                               Text="Se não marcado, os dados serão excluídos em 90 dias."
+                               FontSize="12" TextColor="{StaticResource TextSecondary}" />
+
+                        <!-- Erro -->
+                        <Border IsVisible="{Binding ErroEncerrar, Converter={StaticResource StringNotNullConverter}}"
+                                BackgroundColor="{StaticResource DangerLight}" Stroke="{StaticResource Danger}"
+                                StrokeThickness="1" Padding="10,8">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="6" /></Border.StrokeShape>
+                            <Label Text="{Binding ErroEncerrar}" TextColor="{StaticResource Danger}" FontSize="13" />
+                        </Border>
+
+                        <!-- Botões -->
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10" Margin="0,4,0,0">
+                            <Button Grid.Column="0" Text="Cancelar"
+                                    BackgroundColor="{StaticResource Surface}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    BorderColor="{StaticResource Border}" BorderWidth="1"
+                                    CornerRadius="8" HeightRequest="44"
+                                    Command="{Binding FecharModalEncerrarCommand}" />
+                            <Button Grid.Column="1"
+                                    BackgroundColor="{StaticResource Danger}" TextColor="White"
+                                    CornerRadius="8" HeightRequest="44" FontAttributes="Bold"
+                                    Command="{Binding ConfirmarEncerrarCommand}"
+                                    IsEnabled="{Binding NaoOcupado}">
+                                <Button.Triggers>
+                                    <DataTrigger TargetType="Button" Binding="{Binding ExclusaoImediata}" Value="True">
+                                        <Setter Property="Text" Value="Encerrar e excluir" />
+                                    </DataTrigger>
+                                    <DataTrigger TargetType="Button" Binding="{Binding ExclusaoImediata}" Value="False">
+                                        <Setter Property="Text" Value="Encerrar conta" />
+                                    </DataTrigger>
+                                </Button.Triggers>
+                            </Button>
+                        </Grid>
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Border>
+        </Grid>
+
+    </Grid>
+</ContentPage>

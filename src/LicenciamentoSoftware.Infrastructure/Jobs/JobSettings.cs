@@ -28,4 +28,7 @@ public sealed class JobSettings
 
     /// <summary>Horas sem heartbeat para considerar sessão inativa (padrão: 24h).</summary>
     public int SessoesInativasLimiteHoras { get; set; } = 24;
+
+    /// <summary>Intervalo em minutos para o job de exclusão física de empresas encerradas (padrão: 1440 min = 24h).</summary>
+    public int ExclusaoEmpresasIntervaloMinutos { get; set; } = 1440;
 }

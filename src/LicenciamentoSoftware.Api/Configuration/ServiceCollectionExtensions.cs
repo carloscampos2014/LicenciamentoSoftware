@@ -195,6 +195,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<ConfirmarTotpHandler>();
         services.AddScoped<DesativarTotpHandler>();
         services.AddScoped<AutoCadastrarClienteHandler>();
+        services.AddScoped<DefinirSenhaInicialHandler>();
 
         // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration
         services.AddScoped<EmitirTokenLicencaHandler>(sp =>
@@ -235,6 +236,7 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<DesativarClienteHandler>();
         services.AddScoped<BuscarClientePorIdHandler>();
         services.AddScoped<ListarClientesHandler>();
+        services.AddScoped<EncerrarContaEmpresaHandler>();
         // Usuario
         services.AddScoped<CriarUsuarioHandler>();
         services.AddScoped<AtualizarUsuarioHandler>();
@@ -405,6 +407,9 @@ internal static class ServiceCollectionExtensions
                 sp.GetRequiredService<IClock>(),
                 sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<NotificarExpiracaoJob>>(),
                 jobSettings.DiasAntecedenciaNotificacao));
+
+        // Fase 12.1 — job de exclusão física de empresas encerradas
+        services.AddScoped<ExcluirEmpresasEncerradasJob>();
 
         // BackgroundService orquestrador
         services.AddHostedService<JobScheduler>();

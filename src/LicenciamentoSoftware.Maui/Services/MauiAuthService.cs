@@ -173,6 +173,49 @@ public sealed class MauiAuthService(MauiApiClientFactory factory)
 
     // ── Logout ────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Extrai o IdCliente (tenant) do claim <c>id_cliente</c> do JWT em memória.
+    /// </summary>
+    public Guid? ObterIdCliente()
+    {
+        if (string.IsNullOrEmpty(AccessToken)) return null;
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var token   = handler.ReadJwtToken(AccessToken);
+            var val     = token.Claims.FirstOrDefault(c => c.Type == "id_cliente")?.Value;
+            return Guid.TryParse(val, out var id) ? id : null;
+        }
+        catch { return null; }
+    }
+
+    /// <summary>Extrai o IdUsuario do claim <c>sub</c> do JWT em memória.</summary>
+    public Guid? ObterIdUsuario()
+    {
+        if (string.IsNullOrEmpty(AccessToken)) return null;
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var token   = handler.ReadJwtToken(AccessToken);
+            var val     = token.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+            return Guid.TryParse(val, out var id) ? id : null;
+        }
+        catch { return null; }
+    }
+
+    /// <summary>Extrai o e-mail do claim <c>email</c> do JWT em memória.</summary>
+    public string? ObterEmail()
+    {
+        if (string.IsNullOrEmpty(AccessToken)) return null;
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var token   = handler.ReadJwtToken(AccessToken);
+            return token.Claims.FirstOrDefault(c => c.Type == "email")?.Value;
+        }
+        catch { return null; }
+    }
+
     public async Task LogoutAsync()
     {
         try

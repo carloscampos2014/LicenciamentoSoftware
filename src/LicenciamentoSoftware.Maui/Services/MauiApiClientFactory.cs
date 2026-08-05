@@ -16,6 +16,8 @@ public sealed class MauiApiClientFactory
     public TipoLicencaApiService TipoLicenca { get; }
     public LicencaApiService Licenca { get; }
     public DashboardApiService Dashboard { get; }
+    public ClienteApiService Cliente { get; }
+    public TotpApiService Totp { get; }
 
     private readonly List<HttpClient> _clients = [];
 
@@ -23,13 +25,15 @@ public sealed class MauiApiClientFactory
     {
         var uri = new Uri(baseUrl.TrimEnd('/') + "/");
 
-        Auth        = Criar(uri, c => new AuthApiService(c));
+        Auth         = Criar(uri, c => new AuthApiService(c));
         ClienteFinal = Criar(uri, c => new ClienteFinalApiService(c));
-        Usuario     = Criar(uri, c => new UsuarioApiService(c));
-        Aplicacao   = Criar(uri, c => new AplicacaoApiService(c));
-        TipoLicenca = Criar(uri, c => new TipoLicencaApiService(c));
-        Licenca     = Criar(uri, c => new LicencaApiService(c));
-        Dashboard   = Criar(uri, c => new DashboardApiService(c));
+        Usuario      = Criar(uri, c => new UsuarioApiService(c));
+        Aplicacao    = Criar(uri, c => new AplicacaoApiService(c));
+        TipoLicenca  = Criar(uri, c => new TipoLicencaApiService(c));
+        Licenca      = Criar(uri, c => new LicencaApiService(c));
+        Dashboard    = Criar(uri, c => new DashboardApiService(c));
+        Cliente      = Criar(uri, c => new ClienteApiService(c));
+        Totp         = Criar(uri, c => new TotpApiService(c));
     }
 
     /// <summary>Define o Bearer token em todos os HttpClients autenticados.</summary>

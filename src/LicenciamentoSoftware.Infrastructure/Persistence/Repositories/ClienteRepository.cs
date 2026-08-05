@@ -21,7 +21,8 @@ public sealed class ClienteRepository : IClienteRepository
                    numero_inscricao    AS "NumeroInscricao",
                    email               AS "Email",
                    telefone            AS "Telefone",
-                   ativo               AS "Ativo"
+                   ativo               AS "Ativo",
+                   encerrado_em        AS "EncerradoEm"
             FROM cliente
             WHERE id = @Id
             LIMIT 1
@@ -146,6 +147,62 @@ public sealed class ClienteRepository : IClienteRepository
     public async Task DesativarAsync(Guid id, CancellationToken ct = default)
     {
         const string sql = "UPDATE cliente SET ativo = FALSE WHERE id = @Id";
+
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
+            new CommandDefinition(sql, new { Id = id }, cancellationToken: ct));
+    }
+
+    // -------------------------------------------------------------------------
+    // Fase 12.1 — Encerramento de conta de empresa
+    // -------------------------------------------------------------------------
+
+    public async Task EncerrarContaAsync(
+        Guid id,
+        DateTime encerradoEm,
+        DateTime exclusaoProgramadaEm,
+        CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE cliente
+               SET ativo                  = FALSE,
+                   encerrado_em           = @EncerradoEm,
+                   exclusao_programada_em = @ExclusaoProgramadaEm
+             WHERE id = @Id
+            """;
+
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(new CommandDefinition(sql,
+            new
+            {
+                Id                   = id,
+                EncerradoEm          = encerradoEm,
+                ExclusaoProgramadaEm = exclusaoProgramadaEm,
+            },
+            cancellationToken: ct));
+    }
+
+    public async Task<IReadOnlyList<Guid>> BuscarClientesAgendadosParaExclusaoAsync(
+        DateTime agora,
+        CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT id FROM cliente
+            WHERE exclusao_programada_em IS NOT NULL
+              AND exclusao_programada_em <= @Agora
+            """;
+
+        using var conn = _factory.CreateConnection();
+        var ids = await conn.QueryAsync<Guid>(
+            new CommandDefinition(sql, new { Agora = agora }, cancellationToken: ct));
+        return ids.AsList();
+    }
+
+    public async Task ExcluirFisicamenteAsync(Guid id, CancellationToken ct = default)
+    {
+        // A exclusão em cascata (ON DELETE CASCADE nas FK) remove todos os dados
+        // vinculados: usuario, cliente_final, aplicacao, licenca, logs, sessões, etc.
+        const string sql = "DELETE FROM cliente WHERE id = @Id";
 
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(

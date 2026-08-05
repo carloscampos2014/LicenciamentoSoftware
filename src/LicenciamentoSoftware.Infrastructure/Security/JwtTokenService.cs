@@ -113,4 +113,31 @@ public sealed class JwtTokenService : IJwtTokenService
             return false;
         }
     }
+
+    public ClaimsPrincipal? ValidarToken(string token)
+    {
+        try
+        {
+            var chave = GetChave();
+            var parametros = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = chave,
+                ValidateIssuer = true,
+                ValidIssuer = _emissor,
+                ValidateAudience = true,
+                ValidAudience = _audiencia,
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero,
+            };
+
+            var handler = new JwtSecurityTokenHandler();
+            handler.InboundClaimTypeMap.Clear();
+            return handler.ValidateToken(token, parametros, out _);
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

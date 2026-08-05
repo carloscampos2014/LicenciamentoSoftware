@@ -10,4 +10,10 @@ public interface IJwtTokenService
     TokenPar GerarTokenPar(Guid idUsuario, Guid idCliente, string nome, string papel, string? email = null);
     string GerarRefreshToken();
     bool ValidarAccessToken(string token, out Guid idUsuario);
+
+    /// <summary>
+    /// Valida o token e retorna os claims. Retorna null se inválido ou expirado.
+    /// Usado para validar tokens temporários (ex: "DefinirSenha").
+    /// </summary>
+    System.Security.Claims.ClaimsPrincipal? ValidarToken(string token);
 }

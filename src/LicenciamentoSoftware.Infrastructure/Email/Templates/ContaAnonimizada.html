@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seus dados pessoais foram removidos</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; color: #333; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background-color: #6c63ff; padding: 32px 40px; text-align: center; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; letter-spacing: 0.3px; }
+    .header p { margin: 8px 0 0; color: #d4d0ff; font-size: 13px; }
+    .body { padding: 40px; }
+    .body p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #444; }
+    .info-box { background-color: #f0eeff; border-left: 4px solid #6c63ff; border-radius: 4px; padding: 16px 20px; margin: 24px 0; }
+    .info-box p { margin: 0; font-size: 14px; color: #4a3f8a; }
+    .details-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .details-table td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .details-table td:first-child { color: #888; width: 45%; }
+    .details-table td:last-child { font-weight: 600; color: #222; }
+    .cta { text-align: center; margin: 32px 0 8px; }
+    .cta a { display: inline-block; background-color: #6c63ff; color: #ffffff; text-decoration: none; padding: 12px 32px; border-radius: 6px; font-size: 15px; font-weight: 600; }
+    .footer { background-color: #f8f9fb; padding: 24px 40px; text-align: center; border-top: 1px solid #eee; }
+    .footer p { margin: 0; font-size: 12px; color: #aaa; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>🔐 Dados pessoais removidos</h1>
+      <p>LicenciamentoSoftware — Aviso de privacidade (LGPD)</p>
+    </div>
+    <div class="body">
+      <p>Este e-mail confirma que os dados pessoais da conta de administrador foram removidos conforme solicitado, em conformidade com a LGPD (Art. 18).</p>
+
+      <div class="info-box">
+        <p>ℹ️ O acesso à empresa <strong>{{NomeEmpresa}}</strong> continua disponível através deste e-mail. Para recuperar o acesso, basta informar uma nova senha na tela de login.</p>
+      </div>
+
+      <table class="details-table">
+        <tr>
+          <td>Empresa</td>
+          <td>{{NomeEmpresa}}</td>
+        </tr>
+        <tr>
+          <td>E-mail de acesso</td>
+          <td>{{EmailEmpresa}}</td>
+        </tr>
+        <tr>
+          <td>Data da remoção</td>
+          <td>{{DataRemocao}}</td>
+        </tr>
+      </table>
+
+      <p>Para voltar a acessar o sistema, acesse o portal e faça login com este e-mail. Você será solicitado a criar uma nova senha.</p>
+
+      <div class="cta">
+        <a href="{{UrlPortal}}">Acessar o Portal</a>
+      </div>
+
+      <p style="font-size:13px;color:#888;margin-top:24px">
+        Se você não solicitou esta remoção, entre em contato com o suporte imediatamente.
+      </p>
+    </div>
+    <div class="footer">
+      <p>Este é um e-mail automático. Não responda a esta mensagem.<br/>LicenciamentoSoftware &copy; {{AnoAtual}}</p>
+    </div>
+  </div>
+</body>
+</html>

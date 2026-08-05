@@ -55,13 +55,14 @@ tests/
 | 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
 | 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | ✅ Concluída |
 | — | LGPD — consentimento no cadastro, páginas públicas, exclusão de conta | ✅ Concluída |
-| 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup, perfil da empresa, testes de integração | 🔜 Planejada |
+| 12.1 | Encerramento de conta de empresa + 2FA MAUI — página /minha-empresa, encerrar conta com exclusão opcional, bloqueio HMAC, job de limpeza, notificação de clientes finais | ✅ Concluída |
+| 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup Web, perfil empresa, testes de integração CI | 🔜 Planejada (issues #97 e #98 restantes) |
 | 13 | Instaladores — MSIX Windows, APK/AAB Android (distribuição direta) | 🔜 Planejada |
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript | 🔜 Planejada |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
 | 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | 🔜 Planejada |
 
-**Testes:** 381 aprovados, 0 falhas (333 backend + 48 MAUI).
+**Testes:** 388 aprovados, 0 falhas (340 backend + 48 MAUI).
 
 ## Infraestrutura de Produção
 
@@ -253,7 +254,8 @@ Seções do `appsettings.json` (valores padrão):
   "RenovacaoAutomaticaIntervaloMinutos": 60,
   "RotacaoTokensIntervaloMinutos": 720,
   "NotificacaoIntervaloMinutos": 1440,
-  "DiasAntecedenciaNotificacao": 7
+  "DiasAntecedenciaNotificacao": 7,
+  "ExclusaoEmpresasIntervaloMinutos": 1440
 },
 "EmailSettings": {
   "Habilitado": false,

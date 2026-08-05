@@ -290,6 +290,25 @@ Requisitos transversais:
 
 ---
 
+## Fase 12.1 — Encerramento de conta de empresa ✅ Concluída
+
+**Objetivo:** permitir que um `AdministradorCliente` encerre a conta da empresa no portal, com bloqueio de operações, notificação aos clientes finais e limpeza automática posterior.
+
+1. ✅ **[#124]** Página `/minha-empresa` separada no menu lateral para `AdministradorCliente` — edição de razão social, e-mail e telefone do cliente (reutiliza `PUT /clientes/{id}`).
+2. ✅ **[#125]** Botão "Encerrar conta" na página `/minha-empresa` — modal com senha + checkbox "Excluir dados imediatamente"; `POST /clientes/{id}/encerrar`; desativa o cliente (`Ativo = false`), define `encerrado_em` e `exclusao_programada_em`, revoga todos os refresh tokens do tenant.
+3. ✅ **[#126]** Bloquear renovação de token se empresa estiver inativa — `ValidacaoController.VerificarHmacAsync` verifica `Ativo` do cliente antes de renovar; retorna `401` se inativo.
+4. ✅ **[#127]** Notificar clientes finais quando empresa encerrar conta — fire-and-forget no `EncerrarContaEmpresaHandler` envia template `EmpresaEncerrada` para cada `ClienteFinal` ativo do tenant.
+5. ✅ **[#128]** Job de exclusão física — `ExcluirEmpresasEncerradasJob` (`BackgroundService`) exclui fisicamente clientes com `exclusao_programada_em <= now()`, ativado diariamente (`ExclusaoEmpresasIntervaloMinutos: 1440`).
+6. ✅ **[#129]** Template de e-mail `EmpresaEncerrada` — HTML embarcado como `EmbeddedResource`, mesmo padrão dos templates existentes.
+7. ✅ **[#97]** Setup/gerenciamento de 2FA TOTP no MAUI — tela "Minha Conta" com seção de ativação (segredo copiável), confirmação com código e desativação com código.
+8. ✅ Migration V007 — `encerrado_em TIMESTAMPTZ` e `exclusao_programada_em TIMESTAMPTZ` na tabela `cliente`.
+
+**Resultado:** 388 testes aprovados (340 backend + 48 MAUI). Encerramento de conta com exclusão imediata ou em 90 dias. Bloqueio automático da API de validação para empresas encerradas. Paridade Web + MAUI para gestão de empresa e 2FA.
+
+**Demo:** AdministradorCliente acessa `/minha-empresa` → clica "Encerrar conta" → confirma senha e marca checkbox de exclusão imediata → conta bloqueada na hora → clientes finais notificados por e-mail → tentativa de validação HMAC retorna 401 → job noturno exclui os dados fisicamente.
+
+---
+
 ## Fase 13 — Instaladores
 
 **Objetivo:** distribuição do app MAUI para Windows e Android sem dependência de lojas.

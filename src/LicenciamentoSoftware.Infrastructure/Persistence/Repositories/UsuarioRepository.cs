@@ -263,6 +263,45 @@ public sealed class UsuarioRepository : IUsuarioRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task RevogarTodosRefreshTokensPorClienteAsync(
+        Guid idCliente, CancellationToken cancellationToken = default)
+    {
+        // Revoga todos os refresh tokens ativos de todos os usuários do tenant.
+        // Usado no encerramento de conta de empresa para bloquear qualquer renovação de sessão.
+        const string sql = """
+            UPDATE refresh_token rt
+               SET revogado = TRUE
+              FROM usuario u
+             WHERE rt.id_usuario = u.id
+               AND u.id_cliente  = @IdCliente
+               AND rt.revogado   = FALSE
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { IdCliente = idCliente },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task DesativarTodosPorClienteAsync(
+        Guid idCliente, CancellationToken cancellationToken = default)
+    {
+        // Desativa todos os usuários do tenant para bloquear novos logins após encerramento de conta.
+        const string sql = """
+            UPDATE usuario
+               SET ativo = FALSE
+             WHERE id_cliente = @IdCliente
+               AND ativo      = TRUE
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { IdCliente = idCliente },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
     public async Task DesativarUsuarioAsync(
         Guid idUsuario, CancellationToken cancellationToken = default)
     {
@@ -273,6 +312,22 @@ public sealed class UsuarioRepository : IUsuarioRepository
         await _uow.Connection.ExecuteAsync(
             new CommandDefinition(sql,
                 new { Id = idUsuario },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task DefinirSenhaAsync(
+        Guid idUsuario, string senhaHash, CancellationToken cancellationToken = default)
+    {
+        // Define nova senha sem exigir a anterior.
+        // Usado no fluxo de recuperação após anonimização LGPD.
+        const string sql = """
+            UPDATE usuario SET senha_hash = @SenhaHash WHERE id = @Id
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { Id = idUsuario, SenhaHash = senhaHash },
                 transaction: _uow.Transaction,
                 cancellationToken: cancellationToken));
     }

@@ -73,6 +73,8 @@ public sealed class JobScheduler : BackgroundService
                 _settings.RotacaoTokensIntervaloMinutos, stoppingToken),
             ExecutarComTimerAsync<NotificarExpiracaoJob>(
                 _settings.NotificacaoIntervaloMinutos, stoppingToken),
+            ExecutarComTimerAsync<ExcluirEmpresasEncerradasJob>(
+                _settings.ExclusaoEmpresasIntervaloMinutos, stoppingToken),
         };
 
         await Task.WhenAll(tarefas);

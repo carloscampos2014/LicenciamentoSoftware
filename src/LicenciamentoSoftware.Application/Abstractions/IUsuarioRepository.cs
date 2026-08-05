@@ -36,8 +36,26 @@ public interface IUsuarioRepository
     /// <summary>Revoga todos os refresh tokens ativos do usuário.</summary>
     Task RevogarTodosRefreshTokensAsync(Guid idUsuario, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Revoga todos os refresh tokens ativos de todos os usuários de um tenant.
+    /// Usado no encerramento de conta de empresa.
+    /// </summary>
+    Task RevogarTodosRefreshTokensPorClienteAsync(Guid idCliente, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Desativa todos os usuários ativos de um tenant (ativo = false).
+    /// Usado no encerramento de conta de empresa para bloquear novos logins.
+    /// </summary>
+    Task DesativarTodosPorClienteAsync(Guid idCliente, CancellationToken cancellationToken = default);
+
     /// <summary>Desativa a conta do usuário (ativo = false).</summary>
     Task DesativarUsuarioAsync(Guid idUsuario, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Define a senha de um usuário sem exigir a senha anterior.
+    /// Usado no fluxo de recuperação de acesso após exclusão LGPD (conta anonimizada sem senha).
+    /// </summary>
+    Task DefinirSenhaAsync(Guid idUsuario, string senhaHash, CancellationToken cancellationToken = default);
 
     /// <summary>Salva o segredo TOTP provisório antes da confirmação.</summary>
     Task SalvarTotpPendenteAsync(Guid idUsuario, string segredo, CancellationToken cancellationToken = default);

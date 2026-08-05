@@ -1,4 +1,5 @@
 using LicenciamentoSoftware.Client.Models.Auth;
+using LicenciamentoSoftware.Client.Models.Clientes;
 using LicenciamentoSoftware.Client.Services;
 using Microsoft.AspNetCore.Mvc;
 using QRCoder;
@@ -12,7 +13,7 @@ namespace LicenciamentoSoftware.Web.Server.Controllers;
 /// </summary>
 [ApiController]
 [Route("bff")]
-public sealed class BffController(AuthApiService authService) : ControllerBase
+public sealed class BffController(AuthApiService authService, ClienteApiService clienteService) : ControllerBase
 {
     private const string RefreshTokenCookie = "X-Refresh-Token";
 
@@ -42,6 +43,10 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
 
         if (body.Requer2FA)
             return Ok(new { requer2FA = true, tokenTemporario = body.TokenTemporario });
+
+        // Conta sem senha (anonimização LGPD) — redirecionar para criação de nova senha
+        if (body.SemSenha)
+            return Ok(new { semSenha = true, tokenTemporario = body.TokenTemporario });
 
         if (body.AccessToken is null)
             return Unauthorized(new { Erro = "Falha na autenticação." });
@@ -203,6 +208,41 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
         return Conflict(new { Erro = erro });
     }
 
+    /// <summary>
+    /// Proxy para POST /auth/definir-senha.
+    /// Define senha inicial para conta anonimizada e retorna tokens completos.
+    /// </summary>
+    [HttpPost("definir-senha")]
+    public async Task<IActionResult> DefinirSenha(
+        [FromBody] DefinirSenhaBffRequest request,
+        CancellationToken ct)
+    {
+        var resultado = await authService.DefinirSenhaInicialAsync(
+            request.TokenTemporario, request.NovaSenha, ct);
+
+        if (!resultado.IsSuccess)
+        {
+            if (resultado.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                return Unauthorized(new { Erro = "Token inválido ou expirado. Faça login novamente." });
+            if (resultado.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
+                return UnprocessableEntity(new { Erro = "Senha inválida. Use no mínimo 8 caracteres." });
+            return StatusCode(500);
+        }
+
+        var body = resultado.Body;
+        if (body?.AccessToken is null) return StatusCode(500);
+
+        SetRefreshTokenCookie(body.RefreshToken!, body.Expiracao);
+
+        return Ok(new
+        {
+            accessToken = body.AccessToken,
+            expiracao   = body.Expiracao,
+            nome        = body.Nome,
+            papel       = body.Papel,
+        });
+    }
+
     // =========================================================================
     // TOTP — QR code gerado server-side (sem dependência de CDN externo)
     // =========================================================================
@@ -224,6 +264,41 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
         return File(bytes, "image/png");
     }
 
+    // =========================================================================
+    // Minha Empresa — encerramento de conta
+    // =========================================================================
+
+    /// <summary>
+    /// Proxy para POST /clientes/{id}/encerrar.
+    /// O access token é enviado pelo WASM no header Authorization e propagado para a API.
+    /// </summary>
+    [HttpPost("minha-empresa/encerrar/{id:guid}")]
+    public async Task<IActionResult> EncerrarContaEmpresa(
+        Guid id,
+        [FromBody] EncerrarContaEmpresaRequest request,
+        CancellationToken ct)
+    {
+        var accessToken = Request.Headers.Authorization.ToString().Replace("Bearer ", "");
+        if (string.IsNullOrEmpty(accessToken))
+            return Unauthorized();
+
+        var (sucesso, erro) = await clienteService.EncerrarContaAsync(
+            id,
+            new EncerrarContaRequest(request.SenhaAtual, request.ExclusaoImediata),
+            accessToken,
+            ct);
+
+        if (sucesso) return NoContent();
+
+        if (erro == "Senha incorreta.")
+            return Unauthorized(new { Erro = erro });
+
+        if (erro == "Acesso negado.")
+            return Forbid();
+
+        return Conflict(new { Erro = erro ?? "Erro ao encerrar conta." });
+    }
+
     private void SetRefreshTokenCookie(string refreshToken, DateTime? expiracao)
     {
         Response.Cookies.Append(RefreshTokenCookie, refreshToken, new CookieOptions
@@ -240,3 +315,5 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
 }
 
 public sealed record ExcluirContaBffRequest(string SenhaAtual);
+public sealed record EncerrarContaEmpresaRequest(string SenhaAtual, bool ExclusaoImediata = false);
+public sealed record DefinirSenhaBffRequest(string TokenTemporario, string NovaSenha);

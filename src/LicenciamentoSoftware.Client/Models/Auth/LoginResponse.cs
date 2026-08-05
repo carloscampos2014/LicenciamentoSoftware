@@ -7,4 +7,5 @@ public sealed record LoginResponse(
     string? Nome,
     string? Papel,
     bool Requer2FA = false,
-    string? TokenTemporario = null);
+    string? TokenTemporario = null,
+    bool SemSenha = false);

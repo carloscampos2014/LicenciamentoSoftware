@@ -1,4 +1,5 @@
 using LicenciamentoSoftware.Application.Abstractions;
+using LicenciamentoSoftware.Application.Cliente.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Commands;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Results;
@@ -26,6 +27,8 @@ public sealed class ValidacaoController : ControllerBase
     private readonly ValidarInstalacaoHandler _validarInstalacaoHandler;
     private readonly IHmacLicencaTokenService _hmac;
     private readonly ILicencaTokenRepository _tokenRepo;
+    private readonly ILicencaRepository _licencaRepo;
+    private readonly IClienteRepository _clienteRepo;
 
     public ValidacaoController(
         ValidarLoginHandler validarLoginHandler,
@@ -33,7 +36,9 @@ public sealed class ValidacaoController : ControllerBase
         LogoutValidacaoHandler logoutHandler,
         ValidarInstalacaoHandler validarInstalacaoHandler,
         IHmacLicencaTokenService hmac,
-        ILicencaTokenRepository tokenRepo)
+        ILicencaTokenRepository tokenRepo,
+        ILicencaRepository licencaRepo,
+        IClienteRepository clienteRepo)
     {
         _validarLoginHandler      = validarLoginHandler;
         _heartbeatHandler         = heartbeatHandler;
@@ -41,6 +46,8 @@ public sealed class ValidacaoController : ControllerBase
         _validarInstalacaoHandler = validarInstalacaoHandler;
         _hmac                     = hmac;
         _tokenRepo                = tokenRepo;
+        _licencaRepo              = licencaRepo;
+        _clienteRepo              = clienteRepo;
     }
 
     // =========================================================================
@@ -255,6 +262,15 @@ public sealed class ValidacaoController : ControllerBase
         var tokenInfo = await _tokenRepo.BuscarAtivoporLicencaAsync(idLicenca, ct);
         if (tokenInfo is null)
             return false;
+
+        // Fase 12.1 — bloqueia validação se a empresa (tenant) estiver encerrada/inativa
+        var licenca = await _licencaRepo.BuscarPorIdAsync(idLicenca, ct);
+        if (licenca is not null)
+        {
+            var cliente = await _clienteRepo.BuscarPorIdAsync(licenca.IdCliente, ct);
+            if (cliente is not null && !cliente.Ativo)
+                return false;
+        }
 
         var segredoTexto = tokenRaw.ToString();
 

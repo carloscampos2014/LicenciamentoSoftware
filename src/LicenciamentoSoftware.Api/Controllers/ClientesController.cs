@@ -1,6 +1,8 @@
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Cliente.Commands;
 using LicenciamentoSoftware.Application.Cliente.Handlers;
 using LicenciamentoSoftware.Application.Cliente.Queries;
+using LicenciamentoSoftware.Application.Cliente.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,19 +21,25 @@ public sealed class ClientesController : ControllerBase
     private readonly DesativarClienteHandler _desativarHandler;
     private readonly BuscarClientePorIdHandler _buscarHandler;
     private readonly ListarClientesHandler _listarHandler;
+    private readonly EncerrarContaEmpresaHandler _encerrarHandler;
+    private readonly ICurrentUser _currentUser;
 
     public ClientesController(
         CriarClienteHandler criarHandler,
         AtualizarClienteHandler atualizarHandler,
         DesativarClienteHandler desativarHandler,
         BuscarClientePorIdHandler buscarHandler,
-        ListarClientesHandler listarHandler)
+        ListarClientesHandler listarHandler,
+        EncerrarContaEmpresaHandler encerrarHandler,
+        ICurrentUser currentUser)
     {
         _criarHandler    = criarHandler;
         _atualizarHandler = atualizarHandler;
         _desativarHandler = desativarHandler;
         _buscarHandler   = buscarHandler;
         _listarHandler   = listarHandler;
+        _encerrarHandler = encerrarHandler;
+        _currentUser     = currentUser;
     }
 
     /// <summary>Lista clientes com filtro e paginação.</summary>
@@ -114,6 +122,39 @@ public sealed class ClientesController : ControllerBase
             _                                    => StatusCode(500),
         };
     }
+
+    /// <summary>
+    /// Encerra a conta da empresa do tenant autenticado.
+    /// Requer confirmação de senha. A conta é desativada imediatamente e os dados
+    /// são excluídos fisicamente em 90 dias (ou imediatamente se ExclusaoImediata = true).
+    /// </summary>
+    [HttpPost("{id:guid}/encerrar")]
+    public async Task<IActionResult> EncerrarConta(
+        Guid id,
+        [FromBody] EncerrarContaEmpresaRequest request,
+        CancellationToken ct)
+    {
+        // Garante que o AdministradorCliente só pode encerrar o próprio tenant
+        if (_currentUser.IdCliente != id)
+            return Forbid();
+
+        var resultado = await _encerrarHandler.HandleAsync(
+            new EncerrarContaEmpresaCommand(
+                IdCliente:        _currentUser.IdCliente,
+                IdUsuario:        _currentUser.Id,
+                SenhaAtual:       request.SenhaAtual,
+                ExclusaoImediata: request.ExclusaoImediata),
+            ct);
+
+        return resultado switch
+        {
+            EncerrarContaEmpresaResult.Sucesso       => NoContent(),
+            EncerrarContaEmpresaResult.NaoEncontrado => NotFound(),
+            EncerrarContaEmpresaResult.SenhaInvalida => Unauthorized(new { Erro = "Senha incorreta." }),
+            EncerrarContaEmpresaResult.JaEncerrada   => Conflict(new { Erro = "Conta já foi encerrada." }),
+            _                                        => StatusCode(500),
+        };
+    }
 }
 
 // ----- Request DTOs -----
@@ -128,3 +169,7 @@ public sealed record AtualizarClienteRequest(
     string RazaoSocial,
     string Email,
     string? Telefone);
+
+public sealed record EncerrarContaEmpresaRequest(
+    string SenhaAtual,
+    bool ExclusaoImediata = false);

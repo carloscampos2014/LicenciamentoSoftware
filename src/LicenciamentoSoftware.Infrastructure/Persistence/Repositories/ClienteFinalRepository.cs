@@ -3,7 +3,6 @@ using LicenciamentoSoftware.Application.ClienteFinal.Abstractions;
 using LicenciamentoSoftware.Application.ClienteFinal.Commands;
 using LicenciamentoSoftware.Application.ClienteFinal.Results;
 using LicenciamentoSoftware.Application.Common;
-
 namespace LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 
 public sealed class ClienteFinalRepository : IClienteFinalRepository
@@ -127,5 +126,30 @@ public sealed class ClienteFinalRepository : IClienteFinalRepository
         const string sql = "UPDATE cliente_final SET ativo = FALSE WHERE id = @Id";
         using var conn = _factory.CreateConnection();
         await conn.ExecuteAsync(new CommandDefinition(sql, new { Id = id }, cancellationToken: ct));
+    }
+
+    // -------------------------------------------------------------------------
+    // Fase 12.1 — Notificação de encerramento de conta
+    // -------------------------------------------------------------------------
+
+    public async Task<IReadOnlyList<ClienteFinalEmailInfo>> ListarEmailsAtivosPorClienteAsync(
+        Guid idCliente,
+        CancellationToken ct = default)
+    {
+        const string sql = """
+            SELECT razao_social AS "RazaoSocial",
+                   email        AS "Email"
+            FROM cliente_final
+            WHERE id_cliente = @IdCliente
+              AND ativo       = TRUE
+              AND email       IS NOT NULL
+              AND email       <> ''
+            ORDER BY razao_social
+            """;
+
+        using var conn = _factory.CreateConnection();
+        var itens = await conn.QueryAsync<ClienteFinalEmailInfo>(
+            new CommandDefinition(sql, new { IdCliente = idCliente }, cancellationToken: ct));
+        return itens.AsList();
     }
 }
