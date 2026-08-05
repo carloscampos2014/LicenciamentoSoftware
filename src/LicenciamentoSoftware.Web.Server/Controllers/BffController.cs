@@ -44,6 +44,10 @@ public sealed class BffController(AuthApiService authService, ClienteApiService 
         if (body.Requer2FA)
             return Ok(new { requer2FA = true, tokenTemporario = body.TokenTemporario });
 
+        // Conta sem senha (anonimização LGPD) — redirecionar para criação de nova senha
+        if (body.SemSenha)
+            return Ok(new { semSenha = true, tokenTemporario = body.TokenTemporario });
+
         if (body.AccessToken is null)
             return Unauthorized(new { Erro = "Falha na autenticação." });
 
