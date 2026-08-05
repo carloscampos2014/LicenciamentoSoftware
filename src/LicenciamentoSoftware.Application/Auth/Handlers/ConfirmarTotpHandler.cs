@@ -5,19 +5,20 @@ namespace LicenciamentoSoftware.Application.Auth.Handlers;
 
 public abstract record ConfirmarTotpResult
 {
-    /// <summary>Código válido — 2FA confirmado e ativo.</summary>
+    /// <summary>Código válido — 2FA ativado com sucesso.</summary>
     public sealed record Sucesso : ConfirmarTotpResult;
 
     /// <summary>Código inválido ou expirado.</summary>
     public sealed record CodigoInvalido : ConfirmarTotpResult;
 
-    /// <summary>Usuário não encontrado ou 2FA não configurado ainda.</summary>
+    /// <summary>Usuário não encontrado ou nenhum setup em andamento.</summary>
     public sealed record NaoEncontrado : ConfirmarTotpResult;
 }
 
 /// <summary>
-/// Confirma que o autenticador foi configurado corretamente validando
-/// o primeiro código TOTP gerado pelo app do usuário.
+/// Confirma o setup do 2FA validando o primeiro código TOTP.
+/// Valida contra o segredo pendente e, se correto, move para totp_secret_hash
+/// tornando o 2FA ativo. Só a partir deste momento o login passará a exigir TOTP.
 /// </summary>
 public sealed class ConfirmarTotpHandler
 {
@@ -36,17 +37,23 @@ public sealed class ConfirmarTotpHandler
         ConfirmarTotpCommand command,
         CancellationToken cancellationToken = default)
     {
-        var usuario = await _usuarioRepository
-            .BuscarPorIdAsync(command.IdUsuario, cancellationToken);
+        // Busca o segredo pendente (não o definitivo)
+        var segredoPendente = await _usuarioRepository
+            .BuscarTotpPendenteAsync(command.IdUsuario, cancellationToken);
 
-        if (usuario is null || !usuario.Ativo)
+        if (segredoPendente is null)
             return new ConfirmarTotpResult.NaoEncontrado();
 
-        if (usuario.TotpSecretHash is null)
-            return new ConfirmarTotpResult.NaoEncontrado();
-
-        if (!_totpService.Validar(usuario.TotpSecretHash, command.Codigo))
+        // Valida o código contra o segredo pendente
+        if (!_totpService.Validar(segredoPendente, command.Codigo))
             return new ConfirmarTotpResult.CodigoInvalido();
+
+        // Move pendente → definitivo (ativa o 2FA)
+        var confirmado = await _usuarioRepository
+            .ConfirmarTotpPendenteAsync(command.IdUsuario, cancellationToken);
+
+        if (!confirmado)
+            return new ConfirmarTotpResult.NaoEncontrado();
 
         return new ConfirmarTotpResult.Sucesso();
     }
