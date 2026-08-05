@@ -148,7 +148,7 @@ public sealed class AuthController : ControllerBase
 
     /// <summary>Encerra a sessão revogando o refresh token.</summary>
     [HttpPost("logout")]
-    [Authorize]
+    [AllowAnonymous]
     public async Task<IActionResult> Logout(
         [FromBody] LogoutRequest request,
         CancellationToken cancellationToken)
@@ -192,7 +192,7 @@ public sealed class AuthController : ControllerBase
 
         return resultado switch
         {
-            ConfirmarTotpResult.Sucesso       => Ok(new { Mensagem = "2FA confirmado e ativo." }),
+            ConfirmarTotpResult.Sucesso        => Ok(new { Mensagem = "2FA confirmado e ativo." }),
             ConfirmarTotpResult.CodigoInvalido => Unauthorized(new { Erro = "Código TOTP inválido ou expirado." }),
             ConfirmarTotpResult.NaoEncontrado  => NotFound(new { Erro = "Usuário não encontrado ou 2FA não configurado." }),
             _                                  => StatusCode(500),

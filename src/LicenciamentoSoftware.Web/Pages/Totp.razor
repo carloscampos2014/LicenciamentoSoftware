@@ -4,60 +4,116 @@
 @inject JwtAuthStateProvider AuthProvider
 @inject NavigationManager Nav
 
-<PageTitle>Verificação 2FA — Licenciamento</PageTitle>
+<PageTitle>Verificação 2FA — LicenseManager</PageTitle>
 
-<div class="row justify-content-center mt-5">
-    <div class="col-12 col-md-5 col-lg-4">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h4 class="card-title mb-2 text-center">Verificação em dois fatores</h4>
-                <p class="text-muted text-center small mb-4">
-                    Digite o código de 6 dígitos do seu aplicativo autenticador.
-                </p>
-
-                <EditForm Model="_model" OnValidSubmit="HandleTotp">
-                    <DataAnnotationsValidator />
-
-                    <div class="mb-3">
-                        <label class="form-label">Código TOTP</label>
-                        <InputText class="form-control text-center fs-4 letter-spacing-wide"
-                                   @bind-Value="_model.Codigo"
-                                   maxlength="6"
-                                   autocomplete="one-time-code"
-                                   placeholder="000000" />
-                        <ValidationMessage For="@(() => _model.Codigo)" />
-                    </div>
-
-                    <ApiError Erro="@_erro" />
-
-                    <button type="submit" class="btn btn-primary w-100" disabled="@_carregando">
-                        @if (_carregando) { <span class="spinner-border spinner-border-sm me-1"></span> }
-                        Verificar
-                    </button>
-                </EditForm>
-
-                <p class="text-center small mt-3 mb-0">
-                    <a href="/login">Voltar ao login</a>
-                </p>
+<div style="min-height:100vh;display:flex">
+    <!-- Painel esquerdo decorativo -->
+    <div class="d-none d-lg-flex flex-column justify-content-between p-5"
+         style="width:420px;background:#6c63ff;flex-shrink:0">
+        <div>
+            <div style="width:44px;height:44px;background:rgba(255,255,255,.2);border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:1rem;color:white">
+                LS
             </div>
+            <div class="mt-2" style="color:white;font-weight:700;font-size:1rem">LicenseManager</div>
+            <div style="color:rgba(255,255,255,.7);font-size:.75rem">Sistema de Licenças</div>
+        </div>
+        <div>
+            <h2 style="color:white;font-size:1.75rem;font-weight:700;line-height:1.3">
+                Sua conta está protegida
+            </h2>
+            <p style="color:rgba(255,255,255,.75);font-size:.875rem;margin-top:.75rem">
+                A autenticação em dois fatores garante que só você consegue acessar sua conta,
+                mesmo que sua senha seja comprometida.
+            </p>
+        </div>
+        <div style="color:rgba(255,255,255,.5);font-size:.75rem">
+            © 2026 LicenseManager
+        </div>
+    </div>
+
+    <!-- Painel direito — formulário -->
+    <div class="flex-grow-1 d-flex align-items-center justify-content-center p-4">
+        <div style="width:100%;max-width:380px">
+
+            <!-- Logo mobile -->
+            <div class="d-lg-none text-center mb-4">
+                <div class="sidebar-brand-icon mx-auto mb-2">LS</div>
+                <div style="font-weight:700;font-size:1rem">LicenseManager</div>
+                <div class="text-muted" style="font-size:.75rem">Sistema de Licenças</div>
+            </div>
+
+            <!-- Ícone de escudo -->
+            <div style="width:56px;height:56px;background:#ede9fe;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;margin-bottom:1.25rem">
+                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="#6c63ff" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+            </div>
+
+            <h1 style="font-size:1.5rem;font-weight:700;color:#212529;margin-bottom:.25rem">
+                Verificação em dois fatores
+            </h1>
+            <p class="text-muted mb-4" style="font-size:.875rem">
+                Abra seu aplicativo autenticador e digite o código de 6 dígitos.
+            </p>
+
+            <div class="form-group">
+                <label class="form-label">Código de verificação</label>
+                <input class="form-control"
+                       style="text-align:center;letter-spacing:.4em;font-size:1.5rem;font-weight:600;padding:.75rem"
+                       type="text"
+                       inputmode="numeric"
+                       pattern="[0-9]*"
+                       maxlength="6"
+                       autocomplete="one-time-code"
+                       placeholder="000000"
+                       @bind="_codigo"
+                       @bind:event="oninput"
+                       @onkeyup="HandleEnter" />
+            </div>
+
+            @if (_erro is not null)
+            {
+                <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erro</div>
+            }
+
+            <button class="btn btn-primary w-100 py-2" @onclick="HandleTotp"
+                    disabled="@(_carregando || _codigo.Length != 6)">
+                @if (_carregando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                }
+                Verificar
+            </button>
+
+            <p class="text-center text-muted mt-3 mb-0" style="font-size:.875rem">
+                <a href="/login" style="color:#6c63ff;font-weight:600;text-decoration:none">
+                    ← Voltar ao login
+                </a>
+            </p>
         </div>
     </div>
 </div>
 
 @code {
-    private readonly TotpModel _model = new();
+    private string _codigo = string.Empty;
     private string? _erro;
     private bool _carregando;
 
     [SupplyParameterFromQuery(Name = "token")] private string? TokenTemporario { get; set; }
 
+    private async Task HandleEnter(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && _codigo.Length == 6) await HandleTotp();
+    }
+
     private async Task HandleTotp()
     {
-        if (string.IsNullOrEmpty(TokenTemporario))
-        {
-            Nav.NavigateTo("/login");
-            return;
-        }
+        if (string.IsNullOrEmpty(TokenTemporario)) { Nav.NavigateTo("/login"); return; }
+        if (_codigo.Length != 6) return;
 
         _carregando = true;
         _erro = null;
@@ -65,11 +121,12 @@
         try
         {
             var response = await Http.PostAsJsonAsync("/bff/login/2fa",
-                new { TokenTemporario, Codigo = _model.Codigo });
+                new { TokenTemporario, Codigo = _codigo });
 
             if (!response.IsSuccessStatusCode)
             {
                 _erro = "Código inválido ou expirado. Tente novamente.";
+                _codigo = string.Empty;
                 return;
             }
 
@@ -98,12 +155,4 @@
         DateTime? Expiracao,
         string? Nome,
         string? Papel);
-
-    private sealed class TotpModel
-    {
-        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Código é obrigatório.")]
-        [System.ComponentModel.DataAnnotations.StringLength(6, MinimumLength = 6,
-            ErrorMessage = "O código deve ter 6 dígitos.")]
-        public string Codigo { get; set; } = string.Empty;
-    }
 }
