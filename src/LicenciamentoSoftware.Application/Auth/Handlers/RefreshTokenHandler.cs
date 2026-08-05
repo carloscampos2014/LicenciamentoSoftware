@@ -52,7 +52,7 @@ public sealed class RefreshTokenHandler
             .BuscarPapelAsync(usuario.Id, cancellationToken);
 
         var novoTokenPar = _jwtService.GerarTokenPar(
-            usuario.Id, usuario.IdCliente, usuario.Nome, papel);
+            usuario.Id, usuario.IdCliente, usuario.Nome, papel, usuario.Email);
 
         await _refreshTokenRepository.SalvarAsync(
             usuario.Id,

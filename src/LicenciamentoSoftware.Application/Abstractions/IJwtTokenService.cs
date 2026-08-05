@@ -7,7 +7,7 @@ public record TokenPar(string AccessToken, string RefreshToken, DateTime AccessT
 /// </summary>
 public interface IJwtTokenService
 {
-    TokenPar GerarTokenPar(Guid idUsuario, Guid idCliente, string nome, string papel);
+    TokenPar GerarTokenPar(Guid idUsuario, Guid idCliente, string nome, string papel, string? email = null);
     string GerarRefreshToken();
     bool ValidarAccessToken(string token, out Guid idUsuario);
 }

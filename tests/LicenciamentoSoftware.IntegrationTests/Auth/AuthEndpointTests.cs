@@ -101,13 +101,22 @@ public sealed class AuthEndpointTests : IDisposable
     [Fact]
     public async Task EndpointProtegido_SemToken_Retorna401()
     {
-        // /auth/logout requer Authorize
+        // /clientes requer autenticação
+        var response = await _client.GetAsync("/clientes");
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+
+    [Fact]
+    public async Task Logout_SemToken_Retorna204()
+    {
+        // /auth/logout é AllowAnonymous — aceita revogação sem Bearer token
         var response = await _client.PostAsJsonAsync("/auth/logout", new
         {
-            refreshToken = "qualquer"
+            refreshToken = "token-invalido-qualquer"
         });
 
-        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        // Retorna 204 mesmo com token inválido — o handler trata graciosamente
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 
     [Fact]

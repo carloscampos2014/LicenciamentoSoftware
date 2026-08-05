@@ -39,6 +39,18 @@ public interface IUsuarioRepository
     /// <summary>Desativa a conta do usuário (ativo = false).</summary>
     Task DesativarUsuarioAsync(Guid idUsuario, CancellationToken cancellationToken = default);
 
+    /// <summary>Salva o segredo TOTP provisório antes da confirmação.</summary>
+    Task SalvarTotpPendenteAsync(Guid idUsuario, string segredo, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Confirma o setup TOTP: move o segredo pendente para totp_secret_hash
+    /// e limpa o campo pendente. Retorna false se não houver pendente.
+    /// </summary>
+    Task<bool> ConfirmarTotpPendenteAsync(Guid idUsuario, CancellationToken cancellationToken = default);
+
+    /// <summary>Busca o segredo TOTP pendente do usuário para validação.</summary>
+    Task<string?> BuscarTotpPendenteAsync(Guid idUsuario, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Verifica se existe outro AdministradorCliente ativo no mesmo tenant,
     /// excluindo o usuário indicado. Usado para impedir que o último admin se exclua.

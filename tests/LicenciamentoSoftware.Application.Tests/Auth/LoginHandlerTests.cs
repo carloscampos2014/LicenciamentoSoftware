@@ -73,7 +73,7 @@ public class LoginHandlerTests
         _clock.UtcNow.Returns(DateTime.UtcNow);
 
         var tokenPar = new TokenPar("access", "refresh", DateTime.UtcNow.AddHours(1));
-        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>())
+        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>())
             .Returns(tokenPar);
 
         var resultado = await CriarHandler().HandleAsync(
@@ -92,7 +92,7 @@ public class LoginHandlerTests
         _hasher.Verificar(Arg.Any<string>(), Arg.Any<string>()).Returns(true);
 
         var tokenPar = new TokenPar("token_temporario", "refresh", DateTime.UtcNow.AddMinutes(5));
-        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>())
+        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>())
             .Returns(tokenPar);
 
         var resultado = await CriarHandler().HandleAsync(

@@ -33,24 +33,10 @@ public sealed class ConfigurarTotpHandler
         var segredo = _totpService.GerarSegredo();
         var qrCodeUri = _totpService.GerarQrCodeUri(segredo, command.Email);
 
-        // Armazena o segredo — na Fase real seria criptografado, não hash
-        // pois o TOTP precisa do valor original para validar
-        usuario.DefinirTotpSecret(segredo);
-
-        await _uow.BeginAsync(cancellationToken: cancellationToken);
-
-        try
-        {
-            await _usuarioRepository.AtualizarTotpSecretAsync(
-                usuario.Id, segredo, cancellationToken);
-
-            await _uow.CommitAsync(cancellationToken);
-        }
-        catch
-        {
-            await _uow.RollbackAsync(cancellationToken);
-            throw;
-        }
+        // Salva como pendente — só move para totp_secret_hash quando o usuário
+        // confirmar com o primeiro código gerado pelo autenticador.
+        await _usuarioRepository.SalvarTotpPendenteAsync(
+            usuario.Id, segredo, cancellationToken);
 
         return new ConfigurarTotpResult(segredo, qrCodeUri);
     }

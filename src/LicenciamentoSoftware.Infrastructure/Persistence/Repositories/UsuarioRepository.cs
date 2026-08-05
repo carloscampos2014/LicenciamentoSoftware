@@ -277,6 +277,54 @@ public sealed class UsuarioRepository : IUsuarioRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task SalvarTotpPendenteAsync(
+        Guid idUsuario, string segredo, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE usuario SET totp_secret_pendente = @Segredo WHERE id = @Id
+            """;
+
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { Id = idUsuario, Segredo = segredo },
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task<string?> BuscarTotpPendenteAsync(
+        Guid idUsuario, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT totp_secret_pendente FROM usuario WHERE id = @Id LIMIT 1
+            """;
+
+        using var conn = _factory.CreateConnection();
+        return await conn.QueryFirstOrDefaultAsync<string?>(
+            new CommandDefinition(sql,
+                new { Id = idUsuario },
+                cancellationToken: cancellationToken));
+    }
+
+    public async Task<bool> ConfirmarTotpPendenteAsync(
+        Guid idUsuario, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            UPDATE usuario
+            SET totp_secret_hash     = totp_secret_pendente,
+                totp_secret_pendente = NULL
+            WHERE id = @Id
+              AND totp_secret_pendente IS NOT NULL
+            """;
+
+        using var conn = _factory.CreateConnection();
+        var linhas = await conn.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { Id = idUsuario },
+                cancellationToken: cancellationToken));
+
+        return linhas > 0;
+    }
+
     public async Task<bool> ExisteOutroAdminAsync(
         Guid idCliente, Guid idUsuarioExcluindo, CancellationToken cancellationToken = default)
     {

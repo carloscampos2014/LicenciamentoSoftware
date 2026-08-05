@@ -33,7 +33,10 @@ public sealed class CurrentUser : ICurrentUser
         EstaAutenticado = true;
 
         Id = Guid.TryParse(
-            user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id)
+            user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+            ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+            ?? user.FindFirst("sub")?.Value,
+            out var id)
             ? id : Guid.Empty;
 
         IdCliente = Guid.TryParse(

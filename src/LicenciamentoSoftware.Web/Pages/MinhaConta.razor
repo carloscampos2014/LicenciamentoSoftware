@@ -1,7 +1,11 @@
 @page "/minha-conta"
+@attribute [Authorize]
 @inject HttpClient Http
 @inject JwtAuthStateProvider AuthProvider
 @inject NavigationManager Nav
+@inject TotpApiService TotpService
+@inject ClienteApiService ClienteService
+@using LicenciamentoSoftware.Client.Models.Clientes
 
 <PageTitle>Minha Conta — LicenseManager</PageTitle>
 
@@ -11,6 +15,174 @@
 </div>
 
 <div style="max-width:600px">
+
+    <!-- Seção Minha Empresa -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 style="font-size:1rem;font-weight:700;color:#212529;margin-bottom:.25rem">
+                Minha Empresa
+            </h2>
+            <p class="text-muted mb-3" style="font-size:.875rem">
+                Atualize os dados cadastrais da sua empresa.
+            </p>
+
+            @if (_carregandoEmpresa)
+            {
+                <div class="text-center py-3">
+                    <div class="spinner-border spinner-border-sm text-primary"></div>
+                </div>
+            }
+            else if (_empresa is not null)
+            {
+                <div class="form-group">
+                    <label class="form-label">Razão Social *</label>
+                    <input class="form-control" @bind="_empresaForm.RazaoSocial" />
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Tipo</label>
+                        <input class="form-control" value="@(_empresa.TipoInscricao == 1 ? "CPF" : "CNPJ")" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">@(_empresa.TipoInscricao == 1 ? "CPF" : "CNPJ")</label>
+                        <input class="form-control" value="@_empresa.NumeroInscricao" disabled />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">E-mail da empresa *</label>
+                    <input class="form-control" type="email" @bind="_empresaForm.Email" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Telefone</label>
+                    <input class="form-control" @bind="_empresaForm.Telefone" placeholder="(00) 00000-0000" />
+                </div>
+
+                @if (_erroEmpresa is not null)
+                {
+                    <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erroEmpresa</div>
+                }
+                @if (_sucessoEmpresa)
+                {
+                    <div class="alert alert-success py-2 px-3 mb-3" style="font-size:.875rem">
+                        Dados atualizados com sucesso.
+                    </div>
+                }
+
+                <button class="btn btn-primary btn-sm" @onclick="SalvarEmpresa"
+                        disabled="@_salvandoEmpresa">
+                    @if (_salvandoEmpresa) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    Salvar alterações
+                </button>
+            }
+            else
+            {
+                <p class="text-muted" style="font-size:.875rem">
+                    Não foi possível carregar os dados da empresa.
+                </p>
+            }
+        </div>
+    </div>
+
+    <!-- Seção 2FA -->
+    <div class="card mb-4" id="2fa">
+        <div class="card-body">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h2 style="font-size:1rem;font-weight:700;color:#212529;margin-bottom:.15rem">
+                        Autenticação de dois fatores (2FA)
+                    </h2>
+                    <p class="text-muted mb-0" style="font-size:.875rem">
+                        Adiciona uma camada extra de segurança ao seu login.
+                    </p>
+                </div>
+                @if (_totpAtivo.HasValue)
+                {
+                    <span class="badge-pill @(_totpAtivo.Value ? "badge-ativo" : "badge-inativo")">
+                        @(_totpAtivo.Value ? "Ativo" : "Inativo")
+                    </span>
+                }
+            </div>
+
+            @if (_totpAtivo == false && !_mostrarSetup2FA)
+            {
+                <button class="btn btn-primary btn-sm" @onclick="IniciarSetup2FA" disabled="@_carregando2FA">
+                    @if (_carregando2FA) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                    Ativar 2FA
+                </button>
+            }
+
+            @if (_totpAtivo == true && !_mostrarDesativar2FA)
+            {
+                <button class="btn btn-outline-danger btn-sm" @onclick="() => _mostrarDesativar2FA = true">
+                    Desativar 2FA
+                </button>
+            }
+
+            @if (_erro2FA is not null)
+            {
+                <div class="alert alert-danger py-2 px-3 mt-3" style="font-size:.875rem">@_erro2FA</div>
+            }
+            @if (_sucesso2FA is not null)
+            {
+                <div class="alert alert-success py-2 px-3 mt-3" style="font-size:.875rem">@_sucesso2FA</div>
+            }
+
+            <!-- Setup: exibe QR code -->
+            @if (_mostrarSetup2FA && _qrCodeUri is not null)
+            {
+                <div class="mt-3">
+                    <p style="font-size:.875rem;color:#495057;margin-bottom:.75rem">
+                        <strong>Passo 1:</strong> Escaneie o QR code com Google Authenticator ou Authy.
+                    </p>
+                    <div style="background:#f8f9fa;border-radius:8px;padding:1rem;display:inline-block;margin-bottom:1rem">
+                        <img src="@QrCodeImageUrl" alt="QR Code 2FA" style="width:180px;height:180px" />
+                    </div>
+                    <p style="font-size:.8rem;color:#6c757d;margin-bottom:.75rem">
+                        Ou insira o código manualmente: <code style="font-size:.85rem;user-select:all">@_segredo2FA</code>
+                    </p>
+                    <p style="font-size:.875rem;color:#495057;margin-bottom:.5rem">
+                        <strong>Passo 2:</strong> Digite o código gerado pelo autenticador para confirmar.
+                    </p>
+                    <div class="d-flex gap-2 align-items-start">
+                        <input class="form-control" style="max-width:160px;letter-spacing:.15em;font-size:1.1rem;text-align:center"
+                               @bind="_codigoConfirmacao2FA" placeholder="000000" maxlength="6"
+                               @onkeyup="HandleEnterConfirmar2FA" />
+                        <button class="btn btn-primary btn-sm" @onclick="Confirmar2FA"
+                                disabled="@(_codigoConfirmacao2FA.Length != 6)">
+                            Confirmar
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" @onclick="CancelarSetup2FA">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            }
+
+            <!-- Desativar 2FA -->
+            @if (_mostrarDesativar2FA)
+            {
+                <div class="mt-3" style="background:#fff3cd;border-radius:8px;padding:1rem">
+                    <p style="font-size:.875rem;color:#856404;margin-bottom:.75rem">
+                        Digite o código do autenticador para confirmar a desativação.
+                    </p>
+                    <div class="d-flex gap-2 align-items-start">
+                        <input class="form-control" style="max-width:160px;letter-spacing:.15em;font-size:1.1rem;text-align:center"
+                               @bind="_codigoDesativar2FA" placeholder="000000" maxlength="6" />
+                        <button class="btn btn-danger btn-sm" @onclick="Desativar2FA"
+                                disabled="@(_codigoDesativar2FA.Length != 6 || _carregando2FA)">
+                            @if (_carregando2FA) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                            Desativar
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm"
+                                @onclick="() => { _mostrarDesativar2FA = false; _codigoDesativar2FA = string.Empty; _erro2FA = null; }">
+                            Cancelar
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
     <!-- Seção LGPD -->
     <div class="card mb-4">
         <div class="card-body">
@@ -57,14 +229,12 @@
                     <p style="font-size:.9rem;color:#495057">
                         Para confirmar, digite sua senha atual. Esta ação não pode ser desfeita.
                     </p>
-
                     <div class="form-group">
                         <label class="form-label">Senha atual *</label>
                         <PasswordInput @bind-Value="_senhaConfirmacao"
                                        Placeholder="••••••••"
                                        Autocomplete="current-password" />
                     </div>
-
                     @if (_erroExcluir is not null)
                     {
                         <div class="alert alert-danger py-2 px-3" style="font-size:.875rem">@_erroExcluir</div>
@@ -74,11 +244,9 @@
                     <button class="btn btn-outline-secondary" @onclick="FecharModal" disabled="@_excluindo">
                         Cancelar
                     </button>
-                    <button class="btn btn-danger" @onclick="ConfirmarExclusao" disabled="@(_excluindo || string.IsNullOrWhiteSpace(_senhaConfirmacao))">
-                        @if (_excluindo)
-                        {
-                            <span class="spinner-border spinner-border-sm me-2"></span>
-                        }
+                    <button class="btn btn-danger" @onclick="ConfirmarExclusao"
+                            disabled="@(_excluindo || string.IsNullOrWhiteSpace(_senhaConfirmacao))">
+                        @if (_excluindo) { <span class="spinner-border spinner-border-sm me-2"></span> }
                         Confirmar exclusão
                     </button>
                 </div>
@@ -88,10 +256,186 @@
 }
 
 @code {
+    // ── Empresa ───────────────────────────────────────────────────────────────
+    private ClienteResult? _empresa;
+    private bool _carregandoEmpresa = true;
+    private bool _salvandoEmpresa;
+    private bool _sucessoEmpresa;
+    private string? _erroEmpresa;
+    private readonly EmpresaFormModel _empresaForm = new();
+
+    // ── 2FA ──────────────────────────────────────────────────────────────────
+    private bool? _totpAtivo;
+    private bool _mostrarSetup2FA;
+    private bool _mostrarDesativar2FA;
+    private bool _carregando2FA;
+    private string? _segredo2FA;
+    private string? _qrCodeUri;
+    private string _codigoConfirmacao2FA = string.Empty;
+    private string _codigoDesativar2FA = string.Empty;
+    private string? _erro2FA;
+    private string? _sucesso2FA;
+
+    // QR code gerado pelo BFF via endpoint interno — sem dependência de CDN externo
+    private string QrCodeImageUrl => _qrCodeUri is not null
+        ? $"/bff/totp/qrcode?uri={Uri.EscapeDataString(_qrCodeUri)}"
+        : string.Empty;
+
+    // ── Exclusão de conta ────────────────────────────────────────────────────
     private bool _modalExcluirAberto;
     private string _senhaConfirmacao = string.Empty;
     private string? _erroExcluir;
     private bool _excluindo;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var totpTask   = TotpService.BuscarStatusAsync();
+        var empresaTask = CarregarEmpresaAsync();
+        _totpAtivo = await totpTask;
+        await empresaTask;
+    }
+
+    // ── Empresa ───────────────────────────────────────────────────────────────
+
+    private async Task CarregarEmpresaAsync()
+    {
+        try
+        {
+            var idCliente = AuthProvider.ObterIdCliente();
+            if (idCliente is null) return;
+            _empresa = await ClienteService.BuscarPorIdAsync(idCliente.Value);
+            if (_empresa is not null)
+            {
+                _empresaForm.RazaoSocial = _empresa.RazaoSocial;
+                _empresaForm.Email       = _empresa.Email;
+                _empresaForm.Telefone    = _empresa.Telefone;
+            }
+        }
+        catch { /* falha silenciosa — seção mostra mensagem */ }
+        finally { _carregandoEmpresa = false; }
+    }
+
+    private async Task SalvarEmpresa()
+    {
+        _salvandoEmpresa = true;
+        _erroEmpresa = null;
+        _sucessoEmpresa = false;
+        try
+        {
+            var idCliente = AuthProvider.ObterIdCliente();
+            if (idCliente is null) { _erroEmpresa = "Sessão inválida."; return; }
+
+            var (sucesso, erro) = await ClienteService.AtualizarAsync(
+                idCliente.Value,
+                new AtualizarClienteRequest(
+                    _empresaForm.RazaoSocial,
+                    _empresaForm.Email,
+                    string.IsNullOrWhiteSpace(_empresaForm.Telefone) ? null : _empresaForm.Telefone));
+
+            if (sucesso)
+            {
+                _sucessoEmpresa = true;
+                // Recarregar para sincronizar
+                _empresa = await ClienteService.BuscarPorIdAsync(idCliente.Value);
+            }
+            else
+            {
+                _erroEmpresa = erro;
+            }
+        }
+        finally { _salvandoEmpresa = false; }
+    }
+
+    // ── Setup 2FA ─────────────────────────────────────────────────────────────
+
+    private async Task IniciarSetup2FA()
+    {
+        _carregando2FA = true;
+        _erro2FA = null;
+        _sucesso2FA = null;
+        try
+        {
+            var idUsuario = AuthProvider.ObterIdUsuario();
+            var email = AuthProvider.ObterEmail() ?? AuthProvider.ObterNome() ?? string.Empty;
+
+            if (idUsuario is null)
+            {
+                _erro2FA = "Não foi possível identificar o usuário. Faça login novamente.";
+                return;
+            }
+
+            var (segredo, qrCodeUri, erro) = await TotpService.IniciarSetupAsync(
+                idUsuario.Value, email);
+
+            if (erro is not null) { _erro2FA = erro; return; }
+
+            _segredo2FA = segredo;
+            _qrCodeUri = qrCodeUri;
+            _mostrarSetup2FA = true;
+            _codigoConfirmacao2FA = string.Empty;
+        }
+        finally { _carregando2FA = false; }
+    }
+
+    private async Task Confirmar2FA()
+    {
+        if (_codigoConfirmacao2FA.Length != 6) return;
+        _erro2FA = null;
+
+        var (sucesso, erro) = await TotpService.ConfirmarAsync(_codigoConfirmacao2FA);
+        if (sucesso)
+        {
+            _totpAtivo = true;
+            _mostrarSetup2FA = false;
+            _segredo2FA = null;
+            _qrCodeUri = null;
+            _codigoConfirmacao2FA = string.Empty;
+            _sucesso2FA = "2FA ativado com sucesso! Seu login agora exige o código do autenticador.";
+        }
+        else
+        {
+            _erro2FA = erro;
+        }
+    }
+
+    private async Task HandleEnterConfirmar2FA(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await Confirmar2FA();
+    }
+
+    private void CancelarSetup2FA()
+    {
+        _mostrarSetup2FA = false;
+        _segredo2FA = null;
+        _qrCodeUri = null;
+        _codigoConfirmacao2FA = string.Empty;
+        _erro2FA = null;
+    }
+
+    private async Task Desativar2FA()
+    {
+        if (_codigoDesativar2FA.Length != 6) return;
+        _carregando2FA = true;
+        _erro2FA = null;
+        try
+        {
+            var (sucesso, erro) = await TotpService.DesativarAsync(_codigoDesativar2FA);
+            if (sucesso)
+            {
+                _totpAtivo = false;
+                _mostrarDesativar2FA = false;
+                _codigoDesativar2FA = string.Empty;
+                _sucesso2FA = "2FA desativado. Seu login não exige mais o código do autenticador.";
+            }
+            else
+            {
+                _erro2FA = erro;
+            }
+        }
+        finally { _carregando2FA = false; }
+    }
+
+    // ── Exclusão de conta ────────────────────────────────────────────────────
 
     private void AbrirModalExcluir()
     {
@@ -111,10 +455,8 @@
     private async Task ConfirmarExclusao()
     {
         if (string.IsNullOrWhiteSpace(_senhaConfirmacao)) return;
-
         _excluindo = true;
         _erroExcluir = null;
-
         try
         {
             var response = await Http.PostAsJsonAsync(
@@ -123,7 +465,6 @@
 
             if (response.IsSuccessStatusCode)
             {
-                // Dados anonimizados — fazer logout e redirecionar
                 await Http.PostAsync("/bff/logout", null);
                 AuthProvider.MarcarDesautenticado();
                 Nav.NavigateTo("/login", forceLoad: true);
@@ -145,15 +486,16 @@
 
             _erroExcluir = "Erro inesperado. Tente novamente.";
         }
-        catch
-        {
-            _erroExcluir = "Não foi possível conectar ao servidor.";
-        }
-        finally
-        {
-            _excluindo = false;
-        }
+        catch { _erroExcluir = "Não foi possível conectar ao servidor."; }
+        finally { _excluindo = false; }
     }
 
     private sealed record ErroResponse(string Erro);
+
+    private sealed class EmpresaFormModel
+    {
+        public string RazaoSocial { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Telefone { get; set; }
+    }
 }

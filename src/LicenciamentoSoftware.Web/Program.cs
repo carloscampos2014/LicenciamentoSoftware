@@ -41,6 +41,10 @@ builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<ApiHttpClientFactory>().Licenca);
 builder.Services.AddSingleton(sp =>
     sp.GetRequiredService<ApiHttpClientFactory>().Dashboard);
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<ApiHttpClientFactory>().Totp);
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<ApiHttpClientFactory>().Cliente);
 
 // Autenticação — JwtAuthStateProvider como Singleton para ter acesso
 // à mesma ApiHttpClientFactory e atualizar os tokens

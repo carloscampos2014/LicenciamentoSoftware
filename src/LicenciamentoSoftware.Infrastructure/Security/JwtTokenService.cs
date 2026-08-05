@@ -36,13 +36,13 @@ public sealed class JwtTokenService : IJwtTokenService
         return new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
     }
 
-    public TokenPar GerarTokenPar(Guid idUsuario, Guid idCliente, string nome, string papel)
+    public TokenPar GerarTokenPar(Guid idUsuario, Guid idCliente, string nome, string papel, string? email = null)
     {
         var chave = GetChave();
         var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
         var expiracao = DateTime.UtcNow.AddMinutes(_accessTokenMinutos);
 
-        var claims = new[]
+        var claimsList = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, idUsuario.ToString()),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -51,10 +51,13 @@ public sealed class JwtTokenService : IJwtTokenService
             new Claim(ClaimTypes.Role, papel),
         };
 
+        if (!string.IsNullOrWhiteSpace(email))
+            claimsList.Add(new Claim(JwtRegisteredClaimNames.Email, email));
+
         var token = new JwtSecurityToken(
             issuer: _emissor,
             audience: _audiencia,
-            claims: claims,
+            claims: claimsList,
             expires: expiracao,
             signingCredentials: credenciais);
 

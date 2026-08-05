@@ -1,6 +1,7 @@
 using LicenciamentoSoftware.Client.Models.Auth;
 using LicenciamentoSoftware.Client.Services;
 using Microsoft.AspNetCore.Mvc;
+using QRCoder;
 
 namespace LicenciamentoSoftware.Web.Server.Controllers;
 
@@ -200,6 +201,27 @@ public sealed class BffController(AuthApiService authService) : ControllerBase
             return Unauthorized(new { Erro = erro });
 
         return Conflict(new { Erro = erro });
+    }
+
+    // =========================================================================
+    // TOTP — QR code gerado server-side (sem dependência de CDN externo)
+    // =========================================================================
+
+    /// <summary>
+    /// Gera um QR code PNG para o URI otpauth:// do setup de 2FA.
+    /// </summary>
+    [HttpGet("totp/qrcode")]
+    public IActionResult QrCode([FromQuery] string uri)
+    {
+        if (string.IsNullOrWhiteSpace(uri))
+            return BadRequest();
+
+        using var generator = new QRCodeGenerator();
+        using var data = generator.CreateQrCode(uri, QRCodeGenerator.ECCLevel.Q);
+        using var code = new PngByteQRCode(data);
+        var bytes = code.GetGraphic(6);
+
+        return File(bytes, "image/png");
     }
 
     private void SetRefreshTokenCookie(string refreshToken, DateTime? expiracao)
