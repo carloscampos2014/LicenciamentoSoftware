@@ -9,11 +9,13 @@ namespace LicenciamentoSoftware.Application.Usuario.Handlers;
 /// LGPD Art. 18 — anonimiza os dados pessoais do titular.
 ///
 /// Comportamento por papel:
-///   - AdministradorCliente: conta permanece ativa, nome/email substituídos pelos dados da empresa.
+///   - AdministradorCliente: nome/email substituídos pelos dados da empresa, senha/tokens revogados.
+///     Conta permanece ativa no banco para preservar integridade referencial, mas sem senha não é possível logar.
 ///   - Demais papéis: conta desativada + anonimização completa.
 ///
 /// Em ambos os casos: senha, totp_secret e todos os refresh tokens são revogados.
 /// Logs de auditoria são preservados (obrigação legal).
+/// Não há bloqueio por ser o único admin — a LGPD prevalece sobre restrições operacionais.
 /// </summary>
 public sealed class ExcluirContaHandler
 {
@@ -51,20 +53,15 @@ public sealed class ExcluirContaHandler
         var papel = await _usuarioRepo.BuscarPapelAsync(command.IdUsuario, ct);
         var ehAdmin = papel == "AdministradorCliente";
 
-        // 4. Se for o único admin ativo, bloquear exclusão
-        if (ehAdmin)
-        {
-            var existeOutroAdmin = await ExisteOutroAdminAsync(command.IdCliente, command.IdUsuario, ct);
-            if (!existeOutroAdmin)
-                return new ExcluirContaResult.UltimoAdministrador();
-        }
-
-        // 5. Buscar dados da empresa para substituição (admin) ou usar genérico (demais)
+        // 4. Buscar dados da empresa para substituição (admin) ou usar genérico (demais)
         string nomeSubstituto;
         string emailSubstituto;
 
         if (ehAdmin)
         {
+            // Admin: substitui nome/email pelos dados da empresa.
+            // Conta permanece ativa mas sem senha — próximo acesso com este email será negado.
+            // Não há bloqueio mesmo sendo o único admin: a LGPD prevalece.
             var cliente = await _clienteRepo.BuscarPorIdAsync(command.IdCliente, ct);
             nomeSubstituto  = cliente?.RazaoSocial ?? "Empresa";
             emailSubstituto = cliente?.Email       ?? $"empresa-{command.IdCliente}@anonimizado.local";
@@ -96,13 +93,5 @@ public sealed class ExcluirContaHandler
         }
 
         return new ExcluirContaResult.Sucesso();
-    }
-
-    private async Task<bool> ExisteOutroAdminAsync(
-        Guid idCliente, Guid idUsuarioExcluindo, CancellationToken ct)
-    {
-        // Reutiliza ExisteAdminParaClienteAsync mas precisa excluir o próprio usuário.
-        // Como não há método específico, verificamos contando admins ativos != idUsuarioExcluindo.
-        return await _usuarioRepo.ExisteOutroAdminAsync(idCliente, idUsuarioExcluindo, ct);
     }
 }
