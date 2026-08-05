@@ -168,7 +168,6 @@ public static class AdminController
             <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width,initial-scale=1">
-              <meta http-equiv="refresh" content="30">
               <title>Admin — LicenciamentoSoftware</title>
               <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
               <style>
@@ -180,22 +179,41 @@ public static class AdminController
                 .warn{ color: #fd7e14; font-weight:600; }
                 .badge-tipo { font-size:.75rem; }
                 thead th { background:#6c63ff; color:#fff; }
+                #refresh-btn { cursor:pointer; font-size:.8rem; padding:2px 10px; }
+                #countdown { font-variant-numeric: tabular-nums; min-width:2ch; display:inline-block; }
               </style>
             </head>
             <body>
             <nav class="navbar navbar-dark" style="background:#6c63ff">
               <div class="container-fluid">
                 <span class="navbar-brand fw-bold">🔧 LicenciamentoSoftware — Painel Admin</span>
-                <span class="text-white-50 small">Atualizado: 
+                <div class="d-flex align-items-center gap-3">
+                  <span class="text-white-50 small">
+                    Atualizado: 
             """);
 
         sb.Append(agora);
 
         sb.AppendLine("""
-                  &nbsp;|&nbsp; auto-refresh a cada 30s
-                </span>
+                  &nbsp;|&nbsp; refresh em <span id="countdown">30</span>s
+                  </span>
+                  <button id="refresh-btn" class="btn btn-sm btn-outline-light" onclick="location.reload()">
+                    ↻ Atualizar agora
+                  </button>
+                </div>
               </div>
             </nav>
+            <script>
+              (function() {
+                var s = 30;
+                var el = document.getElementById('countdown');
+                var iv = setInterval(function() {
+                  s--;
+                  if (el) el.textContent = s;
+                  if (s <= 0) { clearInterval(iv); location.reload(); }
+                }, 1000);
+              })();
+            </script>
             <div class="container-fluid py-4">
             """);
 
