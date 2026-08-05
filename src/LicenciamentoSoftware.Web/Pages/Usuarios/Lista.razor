@@ -127,7 +127,7 @@ else
         _carregando = true; _erro = null;
         try
         {
-            var r = await Service.ListarAsync(_filtro, pagina: _pagina);
+            var r = await Service.ListarAsync(_filtro, ativo: true, pagina: _pagina);
             if (r is null) { _erro = "Erro ao carregar."; return; }
             _itens = r.Itens.ToList(); _total = r.Total; _totalPaginas = r.TotalPaginas;
         }
