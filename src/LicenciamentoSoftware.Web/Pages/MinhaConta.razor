@@ -459,9 +459,16 @@
         _erroExcluir = null;
         try
         {
-            var response = await Http.PostAsJsonAsync(
-                "/bff/minha-conta/excluir",
-                new { SenhaAtual = _senhaConfirmacao });
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/bff/minha-conta/excluir")
+            {
+                Content = JsonContent.Create(new { SenhaAtual = _senhaConfirmacao }),
+            };
+
+            if (AuthProvider.AccessToken is not null)
+                request.Headers.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", AuthProvider.AccessToken);
+
+            var response = await Http.SendAsync(request);
 
             if (response.IsSuccessStatusCode)
             {
