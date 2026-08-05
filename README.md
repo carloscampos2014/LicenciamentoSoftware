@@ -60,7 +60,7 @@ tests/
 | 13 | Instaladores — MSIX Windows, APK/AAB Android (distribuição direta) | 🔜 Planejada |
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript | 🔜 Planejada |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
-| 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | 🔜 Planejada |
+| 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | ✅ Concluída |
 
 **Testes:** 388 aprovados, 0 falhas (340 backend + 48 MAUI).
 
@@ -241,8 +241,44 @@ X-Nonce:     <uuid-ou-string-aleatória>   (máx 128 chars, único por requisiç
 X-Signature: <hmac-sha256-hex>             (assinatura sobre idLicenca|X-Timestamp|body)
 ```
 
-## Configuração de jobs e e-mail
+## Painel de Administração (Fase 16)
 
+Painel de monitoramento interno acessível via SSH tunnel. **Nunca exposto publicamente.**
+
+### Acesso
+
+```powershell
+# Abre o tunnel: localhost:16000 → VM:5020
+ssh -i "C:\Dev\ssh-key-2026-01-17.key" -p 22022 -L 16000:localhost:5020 ubuntu@137.131.209.235 -N
+```
+
+Com o tunnel ativo, acesse: **http://localhost:16000**
+
+Credenciais configuradas em `/etc/licenciamento/admin.env` na VM.
+
+### Instalação na VM (primeira vez)
+
+```bash
+# Configurar backup automático
+sudo bash scripts/server/setup-backup.sh
+
+# Instalar serviço Admin
+export ADMIN_SENHA="sua-senha-segura"
+sudo -E bash scripts/server/setup-admin.sh
+```
+
+### Métricas exibidas
+
+- Clientes, usuários ativos, licenças por tipo
+- Sessões abertas, validações e erros (24h / 7 dias)
+- Status dos serviços API e BFF
+- Status e histórico do backup do banco
+- Últimos 20 logins com IP de origem
+- Tamanho do banco de dados
+
+---
+
+## Configuração de jobs e e-mail
 Seções do `appsettings.json` (valores padrão):
 
 ```json

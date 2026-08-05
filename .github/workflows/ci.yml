@@ -55,6 +55,7 @@ jobs:
           dotnet restore src/LicenciamentoSoftware.Api/LicenciamentoSoftware.Api.csproj
           dotnet restore src/LicenciamentoSoftware.Client/LicenciamentoSoftware.Client.csproj
           dotnet restore src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj
+          dotnet restore src/LicenciamentoSoftware.Admin/LicenciamentoSoftware.Admin.csproj
           dotnet restore tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj
           dotnet restore tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj
           dotnet restore tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj
@@ -68,6 +69,7 @@ jobs:
           dotnet build src/LicenciamentoSoftware.Api/LicenciamentoSoftware.Api.csproj --no-restore -c Release
           dotnet build src/LicenciamentoSoftware.Client/LicenciamentoSoftware.Client.csproj --no-restore -c Release
           dotnet build src/LicenciamentoSoftware.Web/LicenciamentoSoftware.Web.csproj --no-restore -c Release
+          dotnet build src/LicenciamentoSoftware.Admin/LicenciamentoSoftware.Admin.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj --no-restore -c Release
