@@ -94,6 +94,10 @@ public sealed class EncerrarContaEmpresaHandler
                 command.ExclusaoImediata ? agora : agora.AddDays(90),
                 ct);
 
+            // Desativa todos os usuários do tenant — impede novos logins
+            await _usuarioRepo.DesativarTodosPorClienteAsync(command.IdCliente, ct);
+
+            // Revoga todos os refresh tokens ativos — encerra sessões existentes
             await _usuarioRepo.RevogarTodosRefreshTokensPorClienteAsync(command.IdCliente, ct);
 
             await _uow.CommitAsync(ct);

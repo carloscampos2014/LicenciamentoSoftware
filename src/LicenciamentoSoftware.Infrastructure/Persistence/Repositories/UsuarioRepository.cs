@@ -284,6 +284,24 @@ public sealed class UsuarioRepository : IUsuarioRepository
                 cancellationToken: cancellationToken));
     }
 
+    public async Task DesativarTodosPorClienteAsync(
+        Guid idCliente, CancellationToken cancellationToken = default)
+    {
+        // Desativa todos os usuários do tenant para bloquear novos logins após encerramento de conta.
+        const string sql = """
+            UPDATE usuario
+               SET ativo = FALSE
+             WHERE id_cliente = @IdCliente
+               AND ativo      = TRUE
+            """;
+
+        await _uow.Connection.ExecuteAsync(
+            new CommandDefinition(sql,
+                new { IdCliente = idCliente },
+                transaction: _uow.Transaction,
+                cancellationToken: cancellationToken));
+    }
+
     public async Task DesativarUsuarioAsync(
         Guid idUsuario, CancellationToken cancellationToken = default)
     {

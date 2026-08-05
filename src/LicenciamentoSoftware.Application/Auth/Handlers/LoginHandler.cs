@@ -1,6 +1,7 @@
 using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Auth.Commands;
 using LicenciamentoSoftware.Application.Auth.Results;
+using LicenciamentoSoftware.Application.Cliente.Abstractions;
 
 namespace LicenciamentoSoftware.Application.Auth.Handlers;
 
@@ -10,6 +11,7 @@ public sealed class LoginHandler
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtTokenService _jwtService;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
+    private readonly IClienteRepository _clienteRepository;
     private readonly IClock _clock;
 
     // Token temporário de desafio 2FA expira em 5 minutos
@@ -20,12 +22,14 @@ public sealed class LoginHandler
         IPasswordHasher passwordHasher,
         IJwtTokenService jwtService,
         IRefreshTokenRepository refreshTokenRepository,
+        IClienteRepository clienteRepository,
         IClock clock)
     {
         _usuarioRepository = usuarioRepository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _refreshTokenRepository = refreshTokenRepository;
+        _clienteRepository = clienteRepository;
         _clock = clock;
     }
 
@@ -40,6 +44,14 @@ public sealed class LoginHandler
             return new AuthResult.Negado("Credenciais inválidas.");
 
         if (!_passwordHasher.Verificar(command.Senha, usuario.SenhaHash))
+            return new AuthResult.Negado("Credenciais inválidas.");
+
+        // Verifica se a empresa (tenant) do usuário está ativa.
+        // Conta encerrada: usuários ficam desativados mas verificamos o cliente
+        // como defesa em profundidade — impede login mesmo que um usuário tenha
+        // sido reativado manualmente sem restaurar o cliente.
+        var cliente = await _clienteRepository.BuscarPorIdAsync(usuario.IdCliente, cancellationToken);
+        if (cliente is null || !cliente.Ativo)
             return new AuthResult.Negado("Credenciais inválidas.");
 
         // Se 2FA habilitado, emite token temporário de desafio

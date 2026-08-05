@@ -47,11 +47,13 @@ else
                         <div>
                             <p class="item-card-title mb-0">@item.Nome</p>
                             <small class="text-muted">@item.Email</small>
+                            <div style="margin-top:.4rem">
+                                <span class="badge-pill @(item.Ativo ? "badge-ativo" : "badge-inativo")">
+                                    @(item.Ativo ? "Ativo" : "Inativo")
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <span class="badge-pill @(item.Ativo ? "badge-ativo" : "badge-inativo")">
-                        @(item.Ativo ? "Ativo" : "Inativo")
-                    </span>
                 </div>
                 <div class="item-card-footer">
                     <button class="btn btn-outline-secondary btn-sm" @onclick="() => AbrirEditar(item)">Editar</button>
