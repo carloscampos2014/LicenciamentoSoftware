@@ -7,11 +7,16 @@ var builder = WebApplication.CreateBuilder(args);
 // ── Porta exclusivamente localhost — nunca exposta pelo Nginx/ufw ─────────────
 builder.WebHost.UseUrls("http://localhost:5020");
 
-// ── Conexão com o banco ───────────────────────────────────────────────────────
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection não configurado.");
-
-builder.Services.AddSingleton(new DbConnectionFactory(connectionString));
+// ── Conexão com o banco (lazy — validada apenas ao usar) ──────────────────────
+builder.Services.AddSingleton<DbConnectionFactory>(sp =>
+{
+    var cs = sp.GetRequiredService<IConfiguration>()
+               .GetConnectionString("DefaultConnection")
+               ?? throw new InvalidOperationException(
+                   "ConnectionStrings:DefaultConnection não configurado. " +
+                   "Defina a variável de ambiente ConnectionStrings__DefaultConnection.");
+    return new DbConnectionFactory(cs);
+});
 
 // ── HTTP Basic Auth ───────────────────────────────────────────────────────────
 builder.Services.AddAuthentication("BasicAuth")
