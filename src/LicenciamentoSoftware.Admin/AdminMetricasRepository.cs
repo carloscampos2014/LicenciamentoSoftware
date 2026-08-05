@@ -56,7 +56,7 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
               AND criado_em   >= NOW() - INTERVAL '24 hours'
               AND motivo_erro IS NOT NULL
             GROUP BY motivo_erro
-            ORDER BY Total DESC
+            ORDER BY 2 DESC
             LIMIT 10
             """;
 
@@ -120,7 +120,7 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
             LEFT JOIN licenca_instalacao  li ON li.licenca_id = l.id
             WHERE l.ativo = TRUE
             GROUP BY 1
-            ORDER BY Total DESC
+            ORDER BY 2 DESC
             """;
 
         using var conn = factory.CreateConnection();
