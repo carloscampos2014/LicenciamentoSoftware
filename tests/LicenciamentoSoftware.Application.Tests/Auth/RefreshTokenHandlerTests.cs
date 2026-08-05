@@ -79,7 +79,7 @@ public class RefreshTokenHandlerTests
         _usuarioRepo.BuscarPapelAsync(idUsuario).Returns("AdministradorCliente");
 
         var novoToken = new TokenPar("novo_access", "novo_refresh", agora.AddHours(1));
-        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>())
+        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>())
             .Returns(novoToken);
 
         var resultado = await CriarHandler().HandleAsync(

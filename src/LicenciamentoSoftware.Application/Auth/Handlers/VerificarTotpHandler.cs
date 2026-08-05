@@ -51,7 +51,7 @@ public sealed class VerificarTotpHandler
             .BuscarPapelAsync(usuario.Id, cancellationToken);
 
         var tokenPar = _jwtService.GerarTokenPar(
-            usuario.Id, usuario.IdCliente, usuario.Nome, papel);
+            usuario.Id, usuario.IdCliente, usuario.Nome, papel, usuario.Email);
 
         await _refreshTokenRepository.SalvarAsync(
             usuario.Id,

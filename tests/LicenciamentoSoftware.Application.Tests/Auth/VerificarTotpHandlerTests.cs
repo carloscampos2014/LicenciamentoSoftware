@@ -64,7 +64,7 @@ public class VerificarTotpHandlerTests
         _clock.UtcNow.Returns(DateTime.UtcNow);
 
         var tokenPar = new TokenPar("access_completo", "refresh", DateTime.UtcNow.AddHours(1));
-        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>())
+        _jwt.GerarTokenPar(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string?>())
             .Returns(tokenPar);
 
         var resultado = await CriarHandler().HandleAsync(

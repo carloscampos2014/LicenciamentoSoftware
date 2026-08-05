@@ -47,7 +47,7 @@ public sealed class LoginHandler
         {
             // Token temporário contém apenas o ID do usuário — não é JWT completo
             var tokenPar = _jwtService.GerarTokenPar(
-                usuario.Id, usuario.IdCliente, usuario.Nome, "Desafio2FA");
+                usuario.Id, usuario.IdCliente, usuario.Nome, "Desafio2FA", usuario.Email);
 
             return new AuthResult.Requer2FA(tokenPar.AccessToken);
         }
@@ -64,7 +64,7 @@ public sealed class LoginHandler
             .BuscarPapelAsync(usuario.Id, cancellationToken);
 
         var tokenPar = _jwtService.GerarTokenPar(
-            usuario.Id, usuario.IdCliente, usuario.Nome, papel);
+            usuario.Id, usuario.IdCliente, usuario.Nome, papel, usuario.Email);
 
         var refreshHash = tokenPar.RefreshToken;
         var expiracao = _clock.UtcNow.AddDays(30);
