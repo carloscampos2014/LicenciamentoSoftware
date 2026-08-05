@@ -212,9 +212,9 @@ public static class AdminController
                 </div>
                 """);
 
-        Card("Clientes Ativos",      m.ClientesAtivos.ToString(ic),           $"Total: {m.TotalClientes} | Encerrados: {m.ClientesEncerrados}");
+        Card("Clientes Ativos",      m.ClientesAtivos.ToString(ic),           $"Total: {m.TotalClientes.ToString(ic)} | Encerrados: {m.ClientesEncerrados.ToString(ic)}");
         Card("Usuários Ativos",      m.UsuariosAtivos.ToString(ic));
-        Card("Licenças Ativas",      m.LicencasAtivas.ToString(ic),            $"Inativas: {m.LicencasInativas}");
+        Card("Licenças Ativas",      m.LicencasAtivas.ToString(ic),            $"Inativas: {m.LicencasInativas.ToString(ic)}");
         Card("Expirando em 7 dias",  m.LicencasExpirandoEm7Dias.ToString(ic),  m.LicencasExpirandoEm7Dias > 0 ? "⚠️ atenção" : "✅ ok");
         Card("Sessões Abertas",      m.SessoesAbertas.ToString(ic));
         Card("Validações 24h",       m.ValidacoesUltimas24h.ToString(ic),      $"7 dias: {m.ValidacoesUltimos7Dias.ToString("N0", ic)}");

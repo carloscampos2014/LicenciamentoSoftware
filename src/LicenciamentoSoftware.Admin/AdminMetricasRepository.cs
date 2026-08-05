@@ -131,14 +131,14 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
 // ── Modelos de resultado ──────────────────────────────────────────────────────
 
 public sealed record MetricasGerais(
-    int TotalClientes,
-    int ClientesAtivos,
-    int ClientesEncerrados,
-    int UsuariosAtivos,
-    int LicencasAtivas,
-    int LicencasInativas,
-    int LicencasExpirandoEm7Dias,
-    int SessoesAbertas,
+    long TotalClientes,
+    long ClientesAtivos,
+    long ClientesEncerrados,
+    long UsuariosAtivos,
+    long LicencasAtivas,
+    long LicencasInativas,
+    long LicencasExpirandoEm7Dias,
+    long SessoesAbertas,
     long ValidacoesUltimas24h,
     long ValidacoesUltimos7Dias,
     long ErrosUltimas24h);
