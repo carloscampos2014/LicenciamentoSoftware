@@ -106,7 +106,11 @@ public static class AdminController
     {
         try
         {
-            var resp = await client.GetAsync(url);
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            // Passa o Host correto para evitar rejeição pelo AllowedHosts do ASP.NET Core
+            var uri = new Uri(url);
+            request.Headers.Host = uri.Host + (uri.IsDefaultPort ? "" : $":{uri.Port}");
+            var resp = await client.SendAsync(request);
             return resp.IsSuccessStatusCode;
         }
         catch { return false; }
