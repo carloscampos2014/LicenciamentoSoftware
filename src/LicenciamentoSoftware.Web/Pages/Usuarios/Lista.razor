@@ -1,5 +1,5 @@
 @page "/usuarios"
-@attribute [Authorize]
+@attribute [Authorize(Roles = "AdministradorCliente")]
 @inject UsuarioApiService Service
 
 <PageTitle>Usuários — Licenciamento</PageTitle>
