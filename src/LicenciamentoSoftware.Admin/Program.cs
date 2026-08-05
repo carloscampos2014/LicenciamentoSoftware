@@ -35,6 +35,15 @@ builder.Services.AddHttpClient("health", c =>
 
 var app = builder.Build();
 
+// Banner de inicialização
+Console.ForegroundColor = ConsoleColor.Cyan;
+Console.WriteLine("=================================================");
+Console.WriteLine("  LicenciamentoSoftware — Painel Admin");
+Console.WriteLine($"  URL:    http://localhost:5020");
+Console.WriteLine($"  Usuário: {builder.Configuration["Admin:Usuario"] ?? "admin"}");
+Console.WriteLine("=================================================");
+Console.ResetColor();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
