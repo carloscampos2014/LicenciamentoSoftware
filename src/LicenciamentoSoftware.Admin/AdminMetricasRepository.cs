@@ -17,25 +17,25 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
     {
         const string sql = """
             SELECT
-                (SELECT COUNT(*)               FROM cliente)                                        AS "TotalClientes",
-                (SELECT COUNT(*)               FROM cliente WHERE ativo = TRUE)                     AS "ClientesAtivos",
-                (SELECT COUNT(*)               FROM cliente WHERE encerrado_em IS NOT NULL)          AS "ClientesEncerrados",
-                (SELECT COUNT(*)               FROM usuario WHERE ativo = TRUE)                     AS "UsuariosAtivos",
-                (SELECT COUNT(*)               FROM licenca WHERE ativo = TRUE)                     AS "LicencasAtivas",
-                (SELECT COUNT(*)               FROM licenca WHERE ativo = FALSE)                    AS "LicencasInativas",
-                (SELECT COUNT(*)               FROM licenca WHERE ativo = TRUE
-                                                               AND tipo_licenca_id IN (
-                                                                   SELECT id FROM tipo_licenca WHERE descricao = 'Por Período')
-                                                               AND data_fim <= NOW() + INTERVAL '7 days'
-                                                               AND data_fim >= NOW())               AS "LicencasExpirandoEm7Dias",
-                (SELECT COUNT(*)               FROM licenca_sessao WHERE ativo = TRUE)              AS "SessoesAbertas",
-                (SELECT COUNT(*)               FROM validacao_log
-                                               WHERE criado_em >= NOW() - INTERVAL '24 hours')      AS "ValidacoesUltimas24h",
-                (SELECT COUNT(*)               FROM validacao_log
-                                               WHERE criado_em >= NOW() - INTERVAL '7 days')        AS "ValidacoesUltimos7Dias",
-                (SELECT COUNT(*)               FROM validacao_log
-                                               WHERE resultado = 'Erro'
-                                               AND criado_em >= NOW() - INTERVAL '24 hours')        AS "ErrosUltimas24h"
+                (SELECT COUNT(*)  FROM cliente)                                                     AS "TotalClientes",
+                (SELECT COUNT(*)  FROM cliente WHERE ativo = TRUE)                                  AS "ClientesAtivos",
+                (SELECT COUNT(*)  FROM cliente WHERE encerrado_em IS NOT NULL)                       AS "ClientesEncerrados",
+                (SELECT COUNT(*)  FROM usuario WHERE ativo = TRUE)                                  AS "UsuariosAtivos",
+                (SELECT COUNT(*)  FROM licenca WHERE ativo = TRUE)                                  AS "LicencasAtivas",
+                (SELECT COUNT(*)  FROM licenca WHERE ativo = FALSE)                                 AS "LicencasInativas",
+                (SELECT COUNT(*)  FROM licenca l
+                                  INNER JOIN licenca_periodo lp ON lp.licenca_id = l.id
+                                  WHERE l.ativo = TRUE
+                                    AND lp.data_fim <= NOW() + INTERVAL '7 days'
+                                    AND lp.data_fim >= NOW())                                       AS "LicencasExpirandoEm7Dias",
+                (SELECT COUNT(*)  FROM licenca_sessao WHERE ativo = TRUE)                           AS "SessoesAbertas",
+                (SELECT COUNT(*)  FROM validacao_log
+                                  WHERE criado_em >= NOW() - INTERVAL '24 hours')                   AS "ValidacoesUltimas24h",
+                (SELECT COUNT(*)  FROM validacao_log
+                                  WHERE criado_em >= NOW() - INTERVAL '7 days')                     AS "ValidacoesUltimos7Dias",
+                (SELECT COUNT(*)  FROM validacao_log
+                                  WHERE resultado = 'erro'
+                                    AND criado_em >= NOW() - INTERVAL '24 hours')                   AS "ErrosUltimas24h"
             """;
 
         using var conn = factory.CreateConnection();
@@ -52,7 +52,7 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
             SELECT motivo_erro  AS "Motivo",
                    COUNT(*)     AS "Total"
             FROM validacao_log
-            WHERE resultado    = 'Erro'
+            WHERE resultado    = 'erro'
               AND criado_em   >= NOW() - INTERVAL '24 hours'
               AND motivo_erro IS NOT NULL
             GROUP BY motivo_erro
@@ -70,15 +70,16 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
 
     public async Task<IReadOnlyList<UltimoLogin>> BuscarUltimosLoginsAsync()
     {
+        // Busca os últimos logins bem-sucedidos com IP e tenant
         const string sql = """
-            SELECT u.email       AS "Email",
-                   vl.ip_origem  AS "Ip",
-                   vl.criado_em  AS "HoraUtc"
+            SELECT c.razao_social  AS "Email",
+                   vl.ip_origem   AS "Ip",
+                   vl.criado_em   AS "HoraUtc"
             FROM validacao_log vl
-            INNER JOIN licenca l ON l.id = vl.id_licenca
-            INNER JOIN usuario u ON u.id_cliente = l.id_cliente AND u.ativo = TRUE
-            WHERE vl.tipo_operacao = 'Login'
-              AND vl.resultado     = 'Sucesso'
+            INNER JOIN licenca l  ON l.id           = vl.id_licenca
+            INNER JOIN cliente c  ON c.id           = l.id_cliente
+            WHERE vl.tipo_operacao = 'login'
+              AND vl.resultado     = 'sucesso'
             ORDER BY vl.criado_em DESC
             LIMIT 20
             """;
@@ -105,12 +106,20 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
     public async Task<IReadOnlyList<LicencaPorTipo>> BuscarLicencasPorTipoAsync()
     {
         const string sql = """
-            SELECT tl.descricao AS "Tipo",
-                   COUNT(*)     AS "Total"
+            SELECT
+                CASE
+                    WHEN lp.licenca_id IS NOT NULL THEN 'Por Período'
+                    WHEN lu.licenca_id IS NOT NULL THEN 'Por Usuários'
+                    WHEN li.licenca_id IS NOT NULL THEN 'Por Instalação'
+                    ELSE 'Permanente'
+                END                AS "Tipo",
+                COUNT(*)           AS "Total"
             FROM licenca l
-            INNER JOIN tipo_licenca tl ON tl.id = l.tipo_licenca_id
+            LEFT JOIN licenca_periodo     lp ON lp.licenca_id = l.id
+            LEFT JOIN licenca_usuarios    lu ON lu.licenca_id = l.id
+            LEFT JOIN licenca_instalacao  li ON li.licenca_id = l.id
             WHERE l.ativo = TRUE
-            GROUP BY tl.descricao
+            GROUP BY 1
             ORDER BY Total DESC
             """;
 
