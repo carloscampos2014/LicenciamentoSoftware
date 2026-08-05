@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LicenciamentoSoftware.Admin</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Acesso direto ao banco via Dapper — reutiliza a camada de persistência -->
+    <ProjectReference Include="..\LicenciamentoSoftware.Infrastructure\LicenciamentoSoftware.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -9,6 +9,7 @@ on:
       - "src/LicenciamentoSoftware.Application/**"
       - "src/LicenciamentoSoftware.Infrastructure/**"
       - "src/LicenciamentoSoftware.Domain/**"
+      - "src/LicenciamentoSoftware.Admin/**"
       - ".github/workflows/deploy-api.yml"
   workflow_dispatch:
 
@@ -48,6 +49,14 @@ jobs:
             --self-contained false \
             -o ./publish/api
 
+      - name: Publish Admin
+        run: |
+          dotnet publish src/LicenciamentoSoftware.Admin/LicenciamentoSoftware.Admin.csproj \
+            -c Release \
+            -r linux-x64 \
+            --self-contained false \
+            -o ./publish/admin
+
       - name: Configurar chave SSH
         run: |
           mkdir -p ~/.ssh
@@ -61,7 +70,7 @@ jobs:
               -p ${{ secrets.SSH_PORT }} \
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "sudo systemctl stop licenciamento-api || true"
+              "sudo systemctl stop licenciamento-api || true; sudo systemctl stop licenciamento-admin || true"
 
       - name: Preparar diretório na VM
         run: |
@@ -77,6 +86,21 @@ jobs:
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
             ./publish/api/ \
             ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/licenciamento/api/
+
+      - name: Preparar diretório Admin na VM
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -p ${{ secrets.SSH_PORT }} \
+              -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+              "sudo mkdir -p /opt/licenciamento/admin && sudo chown ubuntu:ubuntu /opt/licenciamento/admin"
+
+      - name: Enviar Admin para VM
+        run: |
+          rsync -rlptz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }} -o StrictHostKeyChecking=no" \
+            ./publish/admin/ \
+            ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/opt/licenciamento/admin/
 
       - name: Atualizar variáveis de ambiente na VM
         run: |
@@ -105,8 +129,11 @@ jobs:
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
               "sudo chown -R www-data:www-data /opt/licenciamento/api && \
+               sudo chown -R ubuntu:ubuntu /opt/licenciamento/admin && \
                sudo systemctl enable licenciamento-api && \
-               sudo systemctl start licenciamento-api"
+               sudo systemctl start licenciamento-api && \
+               sudo systemctl enable licenciamento-admin || true && \
+               sudo systemctl start licenciamento-admin || true"
 
       - name: Aguardar serviço iniciar
         run: sleep 15

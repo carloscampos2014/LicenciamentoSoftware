@@ -497,3 +497,7 @@ src/LicenciamentoSoftware.Maui/Resources/Raw/appsettings.android.json
 
 # MAUI — configuração local de dev Android (URL do IP local, nunca commitar)
 src/LicenciamentoSoftware.Maui/Resources/Raw/appsettings.android.json
+
+# Scripts locais com dados de conexao SSH
+scripts/ssh-tunnels.ps1
+scripts/install-ssh-tunnels-task.ps1
