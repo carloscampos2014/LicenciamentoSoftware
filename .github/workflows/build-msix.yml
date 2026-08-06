@@ -1,0 +1,132 @@
+name: Build MSIX (Windows)
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/LicenciamentoSoftware.Maui/**"
+      - "src/LicenciamentoSoftware.Client/**"
+      - ".github/workflows/build-msix.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-msix
+  cancel-in-progress: true
+
+jobs:
+  build-msix:
+    name: Build e Empacotar MSIX
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Instalar workload MAUI Windows
+        run: dotnet workload install maui-windows
+
+      - name: Cache NuGet
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-maui-${{ hashFiles('src/LicenciamentoSoftware.Maui/**/*.csproj', 'src/LicenciamentoSoftware.Client/**/*.csproj') }}
+          restore-keys: nuget-maui-
+
+      - name: Restore
+        run: dotnet restore src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj -f net10.0-windows10.0.19041.0
+
+      - name: Gerar certificado autoassinado
+        id: cert
+        shell: pwsh
+        run: |
+          # Gera certificado autoassinado válido por 10 anos
+          $cert = New-SelfSignedCertificate `
+            -Type Custom `
+            -Subject "CN=LicenseManager, O=LicenciamentoSoftware, C=BR" `
+            -KeyUsage DigitalSignature `
+            -FriendlyName "LicenseManager MSIX Certificate" `
+            -CertStoreLocation "Cert:\CurrentUser\My" `
+            -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}") `
+            -NotAfter (Get-Date).AddYears(10)
+
+          $thumbprint = $cert.Thumbprint
+          Write-Host "Thumbprint: $thumbprint"
+          echo "THUMBPRINT=$thumbprint" >> $env:GITHUB_OUTPUT
+
+          # Exportar PFX (senha vazia — apenas para uso no CI)
+          $pfxPath = "$env:RUNNER_TEMP\LicenseManager.pfx"
+          Export-PfxCertificate -Cert "Cert:\CurrentUser\My\$thumbprint" -FilePath $pfxPath -Password (ConvertTo-SecureString -String "" -Force -AsPlainText)
+          echo "PFX_PATH=$pfxPath" >> $env:GITHUB_OUTPUT
+
+          # Exportar CER (chave pública — para distribuição ao usuário final)
+          $cerPath = "$env:RUNNER_TEMP\LicenseManager.cer"
+          Export-Certificate -Cert "Cert:\CurrentUser\My\$thumbprint" -FilePath $cerPath -Type CERT
+          echo "CER_PATH=$cerPath" >> $env:GITHUB_OUTPUT
+
+      - name: Obter versão do app
+        id: version
+        shell: pwsh
+        run: |
+          $xml = [xml](Get-Content "src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj")
+          $displayVersion = $xml.Project.PropertyGroup.ApplicationDisplayVersion | Select-Object -First 1
+          $buildVersion   = $xml.Project.PropertyGroup.ApplicationVersion | Select-Object -First 1
+          if (-not $displayVersion) { $displayVersion = "1.0" }
+          if (-not $buildVersion)   { $buildVersion   = "1" }
+          Write-Host "Version: $displayVersion.$buildVersion"
+          echo "DISPLAY_VERSION=$displayVersion" >> $env:GITHUB_OUTPUT
+          echo "BUILD_VERSION=$buildVersion"     >> $env:GITHUB_OUTPUT
+
+      - name: Publicar MAUI Windows (MSIX)
+        shell: pwsh
+        run: |
+          $thumbprint = "${{ steps.cert.outputs.THUMBPRINT }}"
+          $pfxPath    = "${{ steps.cert.outputs.PFX_PATH }}"
+
+          dotnet publish src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj `
+            -f net10.0-windows10.0.19041.0 `
+            -c Release `
+            /p:WindowsPackageType=MSIX `
+            /p:AppxPackageSigningEnabled=true `
+            /p:PackageCertificateThumbprint="$thumbprint" `
+            /p:PackageCertificateKeyFile="$pfxPath" `
+            /p:PackageCertificatePassword="" `
+            -o ./publish/msix
+
+      - name: Copiar artefatos para pasta de saída
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ./artifacts
+
+          # Localizar o MSIX gerado
+          $msix = Get-ChildItem -Recurse -Filter "*.msix" ./publish/msix | Select-Object -First 1
+          if (-not $msix) {
+            # Tentar na pasta AppPackages gerada pelo MSBuild
+            $msix = Get-ChildItem -Recurse -Filter "*.msix" ./src/LicenciamentoSoftware.Maui | Select-Object -First 1
+          }
+
+          if ($msix) {
+            $destName = "LicenseManager-${{ steps.version.outputs.DISPLAY_VERSION }}-windows.msix"
+            Copy-Item $msix.FullName "./artifacts/$destName"
+            Write-Host "MSIX copiado: $destName"
+          } else {
+            Write-Error "MSIX nao encontrado apos publicacao"
+            exit 1
+          }
+
+          # Copiar o certificado
+          Copy-Item "${{ steps.cert.outputs.CER_PATH }}" "./artifacts/LicenseManager.cer"
+          Write-Host "Certificado copiado: LicenseManager.cer"
+
+      - name: Publicar artefatos
+        uses: actions/upload-artifact@v4
+        with:
+          name: LicenseManager-Windows-${{ steps.version.outputs.DISPLAY_VERSION }}
+          path: ./artifacts/
+          retention-days: 90
+          if-no-files-found: error
