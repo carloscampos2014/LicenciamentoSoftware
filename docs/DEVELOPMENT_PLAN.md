@@ -309,12 +309,33 @@ Requisitos transversais:
 
 ---
 
-## Fase 13 — Instaladores
+## Fase 13 — Instaladores ✅ Concluída
 
 **Objetivo:** distribuição do app MAUI para Windows e Android sem dependência de lojas.
 
-1. **[#101]** Instalador MSIX para Windows — pacote assinado com certificado autoassinado para distribuição direta. Incluir instruções de instalação do certificado.
-2. **[#102]** APK/AAB assinado para Android — keystore guardado como GitHub Secret, APK pronto para distribuição direta.
+1. ✅ **[#101]** Workflow `build-msix.yml` — roda em `windows-latest`, gera certificado autoassinado via `New-SelfSignedCertificate`, compila MAUI com `/p:WindowsPackageType=MSIX`, publica `.msix` + `.cer` como artefato (retenção 90 dias). Trigger: push em `master` (paths do MAUI) + `workflow_dispatch`.
+2. ✅ **[#102]** Workflow `build-android.yml` — roda em `ubuntu-latest`, instala workload `maui-android`, restaura keystore do secret `ANDROID_KEYSTORE_BASE64`, compila MAUI com `AndroidPackageFormats=apk`, assina com `apksigner`, verifica assinatura e publica APK como artefato. Trigger: push em `master` (paths do MAUI) + `workflow_dispatch`.
+3. ✅ `docs/instalacao-windows.md` — instruções para instalar o certificado autoassinado (GUI e PowerShell) e o MSIX, incluindo atualização, desinstalação e solução de problemas.
+4. ✅ `docs/instalacao-android.md` — instruções para habilitar fontes desconhecidas (Android 7 e 8+), instalar via gerenciador de arquivos e ADB, atualização, desinstalação e solução de problemas.
+5. ✅ `scripts/setup-github-secrets.ps1` — adicionados os 4 secrets Android (`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD`); novo parâmetro `-ApenasAndroid` para configurar apenas os secrets do instalador.
+
+**Decisões:**
+- Certificado autoassinado no Windows: sem custo, adequado para distribuição direta. `/p:WindowsPackageType=MSIX` passado na linha de comando — o `.csproj` mantém `None` para dev local.
+- APK para sideload (não AAB): distribuição direta sem Google Play Store conforme escopo da fase.
+- O build local do MAUI Android pode falhar no pre-commit por lock de arquivo do VS/emulador; os workflows de CI rodam em runners limpos sem esse problema.
+
+**Resultado:** 388 testes aprovados (inalterado — nenhum código C# foi modificado). Dois novos workflows independentes para geração de instaladores. Artefatos disponíveis em Actions a cada push no `master`.
+
+**Demo:** disparar `workflow_dispatch` em `build-msix.yml` → baixar artefato → instalar `.cer` → instalar `.msix` → app abre no Windows. Disparar `build-android.yml` após configurar os 4 secrets → baixar APK → instalar no Android via sideload.
+
+---
+
+## Fase 13 — Instaladores (seção original — ver ✅ acima)
+
+**Objetivo:** distribuição do app MAUI para Windows e Android sem dependência de lojas.
+
+1. ✅ **[#101]** Instalador MSIX para Windows — pacote assinado com certificado autoassinado para distribuição direta. Incluir instruções de instalação do certificado.
+2. ✅ **[#102]** APK/AAB assinado para Android — keystore guardado como GitHub Secret, APK pronto para distribuição direta.
 
 ---
 
