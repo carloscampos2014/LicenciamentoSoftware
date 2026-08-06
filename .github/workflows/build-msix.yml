@@ -59,9 +59,9 @@ jobs:
           Write-Host "Thumbprint: $thumbprint"
           echo "THUMBPRINT=$thumbprint" >> $env:GITHUB_OUTPUT
 
-          # Exportar PFX (senha vazia — apenas para uso no CI)
+          # Exportar PFX sem senha (uso exclusivo no CI — -NoProtection evita o erro de senha vazia)
           $pfxPath = "$env:RUNNER_TEMP\LicenseManager.pfx"
-          Export-PfxCertificate -Cert "Cert:\CurrentUser\My\$thumbprint" -FilePath $pfxPath -Password (ConvertTo-SecureString -String "" -Force -AsPlainText)
+          Export-PfxCertificate -Cert "Cert:\CurrentUser\My\$thumbprint" -FilePath $pfxPath -NoProtection
           echo "PFX_PATH=$pfxPath" >> $env:GITHUB_OUTPUT
 
           # Exportar CER (chave pública — para distribuição ao usuário final)
