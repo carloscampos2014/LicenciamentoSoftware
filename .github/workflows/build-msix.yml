@@ -59,10 +59,16 @@ jobs:
           Write-Host "Thumbprint: $thumbprint"
           echo "THUMBPRINT=$thumbprint" >> $env:GITHUB_OUTPUT
 
-          # Exportar PFX sem senha (uso exclusivo no CI — -NoProtection evita o erro de senha vazia)
+          # Exportar PFX com senha fixa para o CI
+          # ConvertTo-SecureString com string vazia falha no PS7; usar New-Object com AppendChar
+          $pfxPassword = "ci_build_only"
+          $securePass = New-Object System.Security.SecureString
+          foreach ($c in $pfxPassword.ToCharArray()) { $securePass.AppendChar($c) }
+
           $pfxPath = "$env:RUNNER_TEMP\LicenseManager.pfx"
-          Export-PfxCertificate -Cert "Cert:\CurrentUser\My\$thumbprint" -FilePath $pfxPath -NoProtection
-          echo "PFX_PATH=$pfxPath" >> $env:GITHUB_OUTPUT
+          Export-PfxCertificate -Cert "Cert:\CurrentUser\My\$thumbprint" -FilePath $pfxPath -Password $securePass
+          echo "PFX_PATH=$pfxPath"             >> $env:GITHUB_OUTPUT
+          echo "PFX_PASSWORD=$pfxPassword"     >> $env:GITHUB_OUTPUT
 
           # Exportar CER (chave pública — para distribuição ao usuário final)
           $cerPath = "$env:RUNNER_TEMP\LicenseManager.cer"
@@ -87,6 +93,7 @@ jobs:
         run: |
           $thumbprint = "${{ steps.cert.outputs.THUMBPRINT }}"
           $pfxPath    = "${{ steps.cert.outputs.PFX_PATH }}"
+          $pfxPass    = "${{ steps.cert.outputs.PFX_PASSWORD }}"
 
           dotnet publish src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj `
             -f net10.0-windows10.0.19041.0 `
@@ -95,7 +102,7 @@ jobs:
             /p:AppxPackageSigningEnabled=true `
             /p:PackageCertificateThumbprint="$thumbprint" `
             /p:PackageCertificateKeyFile="$pfxPath" `
-            /p:PackageCertificatePassword="" `
+            /p:PackageCertificatePassword="$pfxPass" `
             -o ./publish/msix
 
       - name: Copiar artefatos para pasta de saída
