@@ -56,8 +56,8 @@ tests/
 | 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | ✅ Concluída |
 | — | LGPD — consentimento no cadastro, páginas públicas, exclusão de conta | ✅ Concluída |
 | 12.1 | Encerramento de conta de empresa + 2FA MAUI — página /minha-empresa, encerrar conta com exclusão opcional, bloqueio HMAC, job de limpeza, notificação de clientes finais | ✅ Concluída |
-| 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup Web, perfil empresa, testes de integração CI | 🔜 Planejada (issues #97 e #98 restantes) |
-| 13 | Instaladores — MSIX Windows, APK/AAB Android (distribuição direta) | 🔜 Planejada |
+| 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup Web, perfil empresa, testes de integração CI | ✅ Concluída |
+| 13 | Instaladores — MSIX Windows (certificado autoassinado), APK Android (keystore própria) | ✅ Concluída |
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript | 🔜 Planejada |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
 | 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | ✅ Concluída |
@@ -314,6 +314,50 @@ $env:EmailSettings__Usuario = "seu@email.com"
 $env:EmailSettings__Senha = "sua-senha-smtp"
 $env:EmailSettings__EmailRemetente = "noreply@suaempresa.com"
 ```
+
+## Instaladores (Fase 13)
+
+### Windows — MSIX
+
+O app MAUI é distribuído para Windows como pacote MSIX assinado com certificado autoassinado.
+O workflow **Build MSIX (Windows)** roda em `windows-latest` e gera dois artefatos:
+
+| Arquivo | Uso |
+|---|---|
+| `LicenseManager-<versão>-windows.msix` | Instalador do app |
+| `LicenseManager.cer` | Certificado autoassinado (instalar uma única vez) |
+
+Siga as instruções completas em **[docs/instalacao-windows.md](docs/instalacao-windows.md)**.
+
+### Android — APK
+
+O app MAUI é distribuído para Android como APK assinado com keystore própria.
+O workflow **Build APK (Android)** roda em `ubuntu-latest` e gera:
+
+| Arquivo | Uso |
+|---|---|
+| `LicenseManager-<versão>-android.apk` | APK assinado para sideload |
+
+Siga as instruções completas em **[docs/instalacao-android.md](docs/instalacao-android.md)**.
+
+Para configurar a keystore Android como GitHub Secret, execute:
+
+```powershell
+.\scripts\setup-github-secrets.ps1 -ApenasAndroid
+```
+
+Secrets necessários: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD`.
+
+Para gerar uma nova keystore:
+
+```bash
+keytool -genkey -v -keystore licensemanager.keystore \
+        -alias licensemanager \
+        -keyalg RSA -keysize 2048 \
+        -validity 10000
+```
+
+---
 
 ## App MAUI (Desktop + Mobile)
 
