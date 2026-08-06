@@ -137,3 +137,26 @@ jobs:
           path: ./artifacts/
           retention-days: 90
           if-no-files-found: error
+
+      - name: Criar ou atualizar GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.DISPLAY_VERSION }}
+          name: LicenseManager v${{ steps.version.outputs.DISPLAY_VERSION }}
+          body: |
+            ## LicenseManager v${{ steps.version.outputs.DISPLAY_VERSION }}
+
+            ### Windows
+
+            1. Baixe `LicenseManager.cer` e instale o certificado em **Pessoas Confiáveis (Computador Local)**
+               — necessário apenas na primeira instalação.
+               Veja as instruções completas em [docs/instalacao-windows.md](https://github.com/carloscampos2014/LicenciamentoSoftware/blob/master/docs/instalacao-windows.md).
+            2. Baixe e execute `LicenseManager-${{ steps.version.outputs.DISPLAY_VERSION }}-windows.msix`.
+
+            ### Android
+
+            Veja as instruções de sideload em [docs/instalacao-android.md](https://github.com/carloscampos2014/LicenciamentoSoftware/blob/master/docs/instalacao-android.md).
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: ./artifacts/*
