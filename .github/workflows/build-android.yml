@@ -50,89 +50,75 @@ jobs:
           echo "BUILD_VERSION=$BUILD_VERSION"     >> $GITHUB_OUTPUT
           echo "Version: $DISPLAY_VERSION.$BUILD_VERSION"
 
-      - name: Restaurar keystore do secret
+      - name: Preparar keystore
+        id: keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/licensemanager.keystore
-          echo "Keystore restaurada em /tmp/licensemanager.keystore"
+          if [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ]; then
+            # Secret configurado — usar keystore do repositório
+            echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/licensemanager.keystore
+            echo "KEYSTORE_PATH=/tmp/licensemanager.keystore"   >> $GITHUB_OUTPUT
+            echo "KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}"   >> $GITHUB_OUTPUT
+            echo "KEY_PASS=${{ secrets.ANDROID_KEY_PASSWORD }}"  >> $GITHUB_OUTPUT
+            echo "STORE_PASS=${{ secrets.ANDROID_STORE_PASSWORD }}" >> $GITHUB_OUTPUT
+            echo "Usando keystore do secret ANDROID_KEYSTORE_BASE64"
+          else
+            # Secret não configurado — gerar keystore temporária para CI
+            echo "Secret ANDROID_KEYSTORE_BASE64 nao configurado. Gerando keystore temporaria para CI..."
+            keytool -genkey -v \
+              -keystore /tmp/licensemanager.keystore \
+              -alias licensemanager \
+              -keyalg RSA -keysize 2048 \
+              -validity 1 \
+              -storepass ci_temp_pass \
+              -keypass ci_temp_pass \
+              -dname "CN=CI Build, O=LicenciamentoSoftware, C=BR" \
+              -noprompt
+            echo "KEYSTORE_PATH=/tmp/licensemanager.keystore" >> $GITHUB_OUTPUT
+            echo "KEY_ALIAS=licensemanager"                   >> $GITHUB_OUTPUT
+            echo "KEY_PASS=ci_temp_pass"                      >> $GITHUB_OUTPUT
+            echo "STORE_PASS=ci_temp_pass"                    >> $GITHUB_OUTPUT
+            echo "TEMP_KEYSTORE=true"                         >> $GITHUB_OUTPUT
+            echo "Keystore temporaria gerada para CI"
+          fi
 
-      - name: Publicar MAUI Android (APK não assinado)
+      - name: Publicar MAUI Android (APK assinado)
         run: |
           dotnet publish src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj \
             -f net10.0-android \
             -c Release \
             /p:AndroidPackageFormats=apk \
-            /p:AndroidKeyStore=false \
+            /p:AndroidKeyStore=true \
+            /p:AndroidSigningKeyStore="${{ steps.keystore.outputs.KEYSTORE_PATH }}" \
+            /p:AndroidSigningKeyAlias="${{ steps.keystore.outputs.KEY_ALIAS }}" \
+            /p:AndroidSigningKeyPass="${{ steps.keystore.outputs.KEY_PASS }}" \
+            /p:AndroidSigningStorePass="${{ steps.keystore.outputs.STORE_PASS }}" \
             -o ./publish/android
 
       - name: Localizar APK gerado
         id: apk
         run: |
-          # O .NET MAUI gera o APK com sufixo -Signed.apk mesmo sem keystore no .csproj
-          APK=$(find ./publish/android -name "*.apk" | head -1)
+          APK=$(find ./publish/android -name "*-Signed.apk" 2>/dev/null | head -1)
           if [ -z "$APK" ]; then
-            # Tentar nos diretórios do projeto
-            APK=$(find ./src/LicenciamentoSoftware.Maui -name "*.apk" | head -1)
+            APK=$(find ./publish/android -name "*.apk" 2>/dev/null | head -1)
           fi
-
           if [ -z "$APK" ]; then
-            echo "APK nao encontrado. Listando publish/android:"
-            find ./publish/android -type f | head -20
+            echo "APK nao encontrado. Conteudo de publish/android:"
+            find ./publish/android -type f 2>/dev/null | head -20 || echo "Pasta nao existe"
             exit 1
           fi
-
           echo "APK_PATH=$APK" >> $GITHUB_OUTPUT
           echo "APK encontrado: $APK"
-
-      - name: Alinhar APK com zipalign
-        run: |
-          # Encontrar o zipalign do Android SDK
-          ZIPALIGN=$(find $ANDROID_SDK_ROOT -name "zipalign" -type f 2>/dev/null | head -1)
-          if [ -z "$ZIPALIGN" ]; then
-            ZIPALIGN=$(which zipalign 2>/dev/null || echo "")
-          fi
-
-          if [ -n "$ZIPALIGN" ]; then
-            $ZIPALIGN -v -p 4 "${{ steps.apk.outputs.APK_PATH }}" /tmp/licensemanager-aligned.apk
-            echo "APK alinhado com zipalign"
-          else
-            cp "${{ steps.apk.outputs.APK_PATH }}" /tmp/licensemanager-aligned.apk
-            echo "zipalign nao encontrado, usando APK original"
-          fi
-
-      - name: Assinar APK com apksigner
-        run: |
-          # Encontrar o apksigner do Android SDK
-          APKSIGNER=$(find $ANDROID_SDK_ROOT -name "apksigner" -type f 2>/dev/null | head -1)
-          if [ -z "$APKSIGNER" ]; then
-            APKSIGNER=$(which apksigner 2>/dev/null || echo "")
-          fi
-
-          if [ -z "$APKSIGNER" ]; then
-            echo "apksigner nao encontrado. Listando build-tools:"
-            ls $ANDROID_SDK_ROOT/build-tools/ 2>/dev/null || echo "build-tools nao encontrado"
-            exit 1
-          fi
-
-          $APKSIGNER sign \
-            --ks /tmp/licensemanager.keystore \
-            --ks-key-alias "${{ secrets.ANDROID_KEY_ALIAS }}" \
-            --ks-pass "pass:${{ secrets.ANDROID_STORE_PASSWORD }}" \
-            --key-pass "pass:${{ secrets.ANDROID_KEY_PASSWORD }}" \
-            --out /tmp/licensemanager-signed.apk \
-            /tmp/licensemanager-aligned.apk
-
-          echo "APK assinado com sucesso"
-
-      - name: Verificar assinatura do APK
-        run: |
-          APKSIGNER=$(find $ANDROID_SDK_ROOT -name "apksigner" -type f 2>/dev/null | head -1)
-          $APKSIGNER verify --verbose /tmp/licensemanager-signed.apk
+          ls -lh "$APK"
 
       - name: Copiar APK para pasta de artefatos
         run: |
           mkdir -p ./artifacts
-          DEST="./artifacts/LicenseManager-${{ steps.version.outputs.DISPLAY_VERSION }}-android.apk"
-          cp /tmp/licensemanager-signed.apk "$DEST"
+          SUFFIX=""
+          if [ "${{ steps.keystore.outputs.TEMP_KEYSTORE }}" = "true" ]; then
+            SUFFIX="-ci-unsigned"
+          fi
+          DEST="./artifacts/LicenseManager-${{ steps.version.outputs.DISPLAY_VERSION }}-android${SUFFIX}.apk"
+          cp "${{ steps.apk.outputs.APK_PATH }}" "$DEST"
           echo "APK copiado: $DEST"
           ls -lh ./artifacts/
 
