@@ -353,6 +353,8 @@ Cada SDK implementa:
 2. **[#109]** SDK Java/Kotlin — pacote Maven/Gradle.
 3. **[#110]** SDK Python — pacote PyPI. Suporte Python 3.9+.
 4. **[#111]** SDK JavaScript + TypeScript — pacote npm com tipagem completa. Suporte Node.js e browser.
+5. **[#139]** SDK Rust — crate crates.io. Cliente assíncrono (tokio + reqwest), feature flag para síncrono. MSRV: 1.70+.
+6. **[#140]** SDK Ruby — gem RubyGems. Compatível com Ruby 3.0+ e Ruby on Rails.
 
 ---
 
