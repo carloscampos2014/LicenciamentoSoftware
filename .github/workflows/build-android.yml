@@ -39,7 +39,7 @@ jobs:
           restore-keys: nuget-maui-android-
 
       - name: Restore
-        run: dotnet restore src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj -f net10.0-android
+        run: dotnet restore src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj --framework net10.0-android
 
       - name: Obter versão do app
         id: version
