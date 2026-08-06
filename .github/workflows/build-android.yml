@@ -1,0 +1,145 @@
+name: Build APK (Android)
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "src/LicenciamentoSoftware.Maui/**"
+      - "src/LicenciamentoSoftware.Client/**"
+      - ".github/workflows/build-android.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-android
+  cancel-in-progress: true
+
+jobs:
+  build-apk:
+    name: Build e Assinar APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Instalar workload MAUI Android
+        run: dotnet workload install maui-android
+
+      - name: Cache NuGet
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-maui-android-${{ hashFiles('src/LicenciamentoSoftware.Maui/**/*.csproj', 'src/LicenciamentoSoftware.Client/**/*.csproj') }}
+          restore-keys: nuget-maui-android-
+
+      - name: Restore
+        run: dotnet restore src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj -f net10.0-android
+
+      - name: Obter versão do app
+        id: version
+        run: |
+          DISPLAY_VERSION=$(grep -oPm1 "(?<=<ApplicationDisplayVersion>)[^<]+" src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj || echo "1.0")
+          BUILD_VERSION=$(grep -oPm1 "(?<=<ApplicationVersion>)[^<]+" src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj || echo "1")
+          echo "DISPLAY_VERSION=$DISPLAY_VERSION" >> $GITHUB_OUTPUT
+          echo "BUILD_VERSION=$BUILD_VERSION"     >> $GITHUB_OUTPUT
+          echo "Version: $DISPLAY_VERSION.$BUILD_VERSION"
+
+      - name: Restaurar keystore do secret
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > /tmp/licensemanager.keystore
+          echo "Keystore restaurada em /tmp/licensemanager.keystore"
+
+      - name: Publicar MAUI Android (APK não assinado)
+        run: |
+          dotnet publish src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj \
+            -f net10.0-android \
+            -c Release \
+            /p:AndroidPackageFormats=apk \
+            /p:AndroidKeyStore=false \
+            -o ./publish/android
+
+      - name: Localizar APK gerado
+        id: apk
+        run: |
+          # O .NET MAUI gera o APK com sufixo -Signed.apk mesmo sem keystore no .csproj
+          APK=$(find ./publish/android -name "*.apk" | head -1)
+          if [ -z "$APK" ]; then
+            # Tentar nos diretórios do projeto
+            APK=$(find ./src/LicenciamentoSoftware.Maui -name "*.apk" | head -1)
+          fi
+
+          if [ -z "$APK" ]; then
+            echo "APK nao encontrado. Listando publish/android:"
+            find ./publish/android -type f | head -20
+            exit 1
+          fi
+
+          echo "APK_PATH=$APK" >> $GITHUB_OUTPUT
+          echo "APK encontrado: $APK"
+
+      - name: Alinhar APK com zipalign
+        run: |
+          # Encontrar o zipalign do Android SDK
+          ZIPALIGN=$(find $ANDROID_SDK_ROOT -name "zipalign" -type f 2>/dev/null | head -1)
+          if [ -z "$ZIPALIGN" ]; then
+            ZIPALIGN=$(which zipalign 2>/dev/null || echo "")
+          fi
+
+          if [ -n "$ZIPALIGN" ]; then
+            $ZIPALIGN -v -p 4 "${{ steps.apk.outputs.APK_PATH }}" /tmp/licensemanager-aligned.apk
+            echo "APK alinhado com zipalign"
+          else
+            cp "${{ steps.apk.outputs.APK_PATH }}" /tmp/licensemanager-aligned.apk
+            echo "zipalign nao encontrado, usando APK original"
+          fi
+
+      - name: Assinar APK com apksigner
+        run: |
+          # Encontrar o apksigner do Android SDK
+          APKSIGNER=$(find $ANDROID_SDK_ROOT -name "apksigner" -type f 2>/dev/null | head -1)
+          if [ -z "$APKSIGNER" ]; then
+            APKSIGNER=$(which apksigner 2>/dev/null || echo "")
+          fi
+
+          if [ -z "$APKSIGNER" ]; then
+            echo "apksigner nao encontrado. Listando build-tools:"
+            ls $ANDROID_SDK_ROOT/build-tools/ 2>/dev/null || echo "build-tools nao encontrado"
+            exit 1
+          fi
+
+          $APKSIGNER sign \
+            --ks /tmp/licensemanager.keystore \
+            --ks-key-alias "${{ secrets.ANDROID_KEY_ALIAS }}" \
+            --ks-pass "pass:${{ secrets.ANDROID_STORE_PASSWORD }}" \
+            --key-pass "pass:${{ secrets.ANDROID_KEY_PASSWORD }}" \
+            --out /tmp/licensemanager-signed.apk \
+            /tmp/licensemanager-aligned.apk
+
+          echo "APK assinado com sucesso"
+
+      - name: Verificar assinatura do APK
+        run: |
+          APKSIGNER=$(find $ANDROID_SDK_ROOT -name "apksigner" -type f 2>/dev/null | head -1)
+          $APKSIGNER verify --verbose /tmp/licensemanager-signed.apk
+
+      - name: Copiar APK para pasta de artefatos
+        run: |
+          mkdir -p ./artifacts
+          DEST="./artifacts/LicenseManager-${{ steps.version.outputs.DISPLAY_VERSION }}-android.apk"
+          cp /tmp/licensemanager-signed.apk "$DEST"
+          echo "APK copiado: $DEST"
+          ls -lh ./artifacts/
+
+      - name: Publicar artefatos
+        uses: actions/upload-artifact@v4
+        with:
+          name: LicenseManager-Android-${{ steps.version.outputs.DISPLAY_VERSION }}
+          path: ./artifacts/
+          retention-days: 90
+          if-no-files-found: error
