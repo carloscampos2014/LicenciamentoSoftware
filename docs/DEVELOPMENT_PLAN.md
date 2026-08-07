@@ -339,22 +339,29 @@ Requisitos transversais:
 
 ---
 
-## Fase 14 — SDKs cliente (linguagens principais)
+## Fase 14 — SDKs cliente (linguagens principais) ✅ Concluída
 
 **Objetivo:** bibliotecas prontas para uso nas linguagens mais relevantes do mercado, encapsulando a autenticação HMAC e os endpoints de validação.
 
 Cada SDK implementa:
 - Geração de HMAC-SHA256 com timestamp, nonce e assinatura
 - Chamadas aos 4 endpoints de validação (login, heartbeat, logout, instalação)
-- Retry automático em falhas de rede
+- Retry automático em falhas de rede (3 tentativas, backoff exponencial)
 - Modelos de resposta tipados
+- Testes unitários (HMAC + endpoints mockados)
 
-1. **[#108]** SDK C#/.NET — pacote NuGet. Targets: `net6.0`, `net8.0`, `net10.0`.
-2. **[#109]** SDK Java/Kotlin — pacote Maven/Gradle.
-3. **[#110]** SDK Python — pacote PyPI. Suporte Python 3.9+.
-4. **[#111]** SDK JavaScript + TypeScript — pacote npm com tipagem completa. Suporte Node.js e browser.
-5. **[#139]** SDK Rust — crate crates.io. Cliente assíncrono (tokio + reqwest), feature flag para síncrono. MSRV: 1.70+.
-6. **[#140]** SDK Ruby — gem RubyGems. Compatível com Ruby 3.0+ e Ruby on Rails.
+1. ✅ **[#108]** SDK C#/.NET — `sdks/csharp/`. Multi-target `net6.0;net8.0;net10.0`. 12 testes xUnit aprovados.
+2. ✅ **[#109]** SDK Java/Kotlin — `sdks/java/`. Maven, OkHttp + Jackson, JUnit 5 + MockWebServer.
+3. ✅ **[#110]** SDK Python — `sdks/python/`. PyPI-ready, requests + HMAC stdlib, pytest + responses.
+4. ✅ **[#111]** SDK JavaScript + TypeScript — `sdks/javascript/`. npm, fetch nativo (Node+browser), Jest.
+5. ✅ **[#139]** SDK Rust — `sdks/rust/`. crates.io-ready, tokio + reqwest async, wiremock para testes.
+6. ✅ **[#140]** SDK Ruby — `sdks/ruby/`. RubyGems, net/http + OpenSSL stdlib, RSpec + WebMock.
+
+**Workflow CI:** `sdk-tests.yml` — roda todos os 6 SDKs em `ubuntu-latest` em jobs paralelos no push ao `master` ou mudança em `sdks/**`.
+
+**Resultado:** 12 testes C# aprovados localmente. Demais SDKs validados pelo CI (`sdk-tests.yml`) ao fazer merge no master.
+
+**Demo:** `dotnet test sdks/csharp/LicenseManagerSdk.Tests` → 12/12 aprovados.
 
 ---
 
