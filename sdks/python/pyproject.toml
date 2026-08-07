@@ -1,0 +1,22 @@
+[build-system]
+requires      = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name        = "licensemanager-sdk"
+version     = "1.0.0"
+description = "SDK cliente para a API de validação do LicenseManager"
+readme      = "README.md"
+license     = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = ["requests>=2.31.0"]
+
+[project.urls]
+Repository = "https://github.com/carloscampos2014/LicenciamentoSoftware"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["licensemanager_sdk*"]

@@ -58,7 +58,7 @@ tests/
 | 12.1 | Encerramento de conta de empresa + 2FA MAUI — página /minha-empresa, encerrar conta com exclusão opcional, bloqueio HMAC, job de limpeza, notificação de clientes finais | ✅ Concluída |
 | 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup Web, perfil empresa, testes de integração CI | ✅ Concluída |
 | 13 | Instaladores — MSIX Windows (certificado autoassinado), APK Android (keystore própria) | ✅ Concluída |
-| 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript | 🔜 Planejada |
+| 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript, Rust, Ruby | ✅ Concluída |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
 | 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | ✅ Concluída |
 
