@@ -1,0 +1,62 @@
+name: Publish Python (PyPI)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão do pacote (ex: 1.0.0). Deixe vazio para usar a versão do pyproject.toml."
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build, Testes e Publicar PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Instalar dependências de build
+        run: pip install build twine
+
+      - name: Instalar dependências de teste
+        run: |
+          pip install sdks/python
+          pip install -r sdks/python/requirements-dev.txt
+
+      - name: Atualizar versão (se informada)
+        if: ${{ github.event.inputs.version != '' || github.event_name == 'release' }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" sdks/python/pyproject.toml
+          echo "Versão: $VERSION"
+
+      - name: Testes
+        run: pytest sdks/python/tests --tb=short
+
+      - name: Build
+        run: python -m build sdks/python --outdir ./dist
+
+      - name: Listar pacote gerado
+        run: ls -lh ./dist/
+
+      - name: Publicar no PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
