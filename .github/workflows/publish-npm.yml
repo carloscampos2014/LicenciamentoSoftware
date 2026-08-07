@@ -32,7 +32,7 @@ jobs:
         working-directory: sdks/javascript
 
       - name: Atualizar versão (se informada)
-        if: ${{ github.event.inputs.version != '' || github.event_name == 'release' }}
+        if: ${{ github.event.inputs.version != '' }}
         working-directory: sdks/javascript
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
@@ -41,7 +41,8 @@ jobs:
           else
             VERSION="${{ github.event.inputs.version }}"
           fi
-          npm version "$VERSION" --no-git-tag-version
+          # npm version falha se a versão já for igual — ignorar nesse caso
+          npm version "$VERSION" --no-git-tag-version || true
           echo "Versão: $VERSION"
 
       - name: Typecheck

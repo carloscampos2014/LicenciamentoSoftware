@@ -57,4 +57,5 @@ jobs:
         run: |
           cargo publish \
             --manifest-path sdks/rust/Cargo.toml \
-            --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+            --token ${{ secrets.CARGO_REGISTRY_TOKEN }} \
+            --allow-dirty
