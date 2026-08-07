@@ -1,0 +1,79 @@
+name: Publish NuGet
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão do pacote (ex: 1.0.0). Deixe vazio para usar a versão do .csproj."
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build e Publicar NuGet
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # obrigatório para Trusted Publishing (OIDC)
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Determinar versão
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          elif [ -n "${{ github.event.inputs.version }}" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" sdks/csharp/LicenseManagerSdk/LicenseManagerSdk.csproj || echo "1.0.0")
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Versão: $VERSION"
+
+      - name: Restore
+        run: dotnet restore sdks/csharp/LicenseManagerSdk.sln
+
+      - name: Build
+        run: |
+          dotnet build sdks/csharp/LicenseManagerSdk.sln \
+            --no-restore -c Release \
+            /p:Version=${{ steps.version.outputs.VERSION }}
+
+      - name: Testes
+        run: |
+          dotnet test sdks/csharp/LicenseManagerSdk.Tests \
+            --no-build -c Release \
+            --logger "console;verbosity=minimal"
+
+      - name: Pack
+        run: |
+          dotnet pack sdks/csharp/LicenseManagerSdk/LicenseManagerSdk.csproj \
+            --no-build -c Release \
+            /p:Version=${{ steps.version.outputs.VERSION }} \
+            -o ./nupkg
+
+      - name: Listar pacote gerado
+        run: ls -lh ./nupkg/
+
+      - name: Login no NuGet (Trusted Publishing via OIDC)
+        uses: NuGet/login@v1
+        id: nuget-login
+        with:
+          user: carlosalbertode.campos
+
+      - name: Publicar no NuGet
+        run: |
+          dotnet nuget push ./nupkg/*.nupkg \
+            --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} \
+            --source https://api.nuget.org/v3/index.json
