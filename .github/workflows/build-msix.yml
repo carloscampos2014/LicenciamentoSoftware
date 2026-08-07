@@ -18,6 +18,8 @@ jobs:
   build-msix:
     name: Build e Empacotar MSIX
     runs-on: windows-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
