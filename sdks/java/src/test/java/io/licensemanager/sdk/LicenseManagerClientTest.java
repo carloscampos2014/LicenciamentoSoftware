@@ -1,7 +1,7 @@
 package io.licensemanager.sdk;
 
-import mockwebserver3.MockResponse;
-import mockwebserver3.MockWebServer;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.*;
 
 import static org.junit.jupiter.api.Assertions.*;

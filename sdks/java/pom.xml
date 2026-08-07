@@ -43,7 +43,7 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- OkHttp MockWebServer -->
+    <!-- OkHttp MockWebServer — pacote okhttp3.mockwebserver (OkHttp 4.x) -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>

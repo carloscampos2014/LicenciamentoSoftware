@@ -105,10 +105,11 @@ module LicenseManagerSdk
           end
 
           unless response.is_a?(Net::HTTPSuccess)
-            raise LicenseManagerError.new(code, response.body)
+            raise LicenseManagerError.new(code, response.body.to_s)
           end
 
-          return response.body.empty? ? {} : JSON.parse(response.body)
+          body = response.body
+          return (body.nil? || body.empty?) ? {} : JSON.parse(body)
         rescue LicenseManagerError
           raise
         rescue StandardError => e
