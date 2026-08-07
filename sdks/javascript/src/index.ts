@@ -66,8 +66,8 @@ export class LicenseManagerClient {
     const body = { idLicenca: this.licenseId, identificadorUsuario: userId };
     const data = await this.post("api/validacao/login", body);
     return {
-      authorized: data.autorizado ?? false,
-      sessionId:  data.idSessao   ?? null,
+      authorized: (data.autorizado as boolean) ?? false,
+      sessionId:  (data.idSessao as string | null) ?? null,
     };
   }
 
@@ -85,9 +85,9 @@ export class LicenseManagerClient {
     const body = { idLicenca: this.licenseId, identificadorMaquina: machineId };
     const data = await this.post("api/validacao/instalacao", body);
     return {
-      authorized:        data.autorizado     ?? false,
-      installationId:    data.idInstalacao   ?? null,
-      alreadyRegistered: data.jaRegistrada   ?? false,
+      authorized:        (data.autorizado     as boolean) ?? false,
+      installationId:    (data.idInstalacao   as string | null) ?? null,
+      alreadyRegistered: (data.jaRegistrada   as boolean) ?? false,
     };
   }
 
