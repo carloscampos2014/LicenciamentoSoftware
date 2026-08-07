@@ -63,4 +63,5 @@ jobs:
           :rubygems_api_key: ${{ secrets.RUBYGEMS_API_KEY }}
           EOF
           chmod 0600 ~/.gem/credentials
-          gem push *.gem
+          # Ignora erro se a versão já foi publicada
+          gem push *.gem || true
