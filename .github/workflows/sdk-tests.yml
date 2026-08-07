@@ -69,7 +69,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Instalar dependências
         run: |
-          pip install -e sdks/python
+          pip install sdks/python
           pip install -r sdks/python/requirements-dev.txt
       - name: Testes
         run: pytest sdks/python/tests --tb=short
@@ -88,7 +88,7 @@ jobs:
           cache: npm
           cache-dependency-path: sdks/javascript/package.json
       - name: Instalar dependências
-        run: npm ci
+        run: npm install
         working-directory: sdks/javascript
       - name: Typecheck
         run: npx tsc --noEmit
