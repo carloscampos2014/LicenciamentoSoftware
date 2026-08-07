@@ -10,16 +10,24 @@
 
     <!-- NuGet metadata -->
     <PackageId>LicenseManagerSdk</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>LicenciamentoSoftware</Authors>
     <Description>SDK cliente para a API de validação do LicenseManager. Encapsula autenticação HMAC-SHA256 e os endpoints de validação de licença.</Description>
     <PackageTags>licensemanager;sdk;licensing;hmac</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/carloscampos2014/LicenciamentoSoftware</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/carloscampos2014/LicenciamentoSoftware</PackageProjectUrl>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
   </PropertyGroup>
+
+  <!-- Embute o README no pacote NuGet -->
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 
   <!-- System.Net.Http incluído no runtime a partir do net6+ -->
 
