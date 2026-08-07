@@ -1,0 +1,66 @@
+name: Publish npm (JavaScript/TypeScript)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão do pacote (ex: 1.0.0). Deixe vazio para usar a versão do package.json."
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build, Testes e Publicar npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Instalar dependências
+        run: npm install
+        working-directory: sdks/javascript
+
+      - name: Atualizar versão (se informada)
+        if: ${{ github.event.inputs.version != '' || github.event_name == 'release' }}
+        working-directory: sdks/javascript
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          npm version "$VERSION" --no-git-tag-version
+          echo "Versão: $VERSION"
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+        working-directory: sdks/javascript
+
+      - name: Testes
+        run: npm test
+        working-directory: sdks/javascript
+
+      - name: Build
+        run: npx tsc --outDir dist
+        working-directory: sdks/javascript
+
+      - name: Listar dist
+        run: ls -lh sdks/javascript/dist/ 2>/dev/null || echo "dist vazio (sem rollup)"
+
+      - name: Publicar no npm
+        run: npm publish --access public
+        working-directory: sdks/javascript
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,60 @@
+name: Publish Rust (crates.io)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão da crate (ex: 1.0.0). Deixe vazio para usar a versão do Cargo.toml."
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build, Testes e Publicar crates.io
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Cache Cargo
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            sdks/rust/target
+          key: cargo-publish-${{ hashFiles('sdks/rust/Cargo.lock') }}
+          restore-keys: cargo-publish-
+
+      - name: Atualizar versão no Cargo.toml (se informada via input)
+        if: ${{ github.event.inputs.version != '' }}
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" sdks/rust/Cargo.toml
+          echo "Versão atualizada para: $VERSION"
+          grep "^version" sdks/rust/Cargo.toml
+
+      - name: Atualizar versão a partir da tag da release
+        if: ${{ github.event_name == 'release' }}
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          sed -i "s/^version = \".*\"/version = \"$VERSION\"/" sdks/rust/Cargo.toml
+          echo "Versão atualizada para: $VERSION"
+
+      - name: Build
+        run: cargo build --manifest-path sdks/rust/Cargo.toml
+
+      - name: Testes
+        run: cargo test --manifest-path sdks/rust/Cargo.toml
+
+      - name: Publicar no crates.io
+        run: |
+          cargo publish \
+            --manifest-path sdks/rust/Cargo.toml \
+            --token ${{ secrets.CARGO_REGISTRY_TOKEN }}

@@ -1,0 +1,66 @@
+name: Publish Ruby (RubyGems)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão da gem (ex: 1.0.0). Deixe vazio para usar a versão do gemspec."
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build, Testes e Publicar RubyGems
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: sdks/ruby
+
+      - name: Atualizar versão (se informada)
+        if: ${{ github.event.inputs.version != '' || github.event_name == 'release' }}
+        working-directory: sdks/ruby
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          sed -i "s/VERSION = \".*\"/VERSION = \"$VERSION\"/" lib/licensemanager_sdk/version.rb
+          sed -i "s/spec.version.*=.*/spec.version       = \"$VERSION\"/" licensemanager_sdk.gemspec
+          echo "Versão: $VERSION"
+
+      - name: Testes
+        working-directory: sdks/ruby
+        run: bundle exec rspec
+
+      - name: Build gem
+        working-directory: sdks/ruby
+        run: gem build licensemanager_sdk.gemspec
+
+      - name: Listar gem gerada
+        working-directory: sdks/ruby
+        run: ls -lh *.gem
+
+      - name: Publicar no RubyGems
+        working-directory: sdks/ruby
+        run: |
+          mkdir -p ~/.gem
+          cat > ~/.gem/credentials << EOF
+          ---
+          :rubygems_api_key: ${{ secrets.RUBYGEMS_API_KEY }}
+          EOF
+          chmod 0600 ~/.gem/credentials
+          gem push *.gem
