@@ -1,0 +1,76 @@
+site_name: LicenseManager Docs
+site_description: Documentação completa da plataforma LicenseManager
+site_author: Carlos Alberto de Lima Campos
+site_url: https://carloscampos2014.github.io/LicenciamentoSoftware/
+repo_url: https://github.com/carloscampos2014/LicenciamentoSoftware
+repo_name: carloscampos2014/LicenciamentoSoftware
+edit_uri: edit/master/docs/
+
+theme:
+  name: material
+  language: pt
+  palette:
+    - scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Modo escuro
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search:
+      lang: pt
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - def_list
+  - toc:
+      permalink: true
+
+nav:
+  - Início: index.md
+  - Guia de Início Rápido: quickstart.md
+  - Arquitetura: architecture.md
+  - Plano de Desenvolvimento: development-plan.md
+  - SDKs:
+    - Visão Geral: sdks/index.md
+    - C# / .NET: sdks/csharp.md
+    - Java / Kotlin: sdks/java.md
+    - Python: sdks/python.md
+    - JavaScript / TypeScript: sdks/javascript.md
+    - Rust: sdks/rust.md
+    - Ruby: sdks/ruby.md
+    - Delphi: sdks/delphi.md
+    - PHP: sdks/php.md
+    - VB6 / COM: sdks/vb6.md
+  - Instalação:
+    - Windows (MSIX): installation/windows.md
+    - Android (APK): installation/android.md
+  - API de Validação: api-validacao.md
+  - Contribuindo: contributing.md

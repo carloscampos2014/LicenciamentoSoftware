@@ -1,0 +1,69 @@
+name: Sincronizar Wiki
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "docs/**"
+      - "README.md"
+      - ".github/workflows/wiki.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    name: Sincronizar docs com Wiki GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repositório
+        uses: actions/checkout@v7
+
+      - name: Clonar wiki
+        run: |
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/carloscampos2014/LicenciamentoSoftware.wiki.git wiki
+          cd wiki
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Copiar páginas para wiki
+        run: |
+          # Home da wiki = README do repositório
+          cp README.md wiki/Home.md
+
+          # Páginas principais
+          cp docs/architecture.md         wiki/Arquitetura.md
+          cp docs/quickstart.md           wiki/Guia-de-Inicio-Rapido.md
+          cp docs/api-validacao.md        wiki/API-de-Validacao.md
+          cp docs/development-plan.md     wiki/Plano-de-Desenvolvimento.md
+          cp docs/contributing.md         wiki/Contribuindo.md
+
+          # Instalação
+          cp docs/installation/windows.md wiki/Instalacao-Windows.md
+          cp docs/installation/android.md wiki/Instalacao-Android.md
+
+          # SDKs
+          cp docs/sdks/index.md           wiki/SDKs.md
+          cp docs/sdks/csharp.md          wiki/SDK-CSharp.md
+          cp docs/sdks/java.md            wiki/SDK-Java.md
+          cp docs/sdks/python.md          wiki/SDK-Python.md
+          cp docs/sdks/javascript.md      wiki/SDK-JavaScript.md
+          cp docs/sdks/rust.md            wiki/SDK-Rust.md
+          cp docs/sdks/ruby.md            wiki/SDK-Ruby.md
+          cp docs/sdks/php.md             wiki/SDK-PHP.md
+          cp docs/sdks/delphi.md          wiki/SDK-Delphi.md
+          cp docs/sdks/vb6.md             wiki/SDK-VB6.md
+
+      - name: Commit e push na wiki
+        run: |
+          cd wiki
+          git add -A
+          if git diff --staged --quiet; then
+            echo "Nenhuma mudanca na wiki."
+          else
+            git commit -m "docs: sincronizar wiki com docs/ do repositorio"
+            git push
+          fi
