@@ -1098,17 +1098,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#banco-de-dados" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Banco de dados
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#deploy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1164,7 +1153,7 @@
 <a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                               │
 <a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>┌──────────────────────────────▼──────────────────────────┐
 <a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│                 Infrastructure Layer                     │
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  Dapper  │  EF Core  │  PostgreSQL  │  Repositories      │
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  DbUp (migrations)  │  Dapper (queries)  │  PostgreSQL   │
 <a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>└─────────────────────────────────────────────────────────┘
 </code></pre></div>
 <h2 id="projetos-da-solucao">Projetos da solução<a class="headerlink" href="#projetos-da-solucao" title="Permanent link">&para;</a></h2>
@@ -1186,7 +1175,7 @@
 </tr>
 <tr>
 <td><code>Infrastructure</code></td>
-<td>Repositórios Dapper/EF Core, PostgreSQL</td>
+<td>Repositórios Dapper, migrations DbUp, PostgreSQL</td>
 </tr>
 <tr>
 <td><code>Api</code></td>
@@ -1216,11 +1205,13 @@
 <li><strong>2FA:</strong> TOTP (Google Authenticator / Authy)</li>
 <li><strong>Validação:</strong> HMAC-SHA256 com timestamp e nonce (proteção anti-replay ±5 min)</li>
 <li><strong>Isolamento:</strong> <code>IdCliente</code> sempre do JWT, nunca do body</li>
-<li><strong>Auditoria:</strong> log transacional de todas as operações de escrita</li>
+<li>
+<p><strong>Auditoria:</strong> log transacional de todas as operações de escrita</p>
+</li>
+<li>
+<p><strong>Banco de dados:</strong> PostgreSQL hospedado na mesma Oracle Cloud VM da API. Migrations via <strong>DbUp</strong> (scripts SQL embarcados no assembly), acesso de leitura/escrita via <strong>Dapper</strong>.</p>
+</li>
 </ul>
-<h2 id="banco-de-dados">Banco de dados<a class="headerlink" href="#banco-de-dados" title="Permanent link">&para;</a></h2>
-<p>PostgreSQL hospedado na mesma Oracle Cloud VM da API.
-Migrations via EF Core, acesso de leitura via Dapper.</p>
 <h2 id="deploy">Deploy<a class="headerlink" href="#deploy" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
