@@ -278,15 +278,17 @@ Requisitos transversais:
 
 ---
 
-## Fase 12 — Melhorias do portal e adequações legais
+## Fase 12 — Melhorias do portal e adequações legais ✅ Concluída
 
 **Objetivo:** adequações legais, funcionalidades de perfil e qualidade de testes.
 
-1. **[#95]** CNPJ alfanumérico — atualizar `Inscricao.cs` para aceitar letras nas 8 primeiras posições conforme IN RFB 2.229/2024. Algoritmo de validação atualizado (A=10...Z=35). Máscara do frontend atualizada. Testes de domínio com casos alfanuméricos.
-2. **[#96]** Setup e gerenciamento de 2FA TOTP no portal Web — seção em `/minha-conta` para ativar/desativar autenticador, exibir QR code e confirmar primeiro código.
-3. **[#97]** Setup e gerenciamento de 2FA TOTP no app MAUI — mesma funcionalidade do item anterior, adaptada para Windows e Android.
-4. **[#98]** Tela de perfil da empresa — seção "Minha Empresa" em `/minha-conta` para editar razão social, e-mail e telefone do cliente. Endpoint `PUT /clientes/{id}` já existe no backend.
-5. **[#100]** Habilitar testes de integração no CI — adicionar etapa no `ci.yml` com Testcontainers + PostgreSQL e garantir que falha bloqueia o merge.
+1. ✅ **[#95]** CNPJ alfanumérico — `Inscricao.cs` atualizado para aceitar letras nas 8 primeiras posições conforme IN RFB 2.229/2024. Algoritmo de validação atualizado (A=10...Z=35). Testes de domínio com casos alfanuméricos validados.
+2. ✅ **[#96]** Setup e gerenciamento de 2FA TOTP no portal Web — seção em `/minha-conta` com QR code para ativar autenticador, confirmação do primeiro código e desativação com código TOTP.
+3. ✅ **[#97]** Setup e gerenciamento de 2FA TOTP no app MAUI — tela "Minha Conta" com seção de ativação (segredo copiável), confirmação com código e desativação com código. Implementado na Fase 12.1.
+4. ✅ **[#98]** Tela de perfil da empresa — página `/minha-empresa` separada no menu lateral para `AdministradorCliente`, com edição de razão social, e-mail e telefone do cliente via `PUT /clientes/{id}`.
+5. ✅ **[#100]** Testes de integração no CI — etapa no `ci.yml` com Testcontainers + PostgreSQL bloqueia merge se falhar.
+
+**Resultado:** 388 testes aprovados (340 backend + 48 MAUI). CNPJ alfanumérico conforme IN RFB 2.229/2024. 2FA TOTP gerenciável pelo usuário nas três interfaces.
 
 ---
 
