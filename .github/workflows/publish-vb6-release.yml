@@ -1,0 +1,119 @@
+name: Publish VB6/COM Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão da DLL (ex: 1.0.0)"
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build DLL COM e Publicar Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Determinar versão
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event.inputs.version }}" -ne "") {
+            $v = "${{ github.event.inputs.version }}"
+          } else {
+            $xml = [xml](Get-Content "sdks/vb6/LicenseManagerSdk/LicenseManagerSdk.csproj")
+            $v = $xml.Project.PropertyGroup.Version | Select-Object -First 1
+            if (-not $v) { $v = "1.0.0" }
+          }
+          Write-Host "Versão: $v"
+          echo "VERSION=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Restore
+        run: dotnet restore sdks/vb6/LicenseManagerSdk/LicenseManagerSdk.csproj
+
+      - name: Testes
+        run: dotnet test sdks/vb6/LicenseManagerSdk.Tests -c Release --logger "console;verbosity=minimal"
+
+      - name: Build DLL (net48 — para COM Interop no Windows)
+        shell: pwsh
+        run: |
+          dotnet build sdks/vb6/LicenseManagerSdk/LicenseManagerSdk.csproj `
+            --no-restore -c Release `
+            -f net48 `
+            /p:Version=${{ steps.version.outputs.VERSION }}
+
+      - name: Gerar TLB via regasm
+        shell: pwsh
+        run: |
+          $dll = Get-ChildItem -Recurse -Filter "LicenseManagerSdk.dll" `
+            sdks/vb6/LicenseManagerSdk/bin/Release/net48 | Select-Object -First 1
+
+          if (-not $dll) {
+            Write-Error "DLL nao encontrada"
+            exit 1
+          }
+
+          Write-Host "DLL: $($dll.FullName)"
+
+          # Gerar o .tlb (type library para VB6)
+          $regasm = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\regasm.exe"
+          if (-not (Test-Path $regasm)) {
+            $regasm = "C:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm.exe"
+          }
+
+          & $regasm $dll.FullName /tlb /nologo
+          Write-Host "TLB gerado"
+
+      - name: Copiar artefatos
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ./artifacts
+
+          $dir = "sdks/vb6/LicenseManagerSdk/bin/Release/net48"
+
+          Copy-Item "$dir/LicenseManagerSdk.dll" "./artifacts/LicenseManagerSdk.dll"
+          Copy-Item "$dir/LicenseManagerSdk.tlb" "./artifacts/LicenseManagerSdk.tlb" -ErrorAction SilentlyContinue
+
+          ls ./artifacts/
+
+      - name: Publicar GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: sdk-vb6-v${{ steps.version.outputs.VERSION }}
+          name: LicenseManager SDK VB6/COM v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## LicenseManager SDK VB6/COM v${{ steps.version.outputs.VERSION }}
+
+            DLL COM para integração com a API de validação a partir de **VB6, VBA, Delphi** e qualquer linguagem COM.
+
+            ### Instalação
+
+            1. Baixe `LicenseManagerSdk.dll` e `LicenseManagerSdk.tlb`
+            2. Execute como Administrador:
+               ```cmd
+               regasm /codebase /tlb LicenseManagerSdk.dll
+               ```
+
+            ### Uso no VB6
+
+            ```vb
+            Set client = CreateObject("LicenseManagerSdk.LicenseManagerClient")
+            Dim json As String
+            json = client.Login("usuario@empresa.com")
+            ```
+
+            Veja o guia completo em [sdks/vb6/README.md](https://github.com/carloscampos2014/LicenciamentoSoftware/blob/master/sdks/vb6/README.md).
+          draft: false
+          prerelease: false
+          make_latest: false
+          files: ./artifacts/*

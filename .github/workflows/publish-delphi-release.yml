@@ -1,0 +1,77 @@
+name: Publish Delphi Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão do SDK (ex: 1.0.0)"
+        required: false
+        default: "1.0.0"
+
+jobs:
+  publish:
+    name: Empacotar unit Pascal e Publicar Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Determinar versão
+        id: version
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then VERSION="1.0.0"; fi
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "Versão: $VERSION"
+
+      - name: Copiar artefatos
+        run: |
+          mkdir -p ./artifacts
+          cp sdks/delphi/LicenseManagerSdk.pas "./artifacts/LicenseManagerSdk.pas"
+          cp sdks/delphi/README.md             "./artifacts/README.md"
+          ls -lh ./artifacts/
+
+      - name: Publicar GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: sdk-delphi-v${{ steps.version.outputs.VERSION }}
+          name: LicenseManager SDK Delphi v${{ steps.version.outputs.VERSION }}
+          body: |
+            ## LicenseManager SDK Delphi v${{ steps.version.outputs.VERSION }}
+
+            Unit Pascal para integração com a API de validação a partir de **Delphi 10.4 Sydney** e superior.
+            Sem dependências externas — usa apenas a RTL padrão.
+
+            ### Instalação
+
+            1. Baixe `LicenseManagerSdk.pas`
+            2. Copie para o diretório do seu projeto Delphi
+            3. Adicione `LicenseManagerSdk` ao `uses` da sua unit
+
+            ### Uso
+
+            ```pascal
+            uses LicenseManagerSdk;
+
+            var Client := TLicenseManagerClient.Create(
+              'https://licensemanager-api.enzojb.com.br',
+              'seu-token',
+              'guid-da-licenca'
+            );
+            try
+              var Login := Client.Login('usuario@empresa.com');
+              if Login.Authorized then
+                Client.Heartbeat(Login.SessionId);
+            finally
+              Client.Free;
+            end;
+            ```
+
+            Veja exemplos completos em [sdks/delphi/README.md](https://github.com/carloscampos2014/LicenciamentoSoftware/blob/master/sdks/delphi/README.md).
+          draft: false
+          prerelease: false
+          make_latest: false
+          files: ./artifacts/*
