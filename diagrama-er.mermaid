@@ -1,0 +1,114 @@
+erDiagram
+    CLIENTE {
+        guid Id PK
+        string RazaoSocial
+        int TipoInscricao
+        string NumeroInscricao
+        string Email
+        string Telefone
+        bool Ativo
+    }
+
+    USUARIO {
+        guid Id PK
+        guid IdCliente FK
+        string Nome
+        bool Ativo
+    }
+
+    CLIENTE_FINAL {
+        guid Id PK
+        guid IdCliente FK
+        string RazaoSocial
+        int TipoInscricao
+        string NumeroInscricao
+        string Email
+        string Telefone
+        bool Ativo
+    }
+
+    APLICACAO {
+        guid Id PK
+        guid IdCliente FK
+        string Titulo
+        string Descricao
+        guid IdTipoLicenca FK
+        bool Ativo
+    }
+
+    TIPO_LICENCA {
+        guid Id PK
+        string Descricao
+    }
+
+    LICENCA {
+        guid Id PK
+        guid IdCliente FK
+        guid IdClienteFinal FK
+        guid IdAplicativo FK
+        timestamp DataCadastro
+        bool Ativo
+    }
+
+    LICENCA_PERIODO {
+        guid Id PK
+        guid LicencaId FK
+        timestamp DataInicio
+        timestamp DataFim
+        bool RenovacaoAutomatica
+    }
+
+    LICENCA_USUARIOS {
+        guid Id PK
+        guid LicencaId FK
+        int QuantidadeMaxima
+        int MaxSessoesPorUsuario
+        int TempoLimiteSessaoHoras
+    }
+
+    LICENCA_SESSAO {
+        guid Id PK
+        guid LicencaId FK
+        string IdentificadorUsuario
+        timestamp DataLogin
+        timestamp DataUltimaAtividade
+        bool Ativo
+    }
+
+    LICENCA_INSTALACAO {
+        guid Id PK
+        guid LicencaId FK
+        int QuantidadeMaxima
+    }
+
+    LICENCA_INSTALACAO_REGISTRADA {
+        guid Id PK
+        guid LicencaId FK
+        string IdentificadorMaquina
+        timestamp DataRegistro
+        bool Ativo
+    }
+
+    LOG_OPERACAO {
+        guid Id PK
+        string Entidade
+        guid IdRegistro
+        char Operacao
+        timestamp DataHora
+        guid IdUsuario FK
+        text CamposAlterados
+    }
+
+    CLIENTE ||--o{ USUARIO : possui
+    CLIENTE ||--o{ CLIENTE_FINAL : possui
+    CLIENTE ||--o{ APLICACAO : possui
+    CLIENTE ||--o{ LICENCA : possui
+    CLIENTE_FINAL ||--o{ LICENCA : possui
+    APLICACAO ||--o{ LICENCA : licenciada_em
+    TIPO_LICENCA ||--o{ APLICACAO : define_tipo
+    LICENCA ||--o| LICENCA_PERIODO : detalha
+    LICENCA ||--o| LICENCA_USUARIOS : detalha
+    LICENCA ||--o{ LICENCA_SESSAO : possui
+    LICENCA ||--o| LICENCA_INSTALACAO : detalha
+    LICENCA ||--o{ LICENCA_INSTALACAO_REGISTRADA : possui
+    USUARIO ||--o{ LOG_OPERACAO : realiza

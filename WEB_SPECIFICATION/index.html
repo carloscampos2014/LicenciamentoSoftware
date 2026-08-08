@@ -1,0 +1,2394 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentação completa da plataforma LicenseManager">
+      
+      
+        <meta name="author" content="Carlos Alberto de Lima Campos">
+      
+      
+        <link rel="canonical" href="https://carloscampos2014.github.io/LicenciamentoSoftware/WEB_SPECIFICATION/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Especificação do Frontend Web — LicenciamentoSoftware - LicenseManager Docs</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#especificacao-do-frontend-web-licenciamentosoftware" class="md-skip">
+          Ir para o conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href=".." title="LicenseManager Docs" class="md-header__button md-logo" aria-label="LicenseManager Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            LicenseManager Docs
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Especificação do Frontend Web — LicenciamentoSoftware
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Modo escuro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo escuro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="deep-purple" data-md-color-accent="purple"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando a pesquisa
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/carloscampos2014/LicenciamentoSoftware" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    carloscampos2014/LicenciamentoSoftware
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Início
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../quickstart/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Guia de Início Rápido
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../architecture.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Arquitetura
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../development-plan/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Plano de Desenvolvimento
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../sdks/" class="md-tabs__link">
+          
+  
+  
+  SDKs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../installation/windows/" class="md-tabs__link">
+          
+  
+  
+  Instalação
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api-validacao/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API de Validação
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contribuindo
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="LicenseManager Docs" class="md-nav__button md-logo" aria-label="LicenseManager Docs" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    LicenseManager Docs
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/carloscampos2014/LicenciamentoSoftware" title="Ir ao repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    carloscampos2014/LicenciamentoSoftware
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Início
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia de Início Rápido
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arquitetura
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../development-plan/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Plano de Desenvolvimento
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SDKs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    SDKs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visão Geral
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/csharp/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    C# / .NET
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/java/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Java / Kotlin
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/javascript/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JavaScript / TypeScript
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/rust/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rust
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/ruby/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Ruby
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/delphi/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Delphi
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/php/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    PHP
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sdks/vb6/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    VB6 / COM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Instalação
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Instalação
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/windows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Windows (MSIX)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/android/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Android (APK)
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-validacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API de Validação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribuindo
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Índice">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Índice
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-visao-geral" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Visão Geral
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Visão Geral">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-o-que-o-portal-permite" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 O que o portal permite
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-o-que-o-portal-nao-faz" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 O que o portal NÃO faz
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-arquitetura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Arquitetura
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Arquitetura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-projetos-envolvidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Projetos envolvidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-fluxo-de-comunicacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Fluxo de comunicação
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-seguranca-dos-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Segurança dos tokens
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-estrutura-de-arquivos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Estrutura de arquivos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-autenticacao-e-autorizacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Autenticação e autorização
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Autenticação e autorização">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-fluxo-de-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Fluxo de login
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-renovacao-silenciosa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 Renovação silenciosa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-protecao-de-rotas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Proteção de rotas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-logout" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Logout
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-paginas-e-funcionalidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Páginas e funcionalidades
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Páginas e funcionalidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-pagina-de-login-login" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Página de Login (/login)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-pagina-de-verificacao-totp-totp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Página de Verificação TOTP (/totp)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-pagina-de-cadastro-cadastro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Página de Cadastro (/cadastro)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#54-clientes-finais-clientes-finais" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.4 Clientes Finais (/clientes-finais)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#55-usuarios-usuarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.5 Usuários (/usuarios)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#56-aplicacoes-aplicacoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.6 Aplicações (/aplicacoes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#57-licencas-licencas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7 Licenças (/licencas)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5.7 Licenças (/licencas)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#571-listagem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7.1 Listagem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#572-emissao-modal-nova-licenca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7.2 Emissão (modal "Nova Licença")
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#573-detalhe-modal-detalhe-da-licenca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.7.3 Detalhe (modal "Detalhe da Licença")
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#58-dashboard-dashboard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.8 Dashboard (/dashboard)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-componentes-compartilhados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Componentes compartilhados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Componentes compartilhados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-modalrazor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Modal.razor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-confirmdialograzor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 ConfirmDialog.razor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-apierrorrazor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 ApiError.razor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-paginacaorazor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Paginacao.razor
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-servicos-de-autenticacao" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Serviços de autenticação
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Serviços de autenticação">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#71-jwtauthstateprovider" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.1 JwtAuthStateProvider
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#72-apihttpclientfactory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.2 ApiHttpClientFactory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#73-bearertokenhandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.3 BearerTokenHandler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#74-tokenrefreshhandler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7.4 TokenRefreshHandler
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-configuracao-de-portas-desenvolvimento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Configuração de portas (desenvolvimento)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-css-e-identidade-visual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. CSS e identidade visual
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-fluxo-completo-exemplo-de-uso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Fluxo completo — exemplo de uso
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Fluxo completo — exemplo de uso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#101-primeiro-acesso-novo-cliente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.1 Primeiro acesso (novo cliente)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#102-emitir-uma-licenca-com-token" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.2 Emitir uma licença com token
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#103-gerenciar-sessoes-ativas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.3 Gerenciar sessões ativas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#104-renovar-token-expirado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10.4 Renovar token expirado
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-limitacoes-conhecidas-e-trabalhos-futuros" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Limitações conhecidas e trabalhos futuros
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="especificacao-do-frontend-web-licenciamentosoftware">Especificação do Frontend Web — LicenciamentoSoftware<a class="headerlink" href="#especificacao-do-frontend-web-licenciamentosoftware" title="Permanent link">&para;</a></h1>
+<p><strong>Versão:</strong> 1.0<br />
+<strong>Fase:</strong> 9<br />
+<strong>Projeto:</strong> <code>LicenciamentoSoftware.Web</code> + <code>LicenciamentoSoftware.Web.Server</code><br />
+<strong>Stack:</strong> Blazor WASM (.NET 10) + ASP.NET Core BFF + YARP  </p>
+<hr />
+<h2 id="1-visao-geral">1. Visão Geral<a class="headerlink" href="#1-visao-geral" title="Permanent link">&para;</a></h2>
+<p>O frontend web é um <strong>portal de gestão</strong> destinado aos clientes da plataforma (empresas que contratam o sistema de licenciamento). Cada empresa gerencia seus próprios dados de forma isolada — nenhum dado de uma empresa é visível para outra.</p>
+<h3 id="11-o-que-o-portal-permite">1.1 O que o portal permite<a class="headerlink" href="#11-o-que-o-portal-permite" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Cadastrar a empresa e criar a conta de administrador</li>
+<li>Fazer login com e-mail, senha e segundo fator TOTP</li>
+<li>Gerenciar clientes finais, usuários internos e aplicações</li>
+<li>Emitir e gerenciar licenças de software por tipo</li>
+<li>Gerar e renovar tokens HMAC para autenticação dos aplicativos clientes</li>
+<li>Monitorar sessões ativas e instalações registradas</li>
+<li>Executar operações manuais: renovar período, encerrar sessão, liberar instalação</li>
+</ul>
+<h3 id="12-o-que-o-portal-nao-faz">1.2 O que o portal NÃO faz<a class="headerlink" href="#12-o-que-o-portal-nao-faz" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Não é o portal do cliente final</strong> — o usuário final (Pedro da Empresa XYZ) não usa este portal. Ele usa o aplicativo cliente que valida licença via API HMAC</li>
+<li><strong>Não tem painel de administração de plataforma</strong> — não existe um superadmin que gerencia todas as empresas</li>
+<li><strong>Não expõe a API de validação</strong> — os endpoints <code>/api/validacao/*</code> são usados pelos aplicativos, não pelo portal</li>
+</ul>
+<hr />
+<h2 id="2-arquitetura">2. Arquitetura<a class="headerlink" href="#2-arquitetura" title="Permanent link">&para;</a></h2>
+<h3 id="21-projetos-envolvidos">2.1 Projetos envolvidos<a class="headerlink" href="#21-projetos-envolvidos" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>LicenciamentoSoftware.Web          Blazor WASM — páginas e componentes (roda no browser)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>LicenciamentoSoftware.Web.Server   BFF — serve o WASM, gerencia cookies, proxy para API
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>LicenciamentoSoftware.Client       Biblioteca HTTP — DTOs e services compartilhados
+</code></pre></div>
+<h3 id="22-fluxo-de-comunicacao">2.2 Fluxo de comunicação<a class="headerlink" href="#22-fluxo-de-comunicacao" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Browser
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  │  Baixa os arquivos WASM (.js, .wasm, .dll)
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  │  e executa o C# localmente
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  │
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>  ↕ HTTPS / mesma origem (localhost:7152)
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>  │
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>Web.Server (BFF)
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>  │  ├── Serve os arquivos estáticos do WASM
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>  │  ├── POST /bff/login      → autentica, emite cookie HttpOnly
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>  │  ├── POST /bff/login/2fa  → valida TOTP, emite cookie HttpOnly
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>  │  ├── POST /bff/refresh    → renova access token via cookie
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>  │  ├── POST /bff/logout     → revoga sessão, apaga cookie
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>  │  ├── POST /bff/cadastrar  → proxy público para /auth/cadastrar
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>  │  └── /* (demais rotas)    → YARP repassa para a API com Authorization header
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>  │
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  ↕ HTTPS (localhost:7075)
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>  │
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>API (LicenciamentoSoftware.Api)
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>     └── Processa as requisições com JWT Bearer
+</code></pre></div>
+<h3 id="23-seguranca-dos-tokens">2.3 Segurança dos tokens<a class="headerlink" href="#23-seguranca-dos-tokens" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Onde fica</th>
+<th>Acesso JavaScript</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Access Token (JWT, 60 min)</td>
+<td>Memória C# no WASM</td>
+<td>Impossível — nunca serializado</td>
+</tr>
+<tr>
+<td>Refresh Token</td>
+<td>Cookie <code>HttpOnly; Secure; SameSite=Strict</code></td>
+<td>Impossível — HttpOnly</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Por que BFF?</strong><br />
+Em SPA puro o refresh token precisaria de <code>localStorage</code> (exposto a XSS) ou <code>sessionStorage</code> (sem persistência). O BFF elimina esse problema: o cookie HttpOnly é invisível para qualquer JavaScript, inclusive o próprio código da aplicação.</p>
+<p><strong>Fluxo de renovação silenciosa:</strong><br />
+Quando o access token expira (401), o <code>BearerTokenHandler</code> chama automaticamente <code>POST /bff/refresh</code>. O browser envia o cookie automaticamente (mesma origem). Um novo access token é emitido sem que o usuário perceba.</p>
+<hr />
+<h2 id="3-estrutura-de-arquivos">3. Estrutura de arquivos<a class="headerlink" href="#3-estrutura-de-arquivos" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>src/LicenciamentoSoftware.Web/
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>├── App.razor                          Roteador principal com AuthorizeRouteView
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>├── _Imports.razor                     Usings globais
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>├── Program.cs                         Bootstrap: DI, HttpClients, AuthProvider
+<a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>│
+<a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>├── Layout/
+<a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>│   ├── MainLayout.razor               Shell autenticado (sidebar + conteúdo)
+<a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>│   └── PublicLayout.razor             Shell público (login, cadastro, totp)
+<a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>│
+<a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>├── Shared/
+<a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>│   ├── ApiError.razor                 Exibe erros de validação da API (400/409/422)
+<a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>│   ├── ConfirmDialog.razor            Modal de confirmação para ações destrutivas
+<a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>│   ├── Modal.razor                    Modal genérico reutilizável com ChildContent + Footer
+<a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>│   ├── Paginacao.razor                Componente de paginação numérica
+<a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>│   └── RedirectToLogin.razor         Redireciona para /login quando não autenticado
+<a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>│
+<a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>├── Pages/
+<a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>│   ├── Index.razor                    Redirect para /clientes-finais ou /login
+<a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>│   ├── Login.razor                    Formulário de login (layout público)
+<a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>│   ├── Totp.razor                     Verificação de segundo fator TOTP
+<a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>│   ├── Cadastro.razor                 Cadastro público de empresa + responsável
+<a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>│   ├── Logout.razor                   Encerra sessão e redireciona
+<a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>│   │
+<a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>│   ├── ClientesFinais/
+<a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>│   │   └── Lista.razor               Grid de cards + modal criar/editar/desativar
+<a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>│   ├── Usuarios/
+<a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>│   │   └── Lista.razor               Grid de cards + modal criar/editar/desativar
+<a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>│   ├── Aplicacoes/
+<a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>│   │   └── Lista.razor               Grid de cards + modal criar/editar/desativar
+<a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>│   └── Licencas/
+<a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a>│       └── Lista.razor               Grid de cards + modal emitir + modal detalhe
+<a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>│
+<a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>├── Services/
+<a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>│   ├── JwtAuthStateProvider.cs       AuthenticationStateProvider — access token em memória
+<a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>│   ├── BearerTokenHandler.cs         DelegatingHandler — adiciona Authorization header
+<a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a>│   ├── TokenRefreshHandler.cs        DelegatingHandler — renova token silenciosamente em 401
+<a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a>│   └── ApiHttpClientFactory.cs       Factory singleton — HttpClients com DefaultRequestHeaders
+<a id="__codelineno-2-38" name="__codelineno-2-38" href="#__codelineno-2-38"></a>│
+<a id="__codelineno-2-39" name="__codelineno-2-39" href="#__codelineno-2-39"></a>└── wwwroot/
+<a id="__codelineno-2-40" name="__codelineno-2-40" href="#__codelineno-2-40"></a>    ├── index.html                     Entry point HTML do WASM
+<a id="__codelineno-2-41" name="__codelineno-2-41" href="#__codelineno-2-41"></a>    └── css/
+<a id="__codelineno-2-42" name="__codelineno-2-42" href="#__codelineno-2-42"></a>        └── app.css                    Estilos globais (sidebar, cards, badges, modais)
+<a id="__codelineno-2-43" name="__codelineno-2-43" href="#__codelineno-2-43"></a>
+<a id="__codelineno-2-44" name="__codelineno-2-44" href="#__codelineno-2-44"></a>src/LicenciamentoSoftware.Web.Server/
+<a id="__codelineno-2-45" name="__codelineno-2-45" href="#__codelineno-2-45"></a>├── Program.cs                         Bootstrap: BFF, YARP, cookie policy
+<a id="__codelineno-2-46" name="__codelineno-2-46" href="#__codelineno-2-46"></a>├── appsettings.json                   ApiSettings:BaseUrl, ReverseProxy config
+<a id="__codelineno-2-47" name="__codelineno-2-47" href="#__codelineno-2-47"></a>├── Configuration/
+<a id="__codelineno-2-48" name="__codelineno-2-48" href="#__codelineno-2-48"></a>│   └── BffServiceExtensions.cs       Helpers de configuração (cookie policy, HttpClients)
+<a id="__codelineno-2-49" name="__codelineno-2-49" href="#__codelineno-2-49"></a>└── Controllers/
+<a id="__codelineno-2-50" name="__codelineno-2-50" href="#__codelineno-2-50"></a>    └── BffController.cs              Endpoints /bff/* (login, 2fa, refresh, logout, cadastrar)
+<a id="__codelineno-2-51" name="__codelineno-2-51" href="#__codelineno-2-51"></a>
+<a id="__codelineno-2-52" name="__codelineno-2-52" href="#__codelineno-2-52"></a>src/LicenciamentoSoftware.Client/
+<a id="__codelineno-2-53" name="__codelineno-2-53" href="#__codelineno-2-53"></a>├── Models/
+<a id="__codelineno-2-54" name="__codelineno-2-54" href="#__codelineno-2-54"></a>│   ├── Auth/                         LoginRequest, LoginResponse, AutoCadastroRequest
+<a id="__codelineno-2-55" name="__codelineno-2-55" href="#__codelineno-2-55"></a>│   ├── Common/                       PagedResult&lt;T&gt;
+<a id="__codelineno-2-56" name="__codelineno-2-56" href="#__codelineno-2-56"></a>│   ├── ClientesFinais/               ClienteFinalResult, CriarClienteFinalRequest, Atualizar...
+<a id="__codelineno-2-57" name="__codelineno-2-57" href="#__codelineno-2-57"></a>│   ├── Usuarios/                     UsuarioResult, CriarUsuarioRequest, Atualizar...
+<a id="__codelineno-2-58" name="__codelineno-2-58" href="#__codelineno-2-58"></a>│   ├── Aplicacoes/                   AplicacaoResult, CriarAplicacaoRequest, Atualizar...
+<a id="__codelineno-2-59" name="__codelineno-2-59" href="#__codelineno-2-59"></a>│   ├── TiposLicenca/                 TipoLicencaResult
+<a id="__codelineno-2-60" name="__codelineno-2-60" href="#__codelineno-2-60"></a>│   └── Licencas/                     LicencaResult, EmitirLicencaRequest, RenovarPeriodoRequest, TokenInfoResult
+<a id="__codelineno-2-61" name="__codelineno-2-61" href="#__codelineno-2-61"></a>└── Services/
+<a id="__codelineno-2-62" name="__codelineno-2-62" href="#__codelineno-2-62"></a>    ├── AuthApiService.cs             login, verify-2fa, refresh, logout, cadastrar
+<a id="__codelineno-2-63" name="__codelineno-2-63" href="#__codelineno-2-63"></a>    ├── ClienteFinalApiService.cs     CRUD + paginação
+<a id="__codelineno-2-64" name="__codelineno-2-64" href="#__codelineno-2-64"></a>    ├── UsuarioApiService.cs          CRUD + paginação
+<a id="__codelineno-2-65" name="__codelineno-2-65" href="#__codelineno-2-65"></a>    ├── AplicacaoApiService.cs        CRUD + paginação
+<a id="__codelineno-2-66" name="__codelineno-2-66" href="#__codelineno-2-66"></a>    ├── TipoLicencaApiService.cs      listagem
+<a id="__codelineno-2-67" name="__codelineno-2-67" href="#__codelineno-2-67"></a>    └── LicencaApiService.cs          emitir, listar, desativar, renovar, sessões, instalações, token
+</code></pre></div>
+<hr />
+<h2 id="4-autenticacao-e-autorizacao">4. Autenticação e autorização<a class="headerlink" href="#4-autenticacao-e-autorizacao" title="Permanent link">&para;</a></h2>
+<h3 id="41-fluxo-de-login">4.1 Fluxo de login<a class="headerlink" href="#41-fluxo-de-login" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>1. POST /bff/login {email, senha}
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>   ├── Sucesso sem 2FA → BFF emite cookie HttpOnly + retorna {accessToken, nome, papel}
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>   │   WASM: JwtAuthStateProvider.MarcarAutenticado() → redireciona para /
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>   └── Requer 2FA → BFF retorna {requer2FA: true, tokenTemporario}
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>       WASM: redireciona para /totp?token=...
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>2. POST /bff/login/2fa {tokenTemporario, codigo}
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>   └── Sucesso → BFF emite cookie HttpOnly + retorna {accessToken, nome, papel}
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>       WASM: JwtAuthStateProvider.MarcarAutenticado() → redireciona para /
+</code></pre></div>
+<h3 id="42-renovacao-silenciosa">4.2 Renovação silenciosa<a class="headerlink" href="#42-renovacao-silenciosa" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Qualquer requisição autenticada
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  → BearerTokenHandler adiciona Authorization: Bearer {accessToken}
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  → Se retornar 401:
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>      TokenRefreshHandler chama POST /bff/refresh
+<a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>      Browser envia cookie automaticamente
+<a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>      BFF valida cookie → retorna novo accessToken
+<a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>      JwtAuthStateProvider.AtualizarToken()
+<a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>      Requisição original é retentada com novo token
+</code></pre></div>
+<h3 id="43-protecao-de-rotas">4.3 Proteção de rotas<a class="headerlink" href="#43-protecao-de-rotas" title="Permanent link">&para;</a></h3>
+<p>Todas as páginas protegidas usam <code>@attribute [Authorize]</code>. O <code>App.razor</code> usa <code>AuthorizeRouteView</code> com <code>&lt;NotAuthorized&gt;</code> que renderiza <code>&lt;RedirectToLogin /&gt;</code>, redirecionando para <code>/login?returnUrl=...</code>.</p>
+<h3 id="44-logout">4.4 Logout<a class="headerlink" href="#44-logout" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>POST /bff/logout
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  → BFF revoga refresh token na API
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  → BFF apaga cookie
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  → JwtAuthStateProvider.MarcarDesautenticado()
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>  → Redireciona para /login
+</code></pre></div>
+<hr />
+<h2 id="5-paginas-e-funcionalidades">5. Páginas e funcionalidades<a class="headerlink" href="#5-paginas-e-funcionalidades" title="Permanent link">&para;</a></h2>
+<h3 id="51-pagina-de-login-login">5.1 Página de Login (<code>/login</code>)<a class="headerlink" href="#51-pagina-de-login-login" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> PublicLayout (sem sidebar)<br />
+<strong>Visual:</strong> painel roxo esquerdo (branding) + formulário direito</p>
+<p><strong>Campos:</strong>
+- E-mail (tipo email, autocomplete)
+- Senha (tipo password, autocomplete)
+- Enter submete o formulário</p>
+<p><strong>Fluxo:</strong>
+1. Usuário preenche credenciais e clica "Entrar"
+2. Se bem-sucedido → redireciona para <code>returnUrl</code> ou <code>/</code>
+3. Se 2FA necessário → redireciona para <code>/totp?token=...</code>
+4. Se erro → exibe mensagem inline</p>
+<p><strong>Links:</strong> "Cadastre-se gratuitamente" → <code>/cadastro</code></p>
+<hr />
+<h3 id="52-pagina-de-verificacao-totp-totp">5.2 Página de Verificação TOTP (<code>/totp</code>)<a class="headerlink" href="#52-pagina-de-verificacao-totp-totp" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> PublicLayout<br />
+<strong>Parâmetro de query:</strong> <code>token</code> (token temporário de desafio 2FA)</p>
+<p><strong>Campos:</strong>
+- Código TOTP (6 dígitos, <code>autocomplete="one-time-code"</code>)</p>
+<p><strong>Fluxo:</strong>
+1. Usuário digita código do autenticador
+2. POST <code>/bff/login/2fa</code> → se válido, autentica e redireciona para <code>/</code>
+3. Se inválido → exibe erro inline</p>
+<hr />
+<h3 id="53-pagina-de-cadastro-cadastro">5.3 Página de Cadastro (<code>/cadastro</code>)<a class="headerlink" href="#53-pagina-de-cadastro-cadastro" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> PublicLayout<br />
+<strong>Acesso:</strong> Público (anônimo)</p>
+<p><strong>Campos — Dados da empresa:</strong>
+- Razão Social *
+- Tipo de inscrição (CPF / CNPJ)
+- Número CPF/CNPJ *
+- E-mail da empresa *
+- Telefone (opcional)</p>
+<p><strong>Campos — Responsável pela conta:</strong>
+- Nome completo *
+- E-mail de acesso *
+- Senha * (mínimo 8 caracteres)
+- Confirmar senha *</p>
+<p><strong>Fluxo:</strong>
+1. Formulário validado no cliente (senhas coincidem, campos obrigatórios)
+2. POST <code>/bff/cadastrar</code> → proxy para <code>POST /auth/cadastrar</code>
+3. Cria <code>Cliente</code> + primeiro <code>Usuário</code> como <code>AdministradorCliente</code> em uma transação
+4. Sucesso → tela de confirmação com link para <code>/login</code>
+5. Conflito (409) → erro de CPF/CNPJ ou e-mail duplicado
+6. Inválido (422) → lista de erros de validação</p>
+<hr />
+<h3 id="54-clientes-finais-clientes-finais">5.4 Clientes Finais (<code>/clientes-finais</code>)<a class="headerlink" href="#54-clientes-finais-clientes-finais" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> MainLayout (autenticado)<br />
+<strong>Acesso:</strong> Qualquer usuário autenticado</p>
+<p><strong>Listagem:</strong>
+- Grid de cards (3 colunas em desktop)
+- Busca por razão social (Enter ou botão)
+- Paginação numérica
+- Card exibe: razão social, badge ativo/inativo, e-mail, telefone, CPF/CNPJ</p>
+<p><strong>Criar (modal "Novo Cliente"):</strong>
+- Razão Social *
+- Tipo (CPF/CNPJ) + Número *
+- E-mail *
+- Telefone</p>
+<p><strong>Editar (modal "Editar Cliente"):</strong>
+- Razão Social, E-mail, Telefone (CPF/CNPJ não editável após criação)</p>
+<p><strong>Desativar:</strong>
+- ConfirmDialog antes de executar
+- Exclusão lógica (<code>ativo = false</code>)</p>
+<p><strong>Isolamento de tenant:</strong> <code>IdCliente</code> vem do JWT, nunca do formulário.</p>
+<hr />
+<h3 id="55-usuarios-usuarios">5.5 Usuários (<code>/usuarios</code>)<a class="headerlink" href="#55-usuarios-usuarios" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> MainLayout<br />
+<strong>Acesso:</strong> Qualquer usuário autenticado</p>
+<p><strong>Listagem:</strong>
+- Grid de cards com avatar de iniciais
+- Card exibe: nome, e-mail, papel, badge ativo/inativo</p>
+<p><strong>Criar (modal "Novo Usuário"):</strong>
+- Nome <em>, E-mail </em>, Senha *</p>
+<p><strong>Editar (modal "Editar Usuário"):</strong>
+- Nome, E-mail (senha não editável via edição)</p>
+<p><strong>Observação:</strong> O <code>IdCliente</code> vem do JWT. Todos os usuários criados pertencem ao mesmo tenant.</p>
+<hr />
+<h3 id="56-aplicacoes-aplicacoes">5.6 Aplicações (<code>/aplicacoes</code>)<a class="headerlink" href="#56-aplicacoes-aplicacoes" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> MainLayout<br />
+<strong>Acesso:</strong> Qualquer usuário autenticado</p>
+<p><strong>Listagem:</strong>
+- Grid de cards
+- Card exibe: título, tipo de licença (badge colorido), descrição, status</p>
+<p><strong>Criar (modal "Nova Aplicação"):</strong>
+- Título *, Descrição, Tipo de Licença * (dropdown carregado de <code>/tipos-licenca</code>)</p>
+<p><strong>Editar (modal "Editar Aplicação"):</strong>
+- Título, Descrição (tipo não editável após criação)</p>
+<p><strong>Badges de tipo:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Cor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permanente</td>
+<td>Azul</td>
+</tr>
+<tr>
+<td>Por Período</td>
+<td>Amarelo</td>
+</tr>
+<tr>
+<td>Por Usuários</td>
+<td>Roxo</td>
+</tr>
+<tr>
+<td>Por Instalação</td>
+<td>Rosa</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="57-licencas-licencas">5.7 Licenças (<code>/licencas</code>)<a class="headerlink" href="#57-licencas-licencas" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> MainLayout<br />
+<strong>Acesso:</strong> Qualquer usuário autenticado</p>
+<h4 id="571-listagem">5.7.1 Listagem<a class="headerlink" href="#571-listagem" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Grid de cards</li>
+<li>Busca por cliente/aplicativo</li>
+<li>Card exibe: razão social do cliente final, aplicação, tipo (badge), status, resumo (período/usuários/instalações), chave abreviada</li>
+</ul>
+<h4 id="572-emissao-modal-nova-licenca">5.7.2 Emissão (modal "Nova Licença")<a class="headerlink" href="#572-emissao-modal-nova-licenca" title="Permanent link">&para;</a></h4>
+<p><strong>Passo 1 — Seleção:</strong>
+- Dropdown de Aplicação (carregado com tipo embutido no label)
+- Dropdown de Cliente Final
+- Tipo detectado automaticamente ao selecionar a aplicação</p>
+<p><strong>Passo 2 — Campos dinâmicos por tipo:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Campos extras</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Permanente</td>
+<td>Nenhum</td>
+</tr>
+<tr>
+<td>Por Período</td>
+<td>Data início <em>, Data fim </em>, Renovação automática (checkbox)</td>
+</tr>
+<tr>
+<td>Por Usuários</td>
+<td>Máx. usuários *, Máx. sessões por usuário</td>
+</tr>
+<tr>
+<td>Por Instalação</td>
+<td>Máx. instalações *</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Opção:</strong> "Gerar token HMAC junto com a licença" (checkbox)</p>
+<p><strong>Pós-emissão:</strong>
+- Tela de sucesso dentro do modal
+- Se token foi gerado: exibe valor com botão "Copiar"
+- Aviso: "Exibido uma única vez. Guarde com segurança."</p>
+<h4 id="573-detalhe-modal-detalhe-da-licenca">5.7.3 Detalhe (modal "Detalhe da Licença")<a class="headerlink" href="#573-detalhe-modal-detalhe-da-licenca" title="Permanent link">&para;</a></h4>
+<p>Abre ao clicar "Detalhes" em qualquer card da lista. Carrega o detalhe completo da licença via <code>GET /licencas/{id}</code>.</p>
+<p><strong>Conteúdo do modal (adapta-se ao tipo):</strong></p>
+<p><strong>Cabeçalho:</strong>
+- Nome do cliente final + aplicação
+- Badges: status (Ativa/Inativa) + tipo de licença</p>
+<p><strong>Seção Período</strong> (apenas tipo "Por Período"):
+- Datas início/fim, renovação automática
+- Campo "Nova data fim" + botão "Renovar período"</p>
+<p><strong>Seção Usuários</strong> (apenas tipo "Por Usuários"):
+- Máx. simultâneos, sessões por usuário</p>
+<p><strong>Seção Sessões ativas</strong> (quando há sessões):
+- Tabela: identificador do usuário, data login, última atividade
+- Botão "Encerrar" por linha (com ConfirmDialog)</p>
+<p><strong>Seção Instalações</strong> (quando há instalações):
+- Tabela: identificador da máquina, data de registro
+- Botão "Liberar" por linha (com ConfirmDialog)
+- Contador: ativas/máximo</p>
+<p><strong>Seção Token HMAC:</strong>
+- Status: "Sem token" / "Ativo · exp. dd/MM/yyyy" / "Expirado"
+- Botão "Gerar token" (se sem token ou expirado)
+- Botão "Renovar token" (se ativo — revoga o anterior)
+- Após gerar/renovar: exibe valor com botão "Copiar" e aviso de exibição única</p>
+<hr />
+<h3 id="58-dashboard-dashboard">5.8 Dashboard (<code>/dashboard</code>)<a class="headerlink" href="#58-dashboard-dashboard" title="Permanent link">&para;</a></h3>
+<p><strong>Layout:</strong> MainLayout (autenticado) — primeiro item do menu</p>
+<p><strong>Carregamento:</strong> resumo e alertas carregados em paralelo via <code>Task.WhenAll</code>. Skeleton loader exibido durante carregamento.</p>
+<p><strong>Cards de métricas (sempre visíveis após carregamento):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Métrica</th>
+<th>Alerta visual</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Clientes Finais</td>
+<td>Total ativos + novos 30d</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Aplicações</td>
+<td>Total ativas</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Licenças Ativas</td>
+<td>Total + inativas</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Expirando em 7 dias</td>
+<td>Contagem</td>
+<td>Laranja se &gt; 0</td>
+</tr>
+<tr>
+<td>Sessões abertas agora</td>
+<td>Total ativas</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Tokens expirando em 7 dias</td>
+<td>Contagem</td>
+<td>Laranja se &gt; 0</td>
+</tr>
+<tr>
+<td>Novas licenças (30 dias)</td>
+<td>Contagem</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Breakdown por tipo:</strong> badges coloridos mostrando Permanente / Por Período / Por Usuários / Por Instalação.</p>
+<p><strong>Seção de alertas</strong> (oculta quando não há dados):
+- Erros de validação nas últimas 24h com breakdown por motivo
+- Licenças no limite de capacidade (usuários ou instalações)
+- Sessões inativas prolongadas (&gt; 2× TempoLimiteSessaoHoras)
+- Instalações adormecidas (&gt; 30 dias sem validação)</p>
+<p><strong>Componente <code>MetricaCard.razor</code>:</strong> reutilizável, aceita <code>Titulo</code>, <code>Valor</code>, <code>Subtitulo</code>, <code>Cor</code>, <code>Icone</code> e <code>Alerta</code>. Inclui skeleton loader via CSS animation.</p>
+<hr />
+<h2 id="6-componentes-compartilhados">6. Componentes compartilhados<a class="headerlink" href="#6-componentes-compartilhados" title="Permanent link">&para;</a></h2>
+<h3 id="61-modalrazor">6.1 Modal.razor<a class="headerlink" href="#61-modalrazor" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;Modal Visivel=&quot;@_aberto&quot; Titulo=&quot;Título&quot; OnFechar=&quot;Fechar&quot;&gt;
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    &lt;ChildContent&gt;
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        &lt;!-- conteúdo do formulário --&gt;
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    &lt;/ChildContent&gt;
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    &lt;Footer&gt;
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        &lt;button @onclick=&quot;Fechar&quot;&gt;Cancelar&lt;/button&gt;
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        &lt;button @onclick=&quot;Salvar&quot;&gt;Salvar&lt;/button&gt;
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    &lt;/Footer&gt;
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>&lt;/Modal&gt;
+</code></pre></div>
+<ul>
+<li>Overlay escurecido, fecha ao clicar fora</li>
+<li><code>max-height: 85vh</code> com scroll interno no body</li>
+<li>Header e footer fixos, apenas o body rola</li>
+<li>Largura máxima de 560px (responsivo)</li>
+</ul>
+<h3 id="62-confirmdialograzor">6.2 ConfirmDialog.razor<a class="headerlink" href="#62-confirmdialograzor" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">_confirmDialog</span><span class="p">.</span><span class="n">Mensagem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mensagem de confirmação&quot;</span><span class="p">;</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kt">bool</span><span class="w"> </span><span class="n">confirmado</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">_confirmDialog</span><span class="p">.</span><span class="n">MostrarAsync</span><span class="p">();</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">confirmado</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">// executa ação</span>
+</code></pre></div>
+<ul>
+<li>Bloqueante via <code>TaskCompletionSource&lt;bool&gt;</code></li>
+<li>Botão de confirmação vermelho, cancelar neutro</li>
+</ul>
+<h3 id="63-apierrorrazor">6.3 ApiError.razor<a class="headerlink" href="#63-apierrorrazor" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>&lt;ApiError Erro=&quot;@_erro&quot; Erros=&quot;@_erros&quot; /&gt;
+</code></pre></div>
+<ul>
+<li>Exibe <code>Erro</code> (string única) ou <code>Erros</code> (lista) como alert vermelho</li>
+<li>Visível apenas quando há conteúdo</li>
+</ul>
+<h3 id="64-paginacaorazor">6.4 Paginacao.razor<a class="headerlink" href="#64-paginacaorazor" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;Paginacao PaginaAtual=&quot;_pagina&quot; TotalPaginas=&quot;_totalPaginas&quot;
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>           Total=&quot;_total&quot; OnPaginaMudou=&quot;MudarPagina&quot; /&gt;
+</code></pre></div>
+<ul>
+<li>Exibe até 5 páginas numeradas com <code>...</code> implícito</li>
+<li>Texto "Página X de Y (Z itens)"</li>
+<li>Oculto quando <code>TotalPaginas &lt;= 1</code></li>
+</ul>
+<hr />
+<h2 id="7-servicos-de-autenticacao">7. Serviços de autenticação<a class="headerlink" href="#7-servicos-de-autenticacao" title="Permanent link">&para;</a></h2>
+<h3 id="71-jwtauthstateprovider">7.1 JwtAuthStateProvider<a class="headerlink" href="#71-jwtauthstateprovider" title="Permanent link">&para;</a></h3>
+<p>Herda de <code>AuthenticationStateProvider</code>. Implementação central de autenticação.</p>
+<p><strong>Responsabilidades:</strong>
+- Armazena <code>AccessToken</code> em campo privado (never serialized)
+- Parseia claims do JWT payload (base64url, sem verificação de assinatura — já validada pela API)
+- Notifica Blazor quando o estado muda (<code>NotifyAuthenticationStateChanged</code>)
+- Expõe <code>AccessToken</code> para os handlers HTTP
+- Mantém referência ao <code>ApiHttpClientFactory</code> para atualizar headers em todos os clients</p>
+<p><strong>Métodos públicos:</strong>
+- <code>MarcarAutenticado(token, nome, papel)</code> — chamado após login bem-sucedido
+- <code>AtualizarToken(token, nome, papel)</code> — chamado após refresh silencioso
+- <code>MarcarDesautenticado()</code> — chamado no logout</p>
+<h3 id="72-apihttpclientfactory">7.2 ApiHttpClientFactory<a class="headerlink" href="#72-apihttpclientfactory" title="Permanent link">&para;</a></h3>
+<p>Singleton que cria e mantém um <code>HttpClient</code> para cada service. Quando o token muda, atualiza o <code>DefaultRequestHeaders.Authorization</code> de todos os clients de uma vez.</p>
+<p><strong>Por que singleton?</strong>
+Em WASM o escopo do browser é toda a vida da página. Usar <code>Scoped</code> criaria uma nova instância a cada navegação de página, perdendo os tokens nos headers.</p>
+<h3 id="73-bearertokenhandler">7.3 BearerTokenHandler<a class="headerlink" href="#73-bearertokenhandler" title="Permanent link">&para;</a></h3>
+<p><code>DelegatingHandler</code> que adiciona <code>Authorization: Bearer {token}</code> em toda requisição sainte dos services. Usa <code>JwtAuthStateProvider.AccessToken</code> — sempre a versão mais atual em memória.</p>
+<h3 id="74-tokenrefreshhandler">7.4 TokenRefreshHandler<a class="headerlink" href="#74-tokenrefreshhandler" title="Permanent link">&para;</a></h3>
+<p><code>DelegatingHandler</code> que intercepta respostas 401. Faz <code>POST /bff/refresh</code>, obtém novo token, chama <code>JwtAuthStateProvider.AtualizarToken()</code> e retenta a requisição original.</p>
+<hr />
+<h2 id="8-configuracao-de-portas-desenvolvimento">8. Configuração de portas (desenvolvimento)<a class="headerlink" href="#8-configuracao-de-portas-desenvolvimento" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Projeto</th>
+<th>HTTP</th>
+<th>HTTPS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>LicenciamentoSoftware.Api</code></td>
+<td>5016</td>
+<td>7075</td>
+</tr>
+<tr>
+<td><code>LicenciamentoSoftware.Web</code></td>
+<td>5075</td>
+<td>7153 (sem browser)</td>
+</tr>
+<tr>
+<td><code>LicenciamentoSoftware.Web.Server</code></td>
+<td>5074</td>
+<td><strong>7152</strong> ← acesso do usuário</td>
+</tr>
+</tbody>
+</table>
+<p>O usuário acessa sempre <code>https://localhost:7152</code>.<br />
+O <code>Web.Server</code> faz proxy interno para a API em <code>https://localhost:7075</code>.<br />
+O projeto <code>Web</code> não precisa estar em Start — o <code>Web.Server</code> já inclui seus arquivos na build.</p>
+<hr />
+<h2 id="9-css-e-identidade-visual">9. CSS e identidade visual<a class="headerlink" href="#9-css-e-identidade-visual" title="Permanent link">&para;</a></h2>
+<p><strong>Paleta principal:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Uso</th>
+<th>Cor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cor primária (botões, sidebar ativa, logo)</td>
+<td><code>#6c63ff</code> (roxo)</td>
+</tr>
+<tr>
+<td>Background da página</td>
+<td><code>#f8f9fa</code> (cinza claro)</td>
+</tr>
+<tr>
+<td>Cards</td>
+<td><code>#ffffff</code> (branco) com borda <code>#e9ecef</code></td>
+</tr>
+<tr>
+<td>Texto principal</td>
+<td><code>#212529</code></td>
+</tr>
+<tr>
+<td>Texto secundário</td>
+<td><code>#6c757d</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Badges de status:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Badge</th>
+<th>Background</th>
+<th>Texto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ativo</td>
+<td><code>#d1fae5</code></td>
+<td><code>#065f46</code> (verde)</td>
+</tr>
+<tr>
+<td>Inativo</td>
+<td><code>#f3f4f6</code></td>
+<td><code>#6b7280</code> (cinza)</td>
+</tr>
+<tr>
+<td>Permanente</td>
+<td><code>#dbeafe</code></td>
+<td><code>#1e40af</code> (azul)</td>
+</tr>
+<tr>
+<td>Por Período</td>
+<td><code>#fef3c7</code></td>
+<td><code>#92400e</code> (amarelo)</td>
+</tr>
+<tr>
+<td>Por Usuários</td>
+<td><code>#ede9fe</code></td>
+<td><code>#5b21b6</code> (roxo)</td>
+</tr>
+<tr>
+<td>Por Instalação</td>
+<td><code>#fce7f3</code></td>
+<td><code>#9d174d</code> (rosa)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Classes CSS principais:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Classe</th>
+<th>Descrição</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.app-shell</code></td>
+<td>Flex container principal (sidebar + conteúdo)</td>
+</tr>
+<tr>
+<td><code>.sidebar</code></td>
+<td>Sidebar fixa 220px</td>
+</tr>
+<tr>
+<td><code>.main-content</code></td>
+<td>Área de conteúdo com <code>margin-left: 220px</code></td>
+</tr>
+<tr>
+<td><code>.page-header-row</code></td>
+<td>Flex entre título e botão de ação</td>
+</tr>
+<tr>
+<td><code>.cards-grid</code></td>
+<td>Grid responsivo <code>minmax(280px, 1fr)</code></td>
+</tr>
+<tr>
+<td><code>.item-card</code></td>
+<td>Card branco com bordas e hover shadow</td>
+</tr>
+<tr>
+<td><code>.badge-pill</code></td>
+<td>Badge arredondado para status e tipos</td>
+</tr>
+<tr>
+<td><code>.modal-overlay</code></td>
+<td>Overlay fixo com fundo semitransparente</td>
+</tr>
+<tr>
+<td><code>.modal-card</code></td>
+<td>Container do modal com flex-column e scroll</td>
+</tr>
+<tr>
+<td><code>.search-bar</code></td>
+<td>Input de busca estilizado</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-fluxo-completo-exemplo-de-uso">10. Fluxo completo — exemplo de uso<a class="headerlink" href="#10-fluxo-completo-exemplo-de-uso" title="Permanent link">&para;</a></h2>
+<h3 id="101-primeiro-acesso-novo-cliente">10.1 Primeiro acesso (novo cliente)<a class="headerlink" href="#101-primeiro-acesso-novo-cliente" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>1. Acessa https://localhost:7152
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>2. Não autenticado → redireciona para /login
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>3. Clica &quot;Cadastre-se&quot; → /cadastro
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>4. Preenche dados da empresa + responsável → POST /bff/cadastrar
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>5. Conta criada → tela de sucesso → clica &quot;Ir para login&quot;
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>6. Login com e-mail + senha → POST /bff/login
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>7. Se 2FA não configurado → autenticado diretamente
+<a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>8. Se 2FA configurado → redireciona para /totp
+<a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>9. Dashboard em /clientes-finais
+</code></pre></div>
+<h3 id="102-emitir-uma-licenca-com-token">10.2 Emitir uma licença com token<a class="headerlink" href="#102-emitir-uma-licenca-com-token" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>1. Acessa /licencas
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>2. Clica &quot;+ Nova Licença&quot;
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>3. Modal abre — seleciona Aplicação (ex: &quot;Meu CRM (Por Usuários)&quot;)
+<a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>4. Seleciona Cliente Final
+<a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>5. Campos de usuários aparecem: máx. 10 simultâneos
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>6. Marca &quot;Gerar token HMAC&quot;
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>7. Clica &quot;Emitir licença&quot;
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>8. Modal mostra: &quot;Licença emitida com sucesso!&quot;
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>9. Token exibido com botão &quot;Copiar&quot;
+<a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>10. Administrador copia o token e configura no software cliente
+<a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>11. Fecha o modal
+</code></pre></div>
+<h3 id="103-gerenciar-sessoes-ativas">10.3 Gerenciar sessões ativas<a class="headerlink" href="#103-gerenciar-sessoes-ativas" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1. Na lista de licenças, clica &quot;Detalhes&quot; em uma licença &quot;Por Usuários&quot;
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>2. Modal abre com dados completos
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>3. Seção &quot;Sessões ativas&quot; mostra as 3 sessões abertas
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>4. Clica &quot;Encerrar&quot; na sessão do usuário &quot;pedro@empresa.com&quot;
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>5. ConfirmDialog: &quot;Encerrar esta sessão?&quot;
+<a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>6. Confirma → sessão encerrada imediatamente
+<a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>7. Modal atualiza com 2 sessões
+<a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>8. Slot liberado para novo login
+</code></pre></div>
+<h3 id="104-renovar-token-expirado">10.4 Renovar token expirado<a class="headerlink" href="#104-renovar-token-expirado" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>1. Clica &quot;Detalhes&quot; em uma licença
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>2. Seção &quot;Token HMAC&quot; mostra: &quot;Expirado&quot;
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>3. Clica &quot;Gerar token&quot;
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>4. Novo token gerado e exibido com botão &quot;Copiar&quot;
+<a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>5. Administrador copia e atualiza a configuração do software cliente
+</code></pre></div>
+<hr />
+<h2 id="11-limitacoes-conhecidas-e-trabalhos-futuros">11. Limitações conhecidas e trabalhos futuros<a class="headerlink" href="#11-limitacoes-conhecidas-e-trabalhos-futuros" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Limitação</th>
+<th>Fase planejada</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Portal do Cliente Final (ver suas próprias licenças)</td>
+<td>Fase 9.2</td>
+</tr>
+<tr>
+<td>Login social (Google, Microsoft, GitHub) via OAuth</td>
+<td>Fase 9.2</td>
+</tr>
+<tr>
+<td>Setup de TOTP via QR code no portal</td>
+<td>Fase 9.2</td>
+</tr>
+<tr>
+<td>App Desktop/Mobile (MAUI)</td>
+<td>Fase 10</td>
+</tr>
+<tr>
+<td>Deploy em produção com host real</td>
+<td>Fase 11</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar ao topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "search.highlight", "search.suggest", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "Mais 1 nesta p\u00e1gina", "search.result.more.other": "Mais # nesta p\u00e1gina", "search.result.none": "Nenhum resultado encontrado", "search.result.one": "1 resultado encontrado", "search.result.other": "# resultados encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
