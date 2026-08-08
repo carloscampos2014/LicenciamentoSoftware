@@ -41,10 +41,10 @@ jobs:
           cp README.md wiki/Home.md
 
           # Páginas principais
-          cp docs/architecture.md         wiki/Arquitetura.md
+          cp docs/ARCHITECTURE.md         wiki/Arquitetura.md
+          cp docs/development-plan.md     wiki/Plano-de-Desenvolvimento.md
           cp docs/quickstart.md           wiki/Guia-de-Inicio-Rapido.md
           cp docs/api-validacao.md        wiki/API-de-Validacao.md
-          cp docs/development-plan.md     wiki/Plano-de-Desenvolvimento.md
           cp docs/contributing.md         wiki/Contribuindo.md
 
           # Instalação
