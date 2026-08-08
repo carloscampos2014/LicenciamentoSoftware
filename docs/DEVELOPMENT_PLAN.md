@@ -365,13 +365,19 @@ Cada SDK implementa:
 
 ---
 
-## Fase 15 — SDKs cliente (linguagens secundárias)
+## Fase 15 — SDKs cliente (linguagens secundárias) ✅ Concluída
 
 **Objetivo:** atender sistemas legados e outras linguagens relevantes no mercado brasileiro.
 
-1. **[#112]** SDK Delphi — biblioteca nativa para sistemas Delphi/Pascal.
-2. **[#113]** SDK PHP — pacote Composer/Packagist. Suporte PHP 8.0+.
-3. **[#114]** SDK VB6 — DLL COM feita em C# expondo os métodos de validação para chamada via referência ActiveX no VB6.
+1. ✅ **[#112]** SDK Delphi — `sdks/delphi/LicenseManagerSdk.pas`. Unit Pascal pura, sem dependências externas. Compatível com Delphi 10.4 Sydney+. Usa `System.Net.HttpClient`, `System.Hash`, `System.JSON` da RTL padrão. Distribuição: arquivo único copiado para o projeto.
+2. ✅ **[#113]** SDK PHP — `sdks/php/`. Pacote Composer `carloscampos2014/licensemanager-sdk`. PHP 7.4+, `ext-curl` + `ext-json`. PSR-4, testes PHPUnit. Suporte a PHP 7.4, 8.1 e 8.3 no CI.
+3. ✅ **[#114]** SDK VB6 — `sdks/vb6/`. DLL COM feita em C# (`net48` + `netstandard2.0`). Interface `ILicenseManagerClient` com `[ComVisible(true)]`, ProgId `LicenseManagerSdk.LicenseManagerClient`. Registro via `regasm /tlb`. 7 testes xUnit aprovados localmente.
+
+**Workflow CI:** `sdk-tests.yml` atualizado — adicionados jobs `sdk-php` (PHP 7.4/8.1/8.3) e `sdk-vb6` (C# net10.0).
+
+**Resultado:** 7/7 testes VB6 aprovados localmente. PHP e VB6 validados pelo CI ao fazer merge no master.
+
+**Demo:** `dotnet test sdks/vb6/LicenseManagerSdk.Tests` → 7/7 aprovados.
 
 ---
 

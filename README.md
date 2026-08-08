@@ -59,7 +59,7 @@ tests/
 | 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup Web, perfil empresa, testes de integração CI | ✅ Concluída |
 | 13 | Instaladores — MSIX Windows (certificado autoassinado), APK Android (keystore própria) | ✅ Concluída |
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript, Rust, Ruby | ✅ Concluída |
-| 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | 🔜 Planejada |
+| 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | ✅ Concluída |
 | 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | ✅ Concluída |
 
 **Testes:** 388 aprovados, 0 falhas (340 backend + 48 MAUI).
