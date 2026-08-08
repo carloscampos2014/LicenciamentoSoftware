@@ -1241,10 +1241,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#fase-12-melhorias-do-portal-e-adequacoes-legais" class="md-nav__link">
+  <a href="#fase-12-melhorias-do-portal-e-adequacoes-legais-concluida" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Fase 12 — Melhorias do portal e adequações legais
+        Fase 12 — Melhorias do portal e adequações legais ✅ Concluída
       
     </span>
   </a>
@@ -1614,15 +1614,16 @@
 <li><strong>Múltiplos provedores de e-mail</strong> — SendGrid, Amazon SES, além de SMTP genérico</li>
 </ul>
 <hr />
-<h2 id="fase-12-melhorias-do-portal-e-adequacoes-legais">Fase 12 — Melhorias do portal e adequações legais<a class="headerlink" href="#fase-12-melhorias-do-portal-e-adequacoes-legais" title="Permanent link">&para;</a></h2>
+<h2 id="fase-12-melhorias-do-portal-e-adequacoes-legais-concluida">Fase 12 — Melhorias do portal e adequações legais ✅ Concluída<a class="headerlink" href="#fase-12-melhorias-do-portal-e-adequacoes-legais-concluida" title="Permanent link">&para;</a></h2>
 <p><strong>Objetivo:</strong> adequações legais, funcionalidades de perfil e qualidade de testes.</p>
 <ol>
-<li><strong>[#95]</strong> CNPJ alfanumérico — atualizar <code>Inscricao.cs</code> para aceitar letras nas 8 primeiras posições conforme IN RFB 2.229/2024. Algoritmo de validação atualizado (A=10...Z=35). Máscara do frontend atualizada. Testes de domínio com casos alfanuméricos.</li>
-<li><strong>[#96]</strong> Setup e gerenciamento de 2FA TOTP no portal Web — seção em <code>/minha-conta</code> para ativar/desativar autenticador, exibir QR code e confirmar primeiro código.</li>
-<li><strong>[#97]</strong> Setup e gerenciamento de 2FA TOTP no app MAUI — mesma funcionalidade do item anterior, adaptada para Windows e Android.</li>
-<li><strong>[#98]</strong> Tela de perfil da empresa — seção "Minha Empresa" em <code>/minha-conta</code> para editar razão social, e-mail e telefone do cliente. Endpoint <code>PUT /clientes/{id}</code> já existe no backend.</li>
-<li><strong>[#100]</strong> Habilitar testes de integração no CI — adicionar etapa no <code>ci.yml</code> com Testcontainers + PostgreSQL e garantir que falha bloqueia o merge.</li>
+<li>✅ <strong>[#95]</strong> CNPJ alfanumérico — <code>Inscricao.cs</code> atualizado para aceitar letras nas 8 primeiras posições conforme IN RFB 2.229/2024. Algoritmo de validação atualizado (A=10...Z=35). Testes de domínio com casos alfanuméricos validados.</li>
+<li>✅ <strong>[#96]</strong> Setup e gerenciamento de 2FA TOTP no portal Web — seção em <code>/minha-conta</code> com QR code para ativar autenticador, confirmação do primeiro código e desativação com código TOTP.</li>
+<li>✅ <strong>[#97]</strong> Setup e gerenciamento de 2FA TOTP no app MAUI — tela "Minha Conta" com seção de ativação (segredo copiável), confirmação com código e desativação com código. Implementado na Fase 12.1.</li>
+<li>✅ <strong>[#98]</strong> Tela de perfil da empresa — página <code>/minha-empresa</code> separada no menu lateral para <code>AdministradorCliente</code>, com edição de razão social, e-mail e telefone do cliente via <code>PUT /clientes/{id}</code>.</li>
+<li>✅ <strong>[#100]</strong> Testes de integração no CI — etapa no <code>ci.yml</code> com Testcontainers + PostgreSQL bloqueia merge se falhar.</li>
 </ol>
+<p><strong>Resultado:</strong> 388 testes aprovados (340 backend + 48 MAUI). CNPJ alfanumérico conforme IN RFB 2.229/2024. 2FA TOTP gerenciável pelo usuário nas três interfaces.</p>
 <hr />
 <h2 id="fase-121-encerramento-de-conta-de-empresa-concluida">Fase 12.1 — Encerramento de conta de empresa ✅ Concluída<a class="headerlink" href="#fase-121-encerramento-de-conta-de-empresa-concluida" title="Permanent link">&para;</a></h2>
 <p><strong>Objetivo:</strong> permitir que um <code>AdministradorCliente</code> encerre a conta da empresa no portal, com bloqueio de operações, notificação aos clientes finais e limpeza automática posterior.</p>
