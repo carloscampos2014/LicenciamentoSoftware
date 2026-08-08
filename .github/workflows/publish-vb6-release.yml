@@ -52,7 +52,7 @@ jobs:
             -f net48 `
             /p:Version=${{ steps.version.outputs.VERSION }}
 
-      - name: Gerar TLB via regasm
+      - name: Gerar TLB via tlbexp
         shell: pwsh
         run: |
           $dll = Get-ChildItem -Recurse -Filter "LicenseManagerSdk.dll" `
@@ -62,17 +62,21 @@ jobs:
             Write-Error "DLL nao encontrada"
             exit 1
           }
-
           Write-Host "DLL: $($dll.FullName)"
 
-          # Gerar o .tlb (type library para VB6)
-          $regasm = "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\regasm.exe"
-          if (-not (Test-Path $regasm)) {
-            $regasm = "C:\Windows\Microsoft.NET\Framework\v4.0.30319\regasm.exe"
-          }
+          # tlbexp gera o .tlb sem precisar de acesso ao registro
+          $sdk = "C:\Program Files (x86)\Microsoft SDKs\Windows"
+          $tlbexp = Get-ChildItem -Path $sdk -Recurse -Filter "tlbexp.exe" -ErrorAction SilentlyContinue |
+                    Select-Object -First 1
 
-          & $regasm $dll.FullName /tlb /nologo
-          Write-Host "TLB gerado"
+          if ($tlbexp) {
+            Write-Host "Usando tlbexp: $($tlbexp.FullName)"
+            & $tlbexp.FullName $dll.FullName /out:"$($dll.DirectoryName)\LicenseManagerSdk.tlb" /nologo
+            Write-Host "TLB gerado via tlbexp"
+          } else {
+            Write-Host "tlbexp nao encontrado — DLL sera distribuida sem .tlb"
+            Write-Host "O usuario pode gerar localmente com: regasm /codebase /tlb LicenseManagerSdk.dll"
+          }
 
       - name: Copiar artefatos
         shell: pwsh
@@ -82,8 +86,12 @@ jobs:
           $dir = "sdks/vb6/LicenseManagerSdk/bin/Release/net48"
 
           Copy-Item "$dir/LicenseManagerSdk.dll" "./artifacts/LicenseManagerSdk.dll"
-          Copy-Item "$dir/LicenseManagerSdk.tlb" "./artifacts/LicenseManagerSdk.tlb" -ErrorAction SilentlyContinue
-
+          if (Test-Path "$dir/LicenseManagerSdk.tlb") {
+            Copy-Item "$dir/LicenseManagerSdk.tlb" "./artifacts/LicenseManagerSdk.tlb"
+            Write-Host "TLB incluido"
+          } else {
+            Write-Host "TLB nao gerado — apenas DLL sera publicada"
+          }
           ls ./artifacts/
 
       - name: Publicar GitHub Release
