@@ -395,3 +395,14 @@ Acesso: `ssh -L 16000:localhost:5020 <vm>` â†’ `http://localhost:16000`
 4. âœ… **[#121]** SSH tunnel documentado no `README.md` e em `.kiro/steering/vm-oracle.md`. Service `licenciamento-admin.service` instalado via `setup-admin.sh`. Porta 5020 verificada â€” nÃ£o exposta pelo Nginx nem pelo ufw. Script `ssh-tunnels.ps1` atualizado com o tunnel `localhost:16000 â†’ 5020` e adicionado ao `.gitignore`.
 
 **Demo:** `ssh -L 16000:localhost:5020 ...` â†’ `http://localhost:16000` â†’ painel com mÃ©tricas em tempo real; botÃ£o "Executar backup agora" dispara `pg_dump` remoto via tunnel.
+
+---
+
+## Fase 17 — Segurança de conta e paridade MAUI
+
+**Objetivo:** fechar gaps de segurança de acesso (recuperação de senha, troca de senha, reset de 2FA) e garantir paridade funcional do app MAUI com o portal Web.
+
+1. **[#168]** Reset do 2FA via Painel Admin — endpoint POST /admin/usuarios/{id}/reset-2fa + botão no painel Admin para operador redefinir o TOTP de usuário bloqueado.
+2. **[#169]** Alterar própria senha — endpoint PUT /auth/minha-senha + seção em /minha-conta (Web) e MinhaContaPage (MAUI). Invalida refresh tokens ativos.
+3. **[#170]** Recuperação de senha via e-mail — endpoints POST /auth/esqueci-senha + POST /auth/redefinir-senha, migration senha_redefinicao, template de e-mail, páginas no Web e link no MAUI.
+4. **[#171]** Página "Minha Empresa" no MAUI — MinhaEmpresaPage.xaml + MinhaEmpresaViewModel.cs com edição de dados da empresa e encerramento de conta, paridade com /minha-empresa do Web.

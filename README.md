@@ -61,6 +61,7 @@ tests/
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript, Rust, Ruby | ✅ Concluída |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | ✅ Concluída |
 | 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | ✅ Concluída |
+| 17 | Segurança de conta — reset 2FA via Admin, alterar senha, recuperação de senha, Minha Empresa MAUI | 🔜 Planejada |
 
 **Testes:** 388 aprovados, 0 falhas (340 backend + 48 MAUI).
 
