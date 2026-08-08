@@ -1,0 +1,116 @@
+@page "/redefinir-senha"
+@layout Layout.PublicLayout
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Redefinir senha — LicenseManager</PageTitle>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8f9fa">
+    <div style="width:100%;max-width:420px;padding:2rem">
+        <div class="text-center mb-4">
+            <div style="width:48px;height:48px;background:#6c63ff;border-radius:12px;
+                        display:inline-flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:1.1rem;color:white;margin-bottom:1rem">LS</div>
+            <h1 style="font-size:1.4rem;font-weight:700;color:#212529">Nova senha</h1>
+            <p class="text-muted" style="font-size:.875rem">
+                Defina sua nova senha abaixo.
+            </p>
+        </div>
+
+        @if (_tokenInvalido)
+        {
+            <div class="alert alert-danger text-center">
+                <strong>Link inválido ou expirado.</strong><br/>
+                Solicite um novo link de recuperação.
+            </div>
+            <div class="text-center mt-3">
+                <a href="/esqueci-senha" style="color:#6c63ff;font-size:.875rem">Solicitar novo link</a>
+            </div>
+        }
+        else if (_sucesso)
+        {
+            <div class="alert alert-success text-center">
+                <strong>Senha redefinida com sucesso!</strong><br/>
+                Você pode fazer login com sua nova senha.
+            </div>
+            <div class="text-center mt-3">
+                <a href="/login" class="btn btn-primary px-4">Fazer login</a>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold">Nova senha</label>
+                        <input class="form-control" type="password" @bind="_novaSenha"
+                               placeholder="Mínimo 8 caracteres" disabled="@_carregando" />
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold">Confirmar senha</label>
+                        <input class="form-control" type="password" @bind="_confirmacao"
+                               placeholder="Repita a nova senha" disabled="@_carregando" />
+                    </div>
+
+                    @if (_erro is not null)
+                    {
+                        <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erro</div>
+                    }
+
+                    <button class="btn btn-primary w-100 py-2" @onclick="Redefinir" disabled="@_carregando">
+                        @if (_carregando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                        Redefinir senha
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private string _novaSenha = string.Empty;
+    private string _confirmacao = string.Empty;
+    private string? _erro;
+    private bool _carregando;
+    private bool _sucesso;
+    private bool _tokenInvalido;
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+            _tokenInvalido = true;
+    }
+
+    private async Task Redefinir()
+    {
+        _erro = null;
+        if (string.IsNullOrWhiteSpace(_novaSenha) || _novaSenha.Length < 8)
+        { _erro = "A senha deve ter pelo menos 8 caracteres."; return; }
+        if (_novaSenha != _confirmacao)
+        { _erro = "As senhas não conferem."; return; }
+
+        _carregando = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/redefinir-senha", new
+            {
+                Token    = Token,
+                NovaSenha = _novaSenha,
+                ConfirmacaoNovaSenha = _confirmacao,
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                _sucesso = true;
+            }
+            else
+            {
+                _tokenInvalido = true;
+            }
+        }
+        catch { _erro = "Erro ao redefinir. Tente novamente."; }
+        finally { _carregando = false; }
+    }
+}

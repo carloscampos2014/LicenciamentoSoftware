@@ -52,4 +52,12 @@ public partial class LoginViewModel(MauiAuthService authService) : BaseViewModel
     [RelayCommand]
     static async Task IrParaCadastroAsync()
         => await Shell.Current.GoToAsync("cadastro");
+
+    [RelayCommand]
+    static async Task EsqueciSenhaAsync()
+    {
+        // Abre o portal web no browser — o fluxo de recuperacao e feito pelo Web
+        const string url = "https://licensemanager.enzojb.com.br/esqueci-senha";
+        await Launcher.OpenAsync(new Uri(url));
+    }
 }

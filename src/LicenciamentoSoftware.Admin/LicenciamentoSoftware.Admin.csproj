@@ -10,6 +10,8 @@
   <ItemGroup>
     <!-- Acesso direto ao banco via Dapper — reutiliza a camada de persistência -->
     <ProjectReference Include="..\LicenciamentoSoftware.Infrastructure\LicenciamentoSoftware.Infrastructure.csproj" />
+    <!-- Handler de reset de 2FA -->
+    <ProjectReference Include="..\LicenciamentoSoftware.Application\LicenciamentoSoftware.Application.csproj" />
   </ItemGroup>
 
 </Project>

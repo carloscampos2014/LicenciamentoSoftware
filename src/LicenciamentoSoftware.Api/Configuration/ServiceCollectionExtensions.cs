@@ -199,6 +199,23 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<AutoCadastrarClienteHandler>();
         services.AddScoped<DefinirSenhaInicialHandler>();
 
+        // Fase 17 — Segurança de conta
+        services.AddScoped<IRecuperacaoSenhaRepository, RecuperacaoSenhaRepository>();
+        services.AddScoped<AlterarSenhaHandler>();
+        services.AddScoped<EsqueciSenhaHandler>(sp =>
+        {
+            var config    = sp.GetRequiredService<IConfiguration>();
+            var portalUrl = config["AppSettings:PortalUrl"] ?? "https://licensemanager.enzojb.com.br";
+            return new EsqueciSenhaHandler(
+                sp.GetRequiredService<IUsuarioRepository>(),
+                sp.GetRequiredService<IRecuperacaoSenhaRepository>(),
+                sp.GetRequiredService<IEmailService>(),
+                sp.GetRequiredService<IEmailTemplateRenderer>(),
+                sp.GetRequiredService<IClock>(),
+                portalUrl);
+        });
+        services.AddScoped<RedefinirSenhaHandler>();
+
         // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration
         services.AddScoped<EmitirTokenLicencaHandler>(sp =>
         {

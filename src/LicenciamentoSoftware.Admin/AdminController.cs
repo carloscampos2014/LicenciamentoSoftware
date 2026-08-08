@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using LicenciamentoSoftware.Application.Auth.Handlers;
 
 namespace LicenciamentoSoftware.Admin;
 
@@ -351,4 +352,74 @@ public static class AdminController
     }
 
     private sealed record BackupStatus(string? DataHora, string? Tamanho, string? Arquivo, bool Ok);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /usuarios — listagem HTML de usuários com status 2FA
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ListarUsuarios(AdminMetricasRepository repo)
+    {
+        var usuarios = await repo.ListarUsuariosAsync();
+        var ic = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+        sb.AppendLine("""
+            <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Usuários — Painel Admin</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+            </head><body class="bg-light p-4">
+            <div class="container-fluid">
+            <h4 class="mb-3">👤 Usuários da Plataforma <a href="/" class="btn btn-sm btn-outline-secondary ms-3">← Voltar</a></h4>
+            <table class="table table-sm table-bordered table-hover bg-white shadow-sm">
+            <thead class="table-dark">
+            <tr><th>Nome</th><th>E-mail</th><th>Empresa</th><th>Papel</th><th>Ativo</th><th>2FA</th><th>Ação</th></tr>
+            </thead><tbody>
+            """);
+
+        foreach (var u in usuarios)
+        {
+            var ativo  = u.Ativo  ? "✅" : "❌";
+            var totp   = u.TotpAtivo ? "✅ Ativo" : "⬜ Inativo";
+            var btnReset = u.TotpAtivo
+                ? $"""<button class="btn btn-sm btn-warning" onclick="resetar2fa('{u.Id}','{u.Nome}')">Resetar 2FA</button>"""
+                : "<span class=\"text-muted small\">—</span>";
+
+            sb.AppendLine(ic,
+                $"<tr><td>{u.Nome}</td><td>{u.Email}</td><td>{u.NomeCliente}</td><td><code>{u.Papel ?? "—"}</code></td><td>{ativo}</td><td>{totp}</td><td>{btnReset}</td></tr>");
+        }
+
+        sb.AppendLine("""
+            </tbody></table></div>
+            <script>
+            async function resetar2fa(id, nome) {
+              if (!confirm(`Resetar o 2FA de "${nome}"?\n\nO usuário poderá fazer login sem 2FA e deverá configurar um novo autenticador.`)) return;
+              const r = await fetch(`/usuarios/${id}/reset-2fa`, { method: 'POST' });
+              if (r.ok) { alert('2FA resetado com sucesso!'); location.reload(); }
+              else { alert('Erro ao resetar: ' + r.status); }
+            }
+            </script>
+            </body></html>
+            """);
+
+        return Results.Content(sb.ToString(), "text/html; charset=utf-8");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /usuarios/{id}/reset-2fa — reseta o TOTP de um usuário
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ResetarTotp(
+        Guid id,
+        ResetarTotpAdminHandler handler,
+        ILogger<Program> logger)
+    {
+        var resultado = await handler.HandleAsync(id);
+
+        return resultado switch
+        {
+            ResetarTotpAdminResult.Sucesso        => Results.NoContent(),
+            ResetarTotpAdminResult.UsuarioNaoEncontrado => Results.NotFound(new { Erro = "Usuário não encontrado." }),
+            _ => Results.Problem("Erro interno.", statusCode: 500),
+        };
+    }
 }

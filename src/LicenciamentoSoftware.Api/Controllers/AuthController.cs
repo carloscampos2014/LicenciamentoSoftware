@@ -313,6 +313,60 @@ public sealed class AuthController : ControllerBase
             _                                             => StatusCode(500),
         };
     }
+
+    /// <summary>Altera a própria senha do usuário autenticado.</summary>
+    [HttpPut("minha-senha")]
+    [Authorize]
+    public async Task<IActionResult> AlterarSenha(
+        [FromBody] AlterarSenhaRequest request,
+        [FromServices] AlterarSenhaHandler handler,
+        CancellationToken ct)
+    {
+        var resultado = await handler.HandleAsync(
+            new AlterarSenhaCommand(_currentUser.Id, request.SenhaAtual, request.NovaSenha, request.ConfirmacaoNovaSenha), ct);
+
+        return resultado switch
+        {
+            AlterarSenhaResult.Sucesso              => NoContent(),
+            AlterarSenhaResult.SenhaAtualIncorreta  => Unauthorized(new { Erro = "Senha atual incorreta." }),
+            AlterarSenhaResult.UsuarioNaoEncontrado => NotFound(),
+            AlterarSenhaResult.Invalido i           => UnprocessableEntity(new { Erros = i.Erros }),
+            _                                       => StatusCode(500),
+        };
+    }
+
+    /// <summary>Inicia o fluxo de recuperação de senha — envia e-mail com link.</summary>
+    [HttpPost("esqueci-senha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> EsqueciSenha(
+        [FromBody] EsqueciSenhaRequest request,
+        [FromServices] EsqueciSenhaHandler handler,
+        CancellationToken ct)
+    {
+        await handler.HandleAsync(request.Email, ct);
+        // Sempre retorna 200 para não vazar se o e-mail existe
+        return Ok(new { Mensagem = "Se o e-mail estiver cadastrado, você receberá um link em instantes." });
+    }
+
+    /// <summary>Redefine a senha usando o token recebido por e-mail.</summary>
+    [HttpPost("redefinir-senha")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RedefinirSenha(
+        [FromBody] RedefinirSenhaRequest request,
+        [FromServices] RedefinirSenhaHandler handler,
+        CancellationToken ct)
+    {
+        var resultado = await handler.HandleAsync(
+            new RedefinirSenhaCommand(request.Token, request.NovaSenha, request.ConfirmacaoNovaSenha), ct);
+
+        return resultado switch
+        {
+            RedefinirSenhaResult.Sucesso                 => NoContent(),
+            RedefinirSenhaResult.TokenInvalidoOuExpirado => UnprocessableEntity(new { Erro = "Link inválido ou expirado. Solicite um novo link." }),
+            RedefinirSenhaResult.Invalido i              => UnprocessableEntity(new { Erros = i.Erros }),
+            _                                            => StatusCode(500),
+        };
+    }
 }
 
 // ----- Request DTOs (locais ao controller — sem namespace separado para manter simples) -----
@@ -336,3 +390,6 @@ public sealed record AutoCadastrarRequest(
     string EmailResponsavel,
     string Senha,
     bool AceiteLgpd = false);
+public sealed record AlterarSenhaRequest(string SenhaAtual, string NovaSenha, string ConfirmacaoNovaSenha);
+public sealed record EsqueciSenhaRequest(string Email);
+public sealed record RedefinirSenhaRequest(string Token, string NovaSenha, string ConfirmacaoNovaSenha);
