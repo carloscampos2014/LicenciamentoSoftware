@@ -125,6 +125,8 @@ jobs:
           EmailSettings__Senha=${{ secrets.EMAIL_SENHA }}
           EmailSettings__EmailRemetente=${{ secrets.EMAIL_USUARIO }}
           EmailSettings__NomeRemetente=LicenseManager
+          HangfireSettings__Usuario=admin
+          HangfireSettings__Senha=${{ secrets.HANGFIRE_PASSWORD }}
           ENVEOF
           sudo chmod 600 /etc/licenciamento/env
           sudo chown root:root /etc/licenciamento/env

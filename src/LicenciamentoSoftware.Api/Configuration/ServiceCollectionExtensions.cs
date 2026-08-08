@@ -19,6 +19,8 @@ using LicenciamentoSoftware.Infrastructure.Identity;
 using LicenciamentoSoftware.Infrastructure.Jobs;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
+using Hangfire;
+using Hangfire.PostgreSql;
 using LicenciamentoSoftware.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -411,8 +413,20 @@ internal static class ServiceCollectionExtensions
         // Fase 12.1 — job de exclusão física de empresas encerradas
         services.AddScoped<ExcluirEmpresasEncerradasJob>();
 
-        // BackgroundService orquestrador
-        services.AddHostedService<JobScheduler>();
+        // Hangfire — storage PostgreSQL (mesma connection string da app)
+        var connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        services.AddHangfire(cfg => cfg
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(o => o.UseNpgsqlConnection(connectionString)));
+
+        // Servidor Hangfire — processa jobs em background
+        services.AddHangfireServer(o =>
+        {
+            o.WorkerCount = 2;
+            o.Queues = ["default"];
+        });
 
         return services;
     }
