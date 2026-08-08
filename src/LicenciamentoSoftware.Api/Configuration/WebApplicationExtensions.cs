@@ -75,6 +75,7 @@ internal static class WebApplicationExtensions
             Authorization = [new HangfireBasicAuthFilter(hangfireUser, hangfirePassword)],
             DashboardTitle = "LicenseManager — Jobs",
             DisplayStorageConnectionString = false,
+            AppPath = "/health",
         });
 
         // Registrar jobs recorrentes via cron
