@@ -24,7 +24,13 @@ jobs:
 
       - name: Clonar wiki
         run: |
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/carloscampos2014/LicenciamentoSoftware.wiki.git wiki
+          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/carloscampos2014/LicenciamentoSoftware.wiki.git wiki || {
+            echo "Wiki ainda nao inicializada. Inicializando..."
+            mkdir -p wiki
+            cd wiki
+            git init
+            git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/carloscampos2014/LicenciamentoSoftware.wiki.git
+          }
           cd wiki
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -65,5 +71,5 @@ jobs:
             echo "Nenhuma mudanca na wiki."
           else
             git commit -m "docs: sincronizar wiki com docs/ do repositorio"
-            git push
+            git push origin HEAD:master 2>/dev/null || git push origin HEAD:main 2>/dev/null || git push --set-upstream origin HEAD:master
           fi
