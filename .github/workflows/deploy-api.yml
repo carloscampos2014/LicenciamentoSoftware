@@ -117,6 +117,14 @@ jobs:
           JwtSettings__Audiencia=LicenciamentoSoftware
           JwtSettings__AccessTokenMinutos=60
           HmacSettings__Secret=${{ secrets.HMAC_SECRET }}
+          EmailSettings__Habilitado=true
+          EmailSettings__Host=smtp.gmail.com
+          EmailSettings__Porta=587
+          EmailSettings__UsarSsl=true
+          EmailSettings__Usuario=${{ secrets.EMAIL_USUARIO }}
+          EmailSettings__Senha=${{ secrets.EMAIL_SENHA }}
+          EmailSettings__EmailRemetente=${{ secrets.EMAIL_USUARIO }}
+          EmailSettings__NomeRemetente=LicenseManager
           ENVEOF
           sudo chmod 600 /etc/licenciamento/env
           sudo chown root:root /etc/licenciamento/env
