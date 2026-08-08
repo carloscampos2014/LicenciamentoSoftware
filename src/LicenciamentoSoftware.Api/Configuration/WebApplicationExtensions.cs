@@ -1,4 +1,7 @@
+using Hangfire;
 using LicenciamentoSoftware.Api.Middleware;
+using LicenciamentoSoftware.Application.Jobs;
+using LicenciamentoSoftware.Infrastructure.Jobs;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -62,6 +65,50 @@ internal static class WebApplicationExtensions
                 [HealthStatus.Unhealthy] = StatusCodes.Status503ServiceUnavailable,
             },
         });
+
+        // Dashboard Hangfire — protegido por Basic Auth
+        var hangfireUser     = app.Configuration["HangfireSettings:Usuario"] ?? "admin";
+        var hangfirePassword = app.Configuration["HangfireSettings:Senha"]   ?? "changeme";
+
+        app.UseHangfireDashboard("/hangfire", new DashboardOptions
+        {
+            Authorization = [new HangfireBasicAuthFilter(hangfireUser, hangfirePassword)],
+            DashboardTitle = "LicenseManager — Jobs",
+            DisplayStorageConnectionString = false,
+        });
+
+        // Registrar jobs recorrentes via cron
+        var cfg = app.Configuration;
+
+        RecurringJob.AddOrUpdate(
+            "encerrar-sessoes-inativas",
+            (EncerrarSessoesInativasJob job) => job.ExecuteAsync(CancellationToken.None),
+            cfg["HangfireSettings:CronSessoesInativas"] ?? "*/5 * * * *");
+
+        RecurringJob.AddOrUpdate(
+            "expirar-licencas-periodo",
+            (ExpirarLicencasPeriodoJob job) => job.ExecuteAsync(CancellationToken.None),
+            cfg["HangfireSettings:CronExpiracaoLicencas"] ?? "0 * * * *");
+
+        RecurringJob.AddOrUpdate(
+            "renovar-licencas-automaticas",
+            (RenovarLicencasAutomaticasJob job) => job.ExecuteAsync(CancellationToken.None),
+            cfg["HangfireSettings:CronRenovacaoAutomatica"] ?? "15 * * * *");
+
+        RecurringJob.AddOrUpdate(
+            "rotacionar-tokens-licenca",
+            (RotacionarTokensLicencaJob job) => job.ExecuteAsync(CancellationToken.None),
+            cfg["HangfireSettings:CronRotacaoTokens"] ?? "0 2 * * *");
+
+        RecurringJob.AddOrUpdate(
+            "notificar-expiracao",
+            (NotificarExpiracaoJob job) => job.ExecuteAsync(CancellationToken.None),
+            cfg["HangfireSettings:CronNotificacao"] ?? "0 8 * * *");
+
+        RecurringJob.AddOrUpdate(
+            "excluir-empresas-encerradas",
+            (ExcluirEmpresasEncerradasJob job) => job.ExecuteAsync(CancellationToken.None),
+            cfg["HangfireSettings:CronExclusaoEmpresas"] ?? "0 3 * * *");
 
         return app;
     }
