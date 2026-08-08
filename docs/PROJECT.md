@@ -26,7 +26,7 @@ Fornecer uma plataforma centralizada para gerenciamento de:
 |---|---|---|
 | Portal Web | Blazor WebAssembly + BFF | Oracle Cloud VM (Nginx) |
 | Desktop | .NET MAUI (Windows) | Instalador direto |
-| Mobile | .NET MAUI (Android) | Google Play Store |
+| Mobile | .NET MAUI (Android) | APK sideload (distribuição direta, sem Google Play Store) |
 
 Todas as interfaces consomem a mesma API REST de gestão e têm paridade funcional completa.
 
