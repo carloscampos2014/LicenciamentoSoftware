@@ -1,0 +1,60 @@
+name: Publish Java (Maven Central)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versão do pacote (ex: 1.0.0). Deixe vazio para usar a versão do pom.xml."
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    name: Build, Testes e Publicar Maven Central
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          server-id: central
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+          gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
+          gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Atualizar versão (se informada)
+        if: ${{ github.event.inputs.version != '' || github.event_name == 'release' }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="${{ github.event.inputs.version }}"
+          fi
+          mvn -f sdks/java/pom.xml versions:set -DnewVersion="$VERSION" --no-transfer-progress
+          echo "Versão: $VERSION"
+
+      - name: Build e Testes
+        run: mvn -f sdks/java/pom.xml verify --no-transfer-progress
+
+      - name: Publicar no Maven Central
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.MAVEN_GPG_PASSPHRASE }}
+        run: |
+          mvn -f sdks/java/pom.xml deploy \
+            --no-transfer-progress \
+            -DskipTests \
+            -Prelease

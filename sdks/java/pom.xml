@@ -10,8 +10,31 @@
   <packaging>jar</packaging>
 
   <name>LicenseManager SDK</name>
-  <description>SDK cliente para a API de validação do LicenseManager</description>
+  <description>SDK cliente para a API de validação do LicenseManager. Encapsula autenticação HMAC-SHA256 e os endpoints de validação de licença.</description>
   <url>https://github.com/carloscampos2014/LicenciamentoSoftware</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>https://opensource.org/licenses/MIT</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>carloscampos2014</id>
+      <name>Carlos Alberto de Lima Campos</name>
+      <email>carlosalbertode.campos@gmail.com</email>
+      <url>https://github.com/carloscampos2014</url>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/carloscampos2014/LicenciamentoSoftware.git</connection>
+    <developerConnection>scm:git:ssh://github.com/carloscampos2014/LicenciamentoSoftware.git</developerConnection>
+    <url>https://github.com/carloscampos2014/LicenciamentoSoftware</url>
+  </scm>
 
   <properties>
     <maven.compiler.source>21</maven.compiler.source>
@@ -21,21 +44,18 @@
   </properties>
 
   <dependencies>
-    <!-- OkHttp para requisições HTTP -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
       <version>4.12.0</version>
     </dependency>
 
-    <!-- Jackson para JSON -->
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>2.17.1</version>
     </dependency>
 
-    <!-- JUnit 5 (scope test) -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
@@ -43,7 +63,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- OkHttp MockWebServer — pacote okhttp3.mockwebserver (OkHttp 4.x) -->
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>mockwebserver</artifactId>
@@ -61,4 +80,75 @@
       </plugin>
     </plugins>
   </build>
+
+  <!-- Profile ativado no CI para publicação no Maven Central -->
+  <profiles>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <!-- Gera javadoc JAR (obrigatório pelo Maven Central) -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>3.6.3</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals><goal>jar</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Gera sources JAR (obrigatório pelo Maven Central) -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.3.0</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals><goal>jar-no-fork</goal></goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Assina os artefatos com GPG (obrigatório pelo Maven Central) -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.4</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals><goal>sign</goal></goals>
+                <configuration>
+                  <gpgArguments>
+                    <arg>--pinentry-mode</arg>
+                    <arg>loopback</arg>
+                  </gpgArguments>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+
+          <!-- Publica no Maven Central via Central Publishing Portal -->
+          <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.5.0</version>
+            <extensions>true</extensions>
+            <configuration>
+              <publishingServerId>central</publishingServerId>
+              <tokenAuth>true</tokenAuth>
+              <autoPublish>true</autoPublish>
+              <waitUntil>published</waitUntil>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 </project>
