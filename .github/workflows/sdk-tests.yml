@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - "feature/fase-14*"
+      - "feature/fase-15*"
     paths:
       - "sdks/**"
       - ".github/workflows/sdk-tests.yml"
@@ -137,3 +138,49 @@ jobs:
       - name: Testes
         run: bundle exec rspec
         working-directory: sdks/ruby
+
+  # ---------------------------------------------------------------------------
+  # PHP
+  # ---------------------------------------------------------------------------
+  sdk-php:
+    name: SDK PHP
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ["7.4", "8.1", "8.3"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: curl, json
+          coverage: none
+      - name: Instalar dependências
+        run: composer install --no-interaction --prefer-dist
+        working-directory: sdks/php
+      - name: Testes
+        run: composer test
+        working-directory: sdks/php
+
+  # ---------------------------------------------------------------------------
+  # VB6/COM (C#)
+  # ---------------------------------------------------------------------------
+  sdk-vb6:
+    name: SDK VB6/COM (C#)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: "10.0.x"
+      - name: Restore
+        run: |
+          dotnet restore sdks/vb6/LicenseManagerSdk/LicenseManagerSdk.csproj
+          dotnet restore sdks/vb6/LicenseManagerSdk.Tests/LicenseManagerSdk.Tests.csproj
+      - name: Build
+        run: dotnet build sdks/vb6/LicenseManagerSdk/LicenseManagerSdk.csproj --no-restore -c Release
+      - name: Testes
+        run: |
+          dotnet test sdks/vb6/LicenseManagerSdk.Tests \
+            --no-build -c Release \
+            --logger "console;verbosity=minimal"

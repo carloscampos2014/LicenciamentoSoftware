@@ -1,0 +1,40 @@
+{
+    "name": "carloscampos2014/licensemanager-sdk",
+    "description": "SDK cliente para a API de validação do LicenseManager. Encapsula autenticação HMAC-SHA256 e os endpoints de validação de licença.",
+    "type": "library",
+    "license": "MIT",
+    "version": "1.0.0",
+    "authors": [
+        {
+            "name": "Carlos Alberto de Lima Campos",
+            "email": "carlosalbertode.campos@gmail.com",
+            "homepage": "https://github.com/carloscampos2014"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "LicenseManager\\Sdk\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LicenseManager\\Sdk\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --testdox"
+    },
+    "keywords": ["licensemanager", "sdk", "licensing", "hmac"],
+    "homepage": "https://github.com/carloscampos2014/LicenciamentoSoftware",
+    "support": {
+        "source": "https://github.com/carloscampos2014/LicenciamentoSoftware"
+    }
+}
