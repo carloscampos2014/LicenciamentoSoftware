@@ -27,7 +27,7 @@ O LicenseManager é construído sobre uma arquitetura em camadas com isolamento 
                                │
 ┌──────────────────────────────▼──────────────────────────┐
 │                 Infrastructure Layer                     │
-│  Dapper  │  EF Core  │  PostgreSQL  │  Repositories      │
+│  DbUp (migrations)  │  Dapper (queries)  │  PostgreSQL   │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -37,7 +37,7 @@ O LicenseManager é construído sobre uma arquitetura em camadas com isolamento 
 |---|---|
 | `Domain` | Entidades, value objects, invariantes de negócio |
 | `Application` | Handlers, commands, validators (sem dependência de infra) |
-| `Infrastructure` | Repositórios Dapper/EF Core, PostgreSQL |
+| `Infrastructure` | Repositórios Dapper, migrations DbUp, PostgreSQL |
 | `Api` | Controllers REST, middleware, configuração de DI |
 | `Client` | HttpClient compartilhado entre Web e MAUI |
 | `Web` | Blazor WASM + BFF (ASP.NET Core) |
@@ -52,10 +52,7 @@ O LicenseManager é construído sobre uma arquitetura em camadas com isolamento 
 - **Isolamento:** `IdCliente` sempre do JWT, nunca do body
 - **Auditoria:** log transacional de todas as operações de escrita
 
-## Banco de dados
-
-PostgreSQL hospedado na mesma Oracle Cloud VM da API.
-Migrations via EF Core, acesso de leitura via Dapper.
+- **Banco de dados:** PostgreSQL hospedado na mesma Oracle Cloud VM da API. Migrations via **DbUp** (scripts SQL embarcados no assembly), acesso de leitura/escrita via **Dapper**.
 
 ## Deploy
 
