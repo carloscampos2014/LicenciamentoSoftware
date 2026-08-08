@@ -182,5 +182,5 @@ jobs:
       - name: Testes
         run: |
           dotnet test sdks/vb6/LicenseManagerSdk.Tests \
-            --no-build -c Release \
+            -c Release \
             --logger "console;verbosity=minimal"
