@@ -78,7 +78,7 @@ jobs:
               -p ${{ secrets.SSH_PORT }} \
               -o StrictHostKeyChecking=no \
               ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-              "sudo mkdir -p /opt/licenciamento/api && sudo chown ubuntu:ubuntu /opt/licenciamento/api"
+              "sudo mkdir -p /opt/licenciamento/api && sudo chown -R ubuntu:ubuntu /opt/licenciamento/api"
 
       - name: Enviar arquivos para VM
         run: |
