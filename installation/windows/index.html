@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#instalacao-windows" class="md-skip">
+        <a href="#instalaaao-a-windows" class="md-skip">
           Ir para o conteúdo
         </a>
       
@@ -1008,10 +1008,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#passo-1-instalar-o-certificado" class="md-nav__link">
+  <a href="#passo-1-a-instalar-o-certificado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Passo 1 — Instalar o certificado
+        Passo 1 â€” Instalar o certificado
       
     </span>
   </a>
@@ -1019,10 +1019,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#passo-2-instalar-o-msix" class="md-nav__link">
+  <a href="#passo-2-a-instalar-o-msix" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Passo 2 — Instalar o MSIX
+        Passo 2 â€” Instalar o MSIX
       
     </span>
   </a>
@@ -1176,10 +1176,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#passo-1-instalar-o-certificado" class="md-nav__link">
+  <a href="#passo-1-a-instalar-o-certificado" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Passo 1 — Instalar o certificado
+        Passo 1 â€” Instalar o certificado
       
     </span>
   </a>
@@ -1187,10 +1187,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#passo-2-instalar-o-msix" class="md-nav__link">
+  <a href="#passo-2-a-instalar-o-msix" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Passo 2 — Instalar o MSIX
+        Passo 2 â€” Instalar o MSIX
       
     </span>
   </a>
@@ -1228,11 +1228,11 @@
   
 
 
-<h1 id="instalacao-windows">Instalação — Windows<a class="headerlink" href="#instalacao-windows" title="Permanent link">&para;</a></h1>
+<h1 id="instalaaao-a-windows">InstalaÃ§Ã£o â€” Windows<a class="headerlink" href="#instalaaao-a-windows" title="Permanent link">&para;</a></h1>
 <h2 id="download">Download<a class="headerlink" href="#download" title="Permanent link">&para;</a></h2>
 <p><a href="https://github.com/carloscampos2014/LicenciamentoSoftware/releases/tag/windows-v1.0">Download MSIX + Certificado</a></p>
-<h2 id="passo-1-instalar-o-certificado">Passo 1 — Instalar o certificado<a class="headerlink" href="#passo-1-instalar-o-certificado" title="Permanent link">&para;</a></h2>
-<p>Execute o arquivo <code>instalar-certificado.bat</code> como <strong>Administrador</strong> (clique com botão direito → Executar como administrador).</p>
+<h2 id="passo-1-a-instalar-o-certificado">Passo 1 â€” Instalar o certificado<a class="headerlink" href="#passo-1-a-instalar-o-certificado" title="Permanent link">&para;</a></h2>
+<p>Execute o arquivo <code>instalar-certificado.bat</code> como <strong>Administrador</strong> (clique com botÃ£o direito â†’ Executar como administrador).</p>
 <p>Ou via PowerShell como Administrador:</p>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">$cert</span> <span class="p">=</span> <span class="nb">New-Object</span> <span class="n">System</span><span class="p">.</span><span class="n">Security</span><span class="p">.</span><span class="n">Cryptography</span><span class="p">.</span><span class="n">X509Certificates</span><span class="p">.</span><span class="n">X509Certificate2</span>
 <a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nv">$cert</span><span class="p">.</span><span class="n">Import</span><span class="p">(</span><span class="s2">&quot;C:\Caminho\LicenseManager.cer&quot;</span><span class="p">)</span>
@@ -1241,12 +1241,12 @@
 <a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nv">$store</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="nv">$cert</span><span class="p">)</span>
 <a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nv">$store</span><span class="p">.</span><span class="n">Close</span><span class="p">()</span>
 </code></pre></div>
-<h2 id="passo-2-instalar-o-msix">Passo 2 — Instalar o MSIX<a class="headerlink" href="#passo-2-instalar-o-msix" title="Permanent link">&para;</a></h2>
+<h2 id="passo-2-a-instalar-o-msix">Passo 2 â€” Instalar o MSIX<a class="headerlink" href="#passo-2-a-instalar-o-msix" title="Permanent link">&para;</a></h2>
 <p>Clique duas vezes em <code>LicenseManager-1.0-windows.msix</code> e clique em <strong>Instalar</strong>.</p>
 <h2 id="requisitos">Requisitos<a class="headerlink" href="#requisitos" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Windows 10 versão 1809 (build 17763) ou superior</li>
-<li>Windows 11 (qualquer versão)</li>
+<li>Windows 10 versÃ£o 1809 (build 17763) ou superior</li>
+<li>Windows 11 (qualquer versÃ£o)</li>
 </ul>
 
 
