@@ -1,12 +1,12 @@
-# SDK VB6 / COM
+﻿# SDK VB6 / COM
 
-DLL COM para integração a partir de **VB6, VBA, Delphi** e qualquer linguagem COM.
+DLL COM para integraÃ§Ã£o a partir de **VB6, VBA, Delphi** e qualquer linguagem COM.
 
 ## Download
 
 [Download DLL + TLB](https://github.com/carloscampos2014/LicenciamentoSoftware/releases/tag/sdk-vb6-v1.0.0)
 
-## Instalação
+## InstalaÃ§Ã£o
 
 Execute como Administrador:
 
@@ -23,7 +23,7 @@ Dim json As String
 json = client.Login("usuario@empresa.com")
 ```
 
-## Uso (VBA — Excel/Access)
+## Uso (VBA â€” Excel/Access)
 
 ```vba
 Sub ValidarLicenca()

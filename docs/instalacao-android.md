@@ -1,62 +1,62 @@
-# Instalação do LicenseManager no Android
+﻿# InstalaÃ§Ã£o do LicenseManager no Android
 
-## Pré-requisitos
+## PrÃ©-requisitos
 
 - Android 5.0 (API 21) ou superior
-- Espaço livre: aproximadamente 150 MB
-- Conexão com a internet para uso do aplicativo
+- EspaÃ§o livre: aproximadamente 150 MB
+- ConexÃ£o com a internet para uso do aplicativo
 
 ## Download
 
-Acesse a aba **Actions** do repositório no GitHub, selecione a execução mais recente do workflow
-**"Build APK (Android)"** e baixe o artefato `LicenseManager-Android-<versão>`.
+Acesse a aba **Actions** do repositÃ³rio no GitHub, selecione a execuÃ§Ã£o mais recente do workflow
+**"Build APK (Android)"** e baixe o artefato `LicenseManager-Android-<versÃ£o>`.
 
-O arquivo contém:
+O arquivo contÃ©m:
 
 | Arquivo | Finalidade |
 |---|---|
-| `LicenseManager-<versão>-android.apk` | Instalador do aplicativo assinado |
+| `LicenseManager-<versÃ£o>-android.apk` | Instalador do aplicativo assinado |
 
 ---
 
-## Etapa 1 — Habilitar instalação de fontes desconhecidas
+## Etapa 1 â€” Habilitar instalaÃ§Ã£o de fontes desconhecidas
 
-O Android bloqueia por padrão a instalação de APKs fora da Google Play Store.
-É necessário habilitar essa permissão uma única vez para o gerenciador de arquivos
-ou navegador que você usará para instalar o APK.
+O Android bloqueia por padrÃ£o a instalaÃ§Ã£o de APKs fora da Google Play Store.
+Ã‰ necessÃ¡rio habilitar essa permissÃ£o uma Ãºnica vez para o gerenciador de arquivos
+ou navegador que vocÃª usarÃ¡ para instalar o APK.
 
 ### Android 8.0 ou superior (recomendado)
 
-1. Abra **Configurações** → **Aplicativos** (ou **Gerenciar aplicativos**)
+1. Abra **ConfiguraÃ§Ãµes** â†’ **Aplicativos** (ou **Gerenciar aplicativos**)
 2. Localize o aplicativo que vai abrir o APK (ex: **Gerenciador de arquivos**, **Chrome**)
-3. Toque em **Instalar aplicativos desconhecidos** (ou **Permissões especiais**)
-4. Ative a opção **Permitir desta fonte**
+3. Toque em **Instalar aplicativos desconhecidos** (ou **PermissÃµes especiais**)
+4. Ative a opÃ§Ã£o **Permitir desta fonte**
 
-> No Android 8+, a permissão é concedida por aplicativo, não globalmente.
-> Isso é mais seguro — apenas o app que você autorizou pode instalar APKs.
+> No Android 8+, a permissÃ£o Ã© concedida por aplicativo, nÃ£o globalmente.
+> Isso Ã© mais seguro â€” apenas o app que vocÃª autorizou pode instalar APKs.
 
 ### Android 7.0 ou inferior
 
-1. Abra **Configurações** → **Segurança**
-2. Ative a opção **Fontes desconhecidas**
-3. Confirme o aviso de segurança
+1. Abra **ConfiguraÃ§Ãµes** â†’ **SeguranÃ§a**
+2. Ative a opÃ§Ã£o **Fontes desconhecidas**
+3. Confirme o aviso de seguranÃ§a
 
 ---
 
-## Etapa 2 — Instalar o APK
+## Etapa 2 â€” Instalar o APK
 
-### Via gerenciador de arquivos (método mais simples)
+### Via gerenciador de arquivos (mÃ©todo mais simples)
 
 1. Transfira o arquivo `.apk` para o dispositivo (via cabo USB, Google Drive, e-mail, etc.)
 2. Abra o **Gerenciador de arquivos** no dispositivo
-3. Navegue até a pasta onde o APK foi salvo (geralmente **Downloads**)
-4. Toque no arquivo `LicenseManager-<versão>-android.apk`
-5. Toque em **Instalar** na tela de confirmação
-6. Após a instalação, toque em **Abrir** ou encontre o app na gaveta de aplicativos
+3. Navegue atÃ© a pasta onde o APK foi salvo (geralmente **Downloads**)
+4. Toque no arquivo `LicenseManager-<versÃ£o>-android.apk`
+5. Toque em **Instalar** na tela de confirmaÃ§Ã£o
+6. ApÃ³s a instalaÃ§Ã£o, toque em **Abrir** ou encontre o app na gaveta de aplicativos
 
 ### Via ADB (para administradores de TI)
 
-Com o dispositivo conectado via USB e depuração USB habilitada:
+Com o dispositivo conectado via USB e depuraÃ§Ã£o USB habilitada:
 
 ```bash
 adb install LicenseManager-<versao>-android.apk
@@ -70,24 +70,24 @@ adb install -r LicenseManager-<versao>-android.apk
 
 ---
 
-## Atualização
+## AtualizaÃ§Ã£o
 
-Para atualizar para uma versão mais recente:
+Para atualizar para uma versÃ£o mais recente:
 
 1. Baixe o novo APK
-2. Siga os mesmos passos da instalação
-3. O Android detectará que é uma atualização (mesmo `applicationId`) e preservará os dados do app
-4. Não é necessário desinstalar a versão anterior
+2. Siga os mesmos passos da instalaÃ§Ã£o
+3. O Android detectarÃ¡ que Ã© uma atualizaÃ§Ã£o (mesmo `applicationId`) e preservarÃ¡ os dados do app
+4. NÃ£o Ã© necessÃ¡rio desinstalar a versÃ£o anterior
 
 ---
 
-## Desinstalação
+## DesinstalaÃ§Ã£o
 
-**Via configurações do Android:**
+**Via configuraÃ§Ãµes do Android:**
 
-1. Abra **Configurações** → **Aplicativos**
+1. Abra **ConfiguraÃ§Ãµes** â†’ **Aplicativos**
 2. Localize **LicenseManager**
-3. Toque em **Desinstalar** → confirme
+3. Toque em **Desinstalar** â†’ confirme
 
 **Via ADB:**
 
@@ -97,12 +97,12 @@ adb uninstall com.licensemanager.app
 
 ---
 
-## Solução de problemas
+## SoluÃ§Ã£o de problemas
 
-### "Análise bloqueada" ou "App pode ser prejudicial"
+### "AnÃ¡lise bloqueada" ou "App pode ser prejudicial"
 
 O Google Play Protect pode exibir um aviso ao instalar APKs fora da Play Store.
-Isso é esperado para distribuição direta (sideload).
+Isso Ã© esperado para distribuiÃ§Ã£o direta (sideload).
 
 1. Toque em **Mais detalhes**
 2. Toque em **Instalar mesmo assim**
@@ -110,47 +110,47 @@ Isso é esperado para distribuição direta (sideload).
 Se preferir desabilitar temporariamente o Play Protect:
 
 1. Abra o **Google Play Store**
-2. Toque no ícone do seu perfil → **Play Protect**
-3. Toque no ícone de engrenagem → desative **Verificar apps com o Play Protect**
+2. Toque no Ã­cone do seu perfil â†’ **Play Protect**
+3. Toque no Ã­cone de engrenagem â†’ desative **Verificar apps com o Play Protect**
 4. Reinstale o APK
-5. Reative o Play Protect após a instalação
+5. Reative o Play Protect apÃ³s a instalaÃ§Ã£o
 
-### "Não instalado" após tentar instalar
+### "NÃ£o instalado" apÃ³s tentar instalar
 
-Possíveis causas:
+PossÃ­veis causas:
 
-- **Espaço insuficiente:** libere pelo menos 200 MB e tente novamente
-- **Versão incompatível:** verifique se o Android é 5.0 (API 21) ou superior em **Configurações → Sobre o telefone**
-- **APK corrompido:** faça o download novamente
+- **EspaÃ§o insuficiente:** libere pelo menos 200 MB e tente novamente
+- **VersÃ£o incompatÃ­vel:** verifique se o Android Ã© 5.0 (API 21) ou superior em **ConfiguraÃ§Ãµes â†’ Sobre o telefone**
+- **APK corrompido:** faÃ§a o download novamente
 
-### "Aplicativo não instalado — certificado inválido"
+### "Aplicativo nÃ£o instalado â€” certificado invÃ¡lido"
 
-Isso ocorre ao tentar instalar sobre uma versão assinada com outra keystore.
-Desinstale a versão anterior antes de instalar:
+Isso ocorre ao tentar instalar sobre uma versÃ£o assinada com outra keystore.
+Desinstale a versÃ£o anterior antes de instalar:
 
 ```bash
 adb uninstall com.licensemanager.app
 adb install LicenseManager-<versao>-android.apk
 ```
 
-> **Atenção:** a desinstalação remove os dados locais do app (tokens armazenados).
-> Você precisará fazer login novamente após reinstalar.
+> **AtenÃ§Ã£o:** a desinstalaÃ§Ã£o remove os dados locais do app (tokens armazenados).
+> VocÃª precisarÃ¡ fazer login novamente apÃ³s reinstalar.
 
-### O app não consegue conectar à API
+### O app nÃ£o consegue conectar Ã  API
 
-O app precisa de acesso à internet para comunicar com `https://licensemanager-api.enzojb.com.br`.
+O app precisa de acesso Ã  internet para comunicar com `https://licensemanager-api.enzojb.com.br`.
 Verifique:
-- Conexão Wi-Fi ou dados móveis ativa
-- Firewall corporativo não está bloqueando HTTPS (porta 443)
-- VPN ativa não está interferindo
+- ConexÃ£o Wi-Fi ou dados mÃ³veis ativa
+- Firewall corporativo nÃ£o estÃ¡ bloqueando HTTPS (porta 443)
+- VPN ativa nÃ£o estÃ¡ interferindo
 
 ---
 
 ## Sobre a assinatura do APK
 
-O APK é assinado com uma keystore própria do projeto, gerada com `keytool` e armazenada
+O APK Ã© assinado com uma keystore prÃ³pria do projeto, gerada com `keytool` e armazenada
 como GitHub Secret (`ANDROID_KEYSTORE_BASE64`). A assinatura garante a integridade do
-arquivo — qualquer APK modificado após a assinatura será rejeitado pelo Android.
+arquivo â€” qualquer APK modificado apÃ³s a assinatura serÃ¡ rejeitado pelo Android.
 
 Para verificar a assinatura manualmente:
 
