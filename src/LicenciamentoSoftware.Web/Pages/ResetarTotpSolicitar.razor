@@ -1,0 +1,103 @@
+@page "/reset-2fa-solicitar"
+@layout Layout.PublicLayout
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Recuperar acesso ao 2FA — LicenseManager</PageTitle>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8f9fa">
+    <div style="width:100%;max-width:440px;padding:2rem">
+        <div class="text-center mb-4">
+            <div style="width:48px;height:48px;background:#f59e0b;border-radius:12px;
+                        display:inline-flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:1.1rem;color:white;margin-bottom:1rem">🔑</div>
+            <h1 style="font-size:1.4rem;font-weight:700;color:#212529">Recuperar acesso ao 2FA</h1>
+            <p class="text-muted" style="font-size:.875rem">
+                Confirme sua identidade informando sua senha. Enviaremos um link de confirmação para seu e-mail.
+            </p>
+        </div>
+
+        @if (_enviado)
+        {
+            <div class="alert alert-success text-center">
+                <strong>Link enviado!</strong><br/>
+                Verifique seu e-mail e clique no link para confirmar a solicitação.
+                Após a confirmação, um administrador irá aprovar o reset.
+            </div>
+            <div class="text-center mt-3">
+                <a href="/login" style="color:#6c63ff;font-size:.875rem">← Voltar ao login</a>
+            </div>
+        }
+        else
+        {
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <div class="form-group mb-3">
+                        <label class="form-label fw-semibold">Sua senha</label>
+                        <input class="form-control" type="password"
+                               @bind="_senha" placeholder="Digite sua senha"
+                               disabled="@_carregando" />
+                    </div>
+
+                    @if (_erro is not null)
+                    {
+                        <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erro</div>
+                    }
+
+                    <button class="btn btn-warning w-100 py-2 fw-semibold" @onclick="Solicitar"
+                            disabled="@_carregando">
+                        @if (_carregando) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                        Enviar link de confirmação
+                    </button>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="/login" style="color:#6c63ff;font-size:.875rem">← Voltar ao login</a>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private string _senha = string.Empty;
+    private string? _erro;
+    private bool _carregando;
+    private bool _enviado;
+
+    private async Task Solicitar()
+    {
+        if (string.IsNullOrWhiteSpace(_senha)) { _erro = "Informe sua senha."; return; }
+        if (string.IsNullOrWhiteSpace(Token)) { _erro = "Token de sessão inválido. Faça login novamente."; return; }
+
+        _erro = null;
+        _carregando = true;
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/reset-2fa/solicitar", new
+            {
+                TokenTemporario = Token,
+                Senha = _senha,
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                _enviado = true;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var body = await response.Content.ReadFromJsonAsync<ErroResponse>();
+                _erro = body?.Erro ?? "Senha incorreta.";
+            }
+            else
+            {
+                _erro = "Erro ao processar solicitação. Tente novamente.";
+            }
+        }
+        catch { _erro = "Não foi possível conectar ao servidor."; }
+        finally { _carregando = false; }
+    }
+
+    private sealed record ErroResponse(string Erro);
+}

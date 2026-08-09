@@ -201,6 +201,7 @@ internal static class ServiceCollectionExtensions
 
         // Fase 17 — Segurança de conta
         services.AddScoped<IRecuperacaoSenhaRepository, RecuperacaoSenhaRepository>();
+        services.AddScoped<ISolicitacaoReset2FARepository, SolicitacaoReset2FARepository>();
         services.AddScoped<AlterarSenhaHandler>();
         services.AddScoped<EsqueciSenhaHandler>(sp =>
         {
@@ -215,6 +216,22 @@ internal static class ServiceCollectionExtensions
                 portalUrl);
         });
         services.AddScoped<RedefinirSenhaHandler>();
+        services.AddScoped<SolicitarReset2FAHandler>(sp =>
+        {
+            var config    = sp.GetRequiredService<IConfiguration>();
+            var portalUrl = config["AppSettings:PortalUrl"] ?? "https://licensemanager.enzojb.com.br";
+            return new SolicitarReset2FAHandler(
+                sp.GetRequiredService<IJwtTokenService>(),
+                sp.GetRequiredService<IUsuarioRepository>(),
+                sp.GetRequiredService<IPasswordHasher>(),
+                sp.GetRequiredService<ISolicitacaoReset2FARepository>(),
+                sp.GetRequiredService<IEmailService>(),
+                sp.GetRequiredService<IEmailTemplateRenderer>(),
+                sp.GetRequiredService<IClock>(),
+                portalUrl);
+        });
+        services.AddScoped<ConfirmarReset2FAHandler>();
+        services.AddScoped<AprovarReset2FAHandler>();
 
         // Handlers Fase 4 — resolve defaultExpiracaoMinutos a partir de IConfiguration
         services.AddScoped<EmitirTokenLicencaHandler>(sp =>
