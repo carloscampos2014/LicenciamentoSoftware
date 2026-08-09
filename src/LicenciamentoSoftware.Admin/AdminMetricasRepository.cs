@@ -1,4 +1,4 @@
-using Dapper;
+﻿using Dapper;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 
 namespace LicenciamentoSoftware.Admin;
@@ -70,7 +70,6 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
 
     public async Task<IReadOnlyList<UltimoLogin>> BuscarUltimosLoginsAsync()
     {
-        // Busca os últimos logins bem-sucedidos com IP e tenant
         const string sql = """
             SELECT c.razao_social  AS "Email",
                    vl.ip_origem   AS "Ip",
@@ -126,10 +125,33 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
         using var conn = factory.CreateConnection();
         return (await conn.QueryAsync<LicencaPorTipo>(sql)).AsList();
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Listagem de usuários com status 2FA (para reset via Admin)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public async Task<IReadOnlyList<UsuarioAdminInfo>> ListarUsuariosAsync()
+    {
+        const string sql = """
+            SELECT u.id           AS "Id",
+                   u.nome         AS "Nome",
+                   u.email        AS "Email",
+                   u.ativo        AS "Ativo",
+                   c.razao_social AS "NomeCliente",
+                   up.papel       AS "Papel",
+                   CASE WHEN u.totp_secret_hash IS NOT NULL THEN TRUE ELSE FALSE END AS "TotpAtivo"
+            FROM usuario u
+            INNER JOIN cliente c ON c.id = u.id_cliente
+            LEFT  JOIN usuario_papel up ON up.id_usuario = u.id
+            ORDER BY c.razao_social, u.nome
+            """;
+
+        using var conn = factory.CreateConnection();
+        return (await conn.QueryAsync<UsuarioAdminInfo>(sql)).AsList();
+    }
 }
 
 // ── Modelos de resultado ──────────────────────────────────────────────────────
-
 public sealed record MetricasGerais(
     long TotalClientes,
     long ClientesAtivos,
@@ -146,3 +168,6 @@ public sealed record MetricasGerais(
 public sealed record ErroMotivo(string Motivo, long Total);
 public sealed record LicencaPorTipo(string Tipo, long Total);
 public sealed record UltimoLogin(string Email, string? Ip, DateTime HoraUtc);
+public sealed record UsuarioAdminInfo(
+    Guid Id, string Nome, string Email, bool Ativo,
+    string NomeCliente, string? Papel, bool TotpAtivo);

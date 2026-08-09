@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmação de reset do 2FA</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f4f6f9; font-family: 'Segoe UI', Arial, sans-serif; color: #333; }
+    .wrapper { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .header { background-color: #f59e0b; padding: 32px 40px; text-align: center; }
+    .header h1 { margin: 0; color: #ffffff; font-size: 22px; font-weight: 600; }
+    .header p { margin: 8px 0 0; color: #fef3c7; font-size: 13px; }
+    .body { padding: 40px; }
+    .body p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; color: #444; }
+    .warning-box { background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px; padding: 16px 20px; margin: 24px 0; }
+    .warning-box p { margin: 0; font-size: 14px; color: #92400e; }
+    .cta { text-align: center; margin: 32px 0 8px; }
+    .cta a { display: inline-block; background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 14px 36px; border-radius: 6px; font-size: 16px; font-weight: 600; }
+    .link-fallback { text-align: center; margin-top: 16px; font-size: 12px; color: #888; word-break: break-all; }
+    .footer { background-color: #f8f9fb; padding: 24px 40px; text-align: center; border-top: 1px solid #eee; }
+    .footer p { margin: 0; font-size: 12px; color: #aaa; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <h1>⚠️ Confirmação de reset do 2FA</h1>
+      <p>LicenseManager — Segurança da conta</p>
+    </div>
+    <div class="body">
+      <p>Olá, <strong>{{NomeUsuario}}</strong>.</p>
+      <p>Recebemos uma solicitação para remover o autenticador de dois fatores (2FA) da sua conta. Para confirmar que é você, clique no botão abaixo:</p>
+
+      <div class="cta">
+        <a href="{{Link}}">Confirmar solicitação de reset</a>
+      </div>
+
+      <div class="warning-box">
+        <p>⏰ Este link é válido por <strong>{{Expiracao}}</strong> e pode ser usado apenas uma vez.<br/>
+        Após a confirmação, um administrador precisará <strong>aprovar</strong> o reset antes de ser executado.</p>
+      </div>
+
+      <p>Se o botão não funcionar, copie e cole este endereço no navegador:</p>
+      <div class="link-fallback">{{Link}}</div>
+
+      <p style="font-size:13px;color:#888;margin-top:32px">
+        Se você não fez esta solicitação, ignore este e-mail e seu 2FA permanece ativo.
+        Considere trocar sua senha por segurança.
+      </p>
+    </div>
+    <div class="footer">
+      <p>Este é um e-mail automático. Não responda a esta mensagem.<br/>LicenseManager &copy; {{AnoAtual}}</p>
+    </div>
+  </div>
+</body>
+</html>

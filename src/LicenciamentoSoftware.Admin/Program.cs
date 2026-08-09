@@ -1,5 +1,8 @@
 using LicenciamentoSoftware.Admin;
+using LicenciamentoSoftware.Application.Auth.Handlers;
+using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Infrastructure.Persistence;
+using LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
 using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,6 +30,22 @@ builder.Services.AddAuthorization();
 // ── Repositório de métricas ───────────────────────────────────────────────────
 builder.Services.AddScoped<AdminMetricasRepository>();
 
+// ── Dependências para o ResetarTotpAdminHandler ───────────────────────────────
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+builder.Services.AddScoped<ResetarTotpAdminHandler>();
+
+// ── Dependências para os handlers de reset 2FA via solicitação ────────────────
+builder.Services.AddScoped<ISolicitacaoReset2FARepository, SolicitacaoReset2FARepository>();
+builder.Services.AddScoped<AprovarReset2FAHandler>(sp =>
+    new AprovarReset2FAHandler(
+        sp.GetRequiredService<ISolicitacaoReset2FARepository>(),
+        sp.GetRequiredService<IUsuarioRepository>(),
+        sp.GetRequiredService<IEmailService>(),
+        sp.GetRequiredService<IEmailTemplateRenderer>(),
+        sp.GetRequiredService<IUnitOfWork>(),
+        sp.GetRequiredService<IClock>()));
+
 // ── HTTP client para verificar health dos serviços ───────────────────────────
 builder.Services.AddHttpClient("health", c =>
 {
@@ -49,6 +68,11 @@ app.UseAuthorization();
 
 app.MapGet("/", AdminController.Index).RequireAuthorization();
 app.MapPost("/backup/executar", AdminController.ExecutarBackup).RequireAuthorization();
+app.MapGet("/usuarios", AdminController.ListarUsuarios).RequireAuthorization();
+app.MapPost("/usuarios/{id}/reset-2fa", AdminController.ResetarTotp).RequireAuthorization();
+app.MapGet("/reset-2fa/pendentes", AdminController.ListarSolicitacoesPendentes).RequireAuthorization();
+app.MapPost("/reset-2fa/{id}/aprovar", AdminController.AprovarSolicitacaoReset).RequireAuthorization();
+app.MapPost("/reset-2fa/{id}/rejeitar", AdminController.RejeitarSolicitacaoReset).RequireAuthorization();
 app.MapGet("/health", () => Results.Ok("Admin operacional"));
 
 app.Run();

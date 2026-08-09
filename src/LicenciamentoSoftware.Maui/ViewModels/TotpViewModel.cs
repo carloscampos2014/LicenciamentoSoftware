@@ -49,4 +49,12 @@ public partial class TotpViewModel(MauiAuthService authService) : BaseViewModel
     [RelayCommand]
     static async Task VoltarAsync()
         => await Shell.Current.GoToAsync("//login");
+
+    [RelayCommand]
+    async Task NaoTenhoAcessoAsync()
+    {
+        // Abre o portal web passando o token temporario para identificar o usuario
+        var url = $"https://licensemanager.enzojb.com.br/reset-2fa-solicitar?token={Uri.EscapeDataString(TokenTemporario)}";
+        await Launcher.OpenAsync(new Uri(url));
+    }
 }

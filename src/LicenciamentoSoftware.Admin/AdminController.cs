@@ -1,6 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using LicenciamentoSoftware.Application.Abstractions;
+using LicenciamentoSoftware.Application.Auth.Handlers;
 
 namespace LicenciamentoSoftware.Admin;
 
@@ -351,4 +353,153 @@ public static class AdminController
     }
 
     private sealed record BackupStatus(string? DataHora, string? Tamanho, string? Arquivo, bool Ok);
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ListarUsuarios(AdminMetricasRepository repo)
+    {
+        var usuarios = await repo.ListarUsuariosAsync();
+        var ic = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+        sb.AppendLine("""
+            <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Usuários — Painel Admin</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+            </head><body class="bg-light p-4">
+            <div class="container-fluid">
+            <h4 class="mb-3">👤 Usuários da Plataforma <a href="/" class="btn btn-sm btn-outline-secondary ms-3">← Voltar</a></h4>
+            <table class="table table-sm table-bordered table-hover bg-white shadow-sm">
+            <thead class="table-dark">
+            <tr><th>Nome</th><th>E-mail</th><th>Empresa</th><th>Papel</th><th>Ativo</th><th>2FA</th><th>Ação</th></tr>
+            </thead><tbody>
+            """);
+
+        foreach (var u in usuarios)
+        {
+            var ativo  = u.Ativo  ? "✅" : "❌";
+            var totp   = u.TotpAtivo ? "✅ Ativo" : "⬜ Inativo";
+            var btnReset = u.TotpAtivo
+                ? $"""<button class="btn btn-sm btn-warning" onclick="resetar2fa('{u.Id}','{u.Nome}')">Resetar 2FA</button>"""
+                : "<span class=\"text-muted small\">—</span>";
+
+            sb.AppendLine(ic,
+                $"<tr><td>{u.Nome}</td><td>{u.Email}</td><td>{u.NomeCliente}</td><td><code>{u.Papel ?? "—"}</code></td><td>{ativo}</td><td>{totp}</td><td>{btnReset}</td></tr>");
+        }
+
+        sb.AppendLine("""
+            </tbody></table></div>
+            <script>
+            async function resetar2fa(id, nome) {
+              if (!confirm(`Resetar o 2FA de "${nome}"?\n\nO usuário poderá fazer login sem 2FA e deverá configurar um novo autenticador.`)) return;
+              const r = await fetch(`/usuarios/${id}/reset-2fa`, { method: 'POST' });
+              if (r.ok) { alert('2FA resetado com sucesso!'); location.reload(); }
+              else { alert('Erro ao resetar: ' + r.status); }
+            }
+            </script>
+            </body></html>
+            """);
+
+        return Results.Content(sb.ToString(), "text/html; charset=utf-8");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /usuarios/{id}/reset-2fa — reseta o TOTP de um usuário
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ResetarTotp(
+        Guid id,
+        ResetarTotpAdminHandler handler,
+        ILogger<Program> logger)
+    {
+        var resultado = await handler.HandleAsync(id);
+
+        return resultado switch
+        {
+            ResetarTotpAdminResult.Sucesso        => Results.NoContent(),
+            ResetarTotpAdminResult.UsuarioNaoEncontrado => Results.NotFound(new { Erro = "Usuário não encontrado." }),
+            _ => Results.Problem("Erro interno.", statusCode: 500),
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /reset-2fa/pendentes — lista solicitações pendentes de reset de 2FA
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ListarSolicitacoesPendentes(
+        ISolicitacaoReset2FARepository repo)
+    {
+        var pendentes = await repo.ListarPendentesAsync();
+        var ic = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+        sb.AppendLine("<!DOCTYPE html><html lang='pt-BR'><head><meta charset='UTF-8'>");
+        sb.AppendLine("<link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css'>");
+        sb.AppendLine("</head><body class='bg-light p-4'><div class='container-fluid'>");
+        sb.AppendLine("<h4 class='mb-3'>Solicitacoes de Reset 2FA <a href='/' class='btn btn-sm btn-outline-secondary ms-3'>Voltar</a></h4>");
+        if (!pendentes.Any())
+        {
+            sb.AppendLine("<div class='alert alert-success'>Nenhuma solicitacao pendente.</div>");
+        }
+        else
+        {
+            sb.AppendLine("<table class='table table-bordered table-hover bg-white shadow-sm'>");
+            sb.AppendLine("<thead class='table-warning'><tr><th>Usuario</th><th>Email</th><th>Empresa</th><th>IP</th><th>Data/Hora</th><th>Acoes</th></tr></thead><tbody>");
+            foreach (var s in pendentes)
+            {
+                var tr = string.Format(ic,
+                    "<tr><td>{0}</td><td>{1}</td><td>{2}</td><td><code>{3}</code></td><td>{4} UTC</td>" +
+                    "<td><button class='btn btn-sm btn-success me-1' onclick=\"processar('{5}','aprovar','{0}')\">Aprovar</button> " +
+                    "<button class='btn btn-sm btn-danger' onclick=\"processar('{5}','rejeitar','{0}')\">Rejeitar</button></td></tr>",
+                    s.NomeUsuario, s.EmailUsuario, s.NomeCliente,
+                    s.IpOrigem ?? "-", s.CriadoEm.ToString("dd/MM/yyyy HH:mm:ss", ic), s.Id);
+                sb.AppendLine(tr);
+            }
+            sb.AppendLine("</tbody></table>");
+        }
+        sb.AppendLine("<script>");
+        sb.AppendLine("async function processar(id,acao,nome){ if(!confirm('Confirma '+acao+' para '+nome+'?'))return;");
+        sb.AppendLine("const r=await fetch('/reset-2fa/'+id+'/'+acao,{method:'POST'});if(r.ok){alert('OK!');location.reload();}else{alert('Erro '+r.status);} }");
+        sb.AppendLine("</script></div></body></html>");
+        return Results.Content(sb.ToString(), "text/html; charset=utf-8");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /reset-2fa/{id}/aprovar — executa o reset aprovado
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> AprovarSolicitacaoReset(
+        Guid id,
+        AprovarReset2FAHandler handler)
+    {
+        var resultado = await handler.HandleAsync(id);
+        return resultado switch
+        {
+            AprovarReset2FAResult.Sucesso            => Results.NoContent(),
+            AprovarReset2FAResult.SolicitacaoNaoEncontrada => Results.NotFound(new { Erro = "Solicitação não encontrada." }),
+            AprovarReset2FAResult.JaProcessada       => Results.Conflict(new { Erro = "Solicitação já foi processada." }),
+            _ => Results.Problem("Erro interno.", statusCode: 500),
+        };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // POST /reset-2fa/{id}/rejeitar — rejeita a solicitação
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> RejeitarSolicitacaoReset(
+        Guid id,
+        ISolicitacaoReset2FARepository repo,
+        IUnitOfWork uow)
+    {
+        await uow.BeginAsync();
+        try
+        {
+            await repo.RejeitarAsync(id);
+            await uow.CommitAsync();
+        }
+        catch
+        {
+            await uow.RollbackAsync();
+            throw;
+        }
+        return Results.NoContent();
+    }
 }

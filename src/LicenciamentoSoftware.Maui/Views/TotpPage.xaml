@@ -87,6 +87,17 @@
                         </Label.GestureRecognizers>
                     </Label>
 
+                    <Label Text="Não tenho acesso ao autenticador"
+                           TextColor="{StaticResource Primary}"
+                           FontSize="12"
+                           TextDecorations="Underline"
+                           HorizontalOptions="Center"
+                           Margin="0,8,0,0">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NaoTenhoAcessoCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
                 </VerticalStackLayout>
             </Border>
         </ScrollView>

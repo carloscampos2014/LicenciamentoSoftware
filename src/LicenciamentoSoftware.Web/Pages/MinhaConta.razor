@@ -183,6 +183,47 @@
         </div>
     </div>
 
+    <!-- Seção Alterar Senha -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2 style="font-size:1rem;font-weight:700;color:#212529;margin-bottom:.25rem">
+                Alterar senha
+            </h2>
+            <p class="text-muted mb-3" style="font-size:.875rem">
+                Escolha uma senha segura com pelo menos 8 caracteres.
+            </p>
+
+            <div class="form-group mb-2">
+                <label class="form-label">Senha atual</label>
+                <input class="form-control" type="password" @bind="_senhaAtual" />
+            </div>
+            <div class="form-group mb-2">
+                <label class="form-label">Nova senha</label>
+                <input class="form-control" type="password" @bind="_novaSenha" />
+            </div>
+            <div class="form-group mb-3">
+                <label class="form-label">Confirmar nova senha</label>
+                <input class="form-control" type="password" @bind="_confirmacaoSenha" />
+            </div>
+
+            @if (_erroSenha is not null)
+            {
+                <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erroSenha</div>
+            }
+            @if (_sucessoSenha)
+            {
+                <div class="alert alert-success py-2 px-3 mb-3" style="font-size:.875rem">
+                    Senha alterada com sucesso. Você será desconectado em outros dispositivos.
+                </div>
+            }
+
+            <button class="btn btn-primary btn-sm" @onclick="AlterarSenha" disabled="@_salvandoSenha">
+                @if (_salvandoSenha) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Alterar senha
+            </button>
+        </div>
+    </div>
+
     <!-- Seção LGPD -->
     <div class="card mb-4">
         <div class="card-body">
@@ -505,4 +546,49 @@
         public string Email { get; set; } = string.Empty;
         public string? Telefone { get; set; }
     }
+
+    // ── Alterar senha (Fase 17) ───────────────────────────────────────────────
+    private string _senhaAtual      = string.Empty;
+    private string _novaSenha       = string.Empty;
+    private string _confirmacaoSenha = string.Empty;
+    private string? _erroSenha;
+    private bool _sucessoSenha;
+    private bool _salvandoSenha;
+
+    private async Task AlterarSenha()
+    {
+        _erroSenha  = null;
+        _sucessoSenha = false;
+        if (string.IsNullOrWhiteSpace(_senhaAtual)) { _erroSenha = "Informe a senha atual."; return; }
+        if (string.IsNullOrWhiteSpace(_novaSenha) || _novaSenha.Length < 8)
+            { _erroSenha = "A nova senha deve ter pelo menos 8 caracteres."; return; }
+        if (_novaSenha != _confirmacaoSenha) { _erroSenha = "As senhas não conferem."; return; }
+
+        _salvandoSenha = true;
+        try
+        {
+            var response = await Http.PutAsJsonAsync("api/auth/minha-senha", new
+            {
+                SenhaAtual           = _senhaAtual,
+                NovaSenha            = _novaSenha,
+                ConfirmacaoNovaSenha = _confirmacaoSenha,
+            });
+
+            if (response.IsSuccessStatusCode)
+            {
+                _sucessoSenha = true;
+                _senhaAtual       = string.Empty;
+                _novaSenha        = string.Empty;
+                _confirmacaoSenha = string.Empty;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                _erroSenha = "Senha atual incorreta.";
+            else
+                _erroSenha = "Erro ao alterar senha. Tente novamente.";
+        }
+        catch { _erroSenha = "Não foi possível conectar ao servidor."; }
+        finally { _salvandoSenha = false; }
+    }
 }
+
+@* Variáveis e método para alterar senha — adicionados na Fase 17 *@

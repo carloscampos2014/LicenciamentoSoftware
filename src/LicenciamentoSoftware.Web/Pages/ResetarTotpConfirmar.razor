@@ -1,0 +1,80 @@
+@page "/reset-2fa-confirmar"
+@layout Layout.PublicLayout
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<PageTitle>Confirmar reset do 2FA — LicenseManager</PageTitle>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f8f9fa">
+    <div style="width:100%;max-width:440px;padding:2rem">
+        <div class="text-center mb-4">
+            <div style="width:48px;height:48px;background:#f59e0b;border-radius:12px;
+                        display:inline-flex;align-items:center;justify-content:center;
+                        font-weight:700;font-size:1.1rem;color:white;margin-bottom:1rem">✅</div>
+            <h1 style="font-size:1.4rem;font-weight:700;color:#212529">Confirmar reset do 2FA</h1>
+        </div>
+
+        @if (_tokenInvalido)
+        {
+            <div class="alert alert-danger text-center">
+                <strong>Link inválido ou expirado.</strong><br/>
+                Solicite um novo link na tela de 2FA.
+            </div>
+            <div class="text-center mt-3">
+                <a href="/login" style="color:#6c63ff;font-size:.875rem">← Voltar ao login</a>
+            </div>
+        }
+        else if (_confirmado)
+        {
+            <div class="alert alert-success text-center">
+                <strong>Solicitação enviada com sucesso!</strong><br/><br/>
+                Sua solicitação foi registrada e está aguardando aprovação do administrador.<br/>
+                Você receberá um e-mail quando o reset for executado.
+            </div>
+            <div class="text-center mt-3">
+                <a href="/login" class="btn btn-primary px-4">← Voltar ao login</a>
+            </div>
+        }
+        else if (_processando)
+        {
+            <div class="text-center py-4">
+                <div class="spinner-border text-warning" role="status"></div>
+                <p class="mt-2 text-muted">Processando confirmação...</p>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool _processando = true;
+    private bool _confirmado;
+    private bool _tokenInvalido;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Token))
+        {
+            _tokenInvalido = true;
+            _processando   = false;
+            return;
+        }
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/reset-2fa/confirmar",
+                new { Token });
+
+            if (response.IsSuccessStatusCode)
+                _confirmado = true;
+            else
+                _tokenInvalido = true;
+        }
+        catch
+        {
+            _tokenInvalido = true;
+        }
+        finally { _processando = false; }
+    }
+}

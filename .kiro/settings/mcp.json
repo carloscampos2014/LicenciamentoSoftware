@@ -1,0 +1,111 @@
+{
+  "mcpServers": {
+    "microsoft-learn": {
+      "url": "https://learn.microsoft.com/api/mcp"
+    },
+    "filesystem": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Dev\\LicenciamentoSoftware"
+      ]
+    },
+    "github": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_PAT}"
+      }
+    },
+    "postgres": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://postgres:12345678@localhost:5432/licenciamento_dev"
+      ]
+    },
+    "git": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "uvx",
+        "--from",
+        "mcp-server-git==0.5.0",
+        "--with",
+        "mcp==1.1.2",
+        "mcp-server-git",
+        "--repository",
+        "C:\\Dev\\LicenciamentoSoftware"
+      ]
+    },
+    "fetch": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "uvx",
+        "--with",
+        "mcp==1.1.2",
+        "mcp-server-fetch"
+      ]
+    },
+    "memory": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    },
+    "sequential-thinking": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "time": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "uvx",
+        "--with",
+        "mcp==1.1.2",
+        "mcp-server-time"
+      ]
+    },
+    "everything": {
+      "command": "cmd",
+      "args": [
+        "/c",
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ]
+    },
+    "figma": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--stdio"
+      ],
+      "env": {
+        "FIGMA_API_KEY": "${env:FIGMA_API_KEY}"
+      }
+    }
+  }
+}
