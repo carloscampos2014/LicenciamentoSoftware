@@ -1,4 +1,4 @@
-@page "/minha-conta"
+﻿@page "/minha-conta"
 @attribute [Authorize]
 @inject HttpClient Http
 @inject JwtAuthStateProvider AuthProvider
@@ -567,7 +567,7 @@
         _salvandoSenha = true;
         try
         {
-            var response = await Http.PutAsJsonAsync("api/auth/minha-senha", new
+            var response = await Http.PutAsJsonAsync("auth/minha-senha", new
             {
                 SenhaAtual           = _senhaAtual,
                 NovaSenha            = _novaSenha,

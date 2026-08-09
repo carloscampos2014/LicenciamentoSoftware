@@ -1,4 +1,4 @@
-@page "/esqueci-senha"
+﻿@page "/esqueci-senha"
 @layout Layout.PublicLayout
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -70,7 +70,7 @@
         _carregando = true;
         try
         {
-            await Http.PostAsJsonAsync("api/auth/esqueci-senha", new { Email = _email });
+            await Http.PostAsJsonAsync("auth/esqueci-senha", new { Email = _email });
             // Sempre mostra sucesso — não vaza se e-mail existe
             _enviado = true;
         }

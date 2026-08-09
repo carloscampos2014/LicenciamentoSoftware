@@ -1,4 +1,4 @@
-@page "/reset-2fa-solicitar"
+﻿@page "/reset-2fa-solicitar"
 @layout Layout.PublicLayout
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -75,7 +75,7 @@
         _carregando = true;
         try
         {
-            var response = await Http.PostAsJsonAsync("api/auth/reset-2fa/solicitar", new
+            var response = await Http.PostAsJsonAsync("auth/reset-2fa/solicitar", new
             {
                 TokenTemporario = Token,
                 Senha = _senha,
