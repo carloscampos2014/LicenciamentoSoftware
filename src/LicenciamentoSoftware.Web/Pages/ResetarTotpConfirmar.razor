@@ -1,4 +1,4 @@
-@page "/reset-2fa-confirmar"
+﻿@page "/reset-2fa-confirmar"
 @layout Layout.PublicLayout
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -63,7 +63,7 @@
 
         try
         {
-            var response = await Http.PostAsJsonAsync("api/auth/reset-2fa/confirmar",
+            var response = await Http.PostAsJsonAsync("auth/reset-2fa/confirmar",
                 new { Token });
 
             if (response.IsSuccessStatusCode)

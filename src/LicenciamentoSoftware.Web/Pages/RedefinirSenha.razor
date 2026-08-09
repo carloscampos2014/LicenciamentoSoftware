@@ -1,4 +1,4 @@
-@page "/redefinir-senha"
+﻿@page "/redefinir-senha"
 @layout Layout.PublicLayout
 @inject HttpClient Http
 @inject NavigationManager Nav
@@ -94,7 +94,7 @@
         _carregando = true;
         try
         {
-            var response = await Http.PostAsJsonAsync("api/auth/redefinir-senha", new
+            var response = await Http.PostAsJsonAsync("auth/redefinir-senha", new
             {
                 Token    = Token,
                 NovaSenha = _novaSenha,
