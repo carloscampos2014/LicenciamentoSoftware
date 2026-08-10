@@ -1,8 +1,10 @@
 using LicenciamentoSoftware.Admin;
 using LicenciamentoSoftware.Application.Auth.Handlers;
 using LicenciamentoSoftware.Application.Abstractions;
+using LicenciamentoSoftware.Infrastructure.Email;
 using LicenciamentoSoftware.Infrastructure.Persistence;
 using LicenciamentoSoftware.Infrastructure.Persistence.Repositories;
+using LicenciamentoSoftware.Infrastructure.Security;
 using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,14 +39,14 @@ builder.Services.AddScoped<ResetarTotpAdminHandler>();
 
 // ── Dependências para os handlers de reset 2FA via solicitação ────────────────
 builder.Services.AddScoped<ISolicitacaoReset2FARepository, SolicitacaoReset2FARepository>();
-builder.Services.AddScoped<AprovarReset2FAHandler>(sp =>
-    new AprovarReset2FAHandler(
-        sp.GetRequiredService<ISolicitacaoReset2FARepository>(),
-        sp.GetRequiredService<IUsuarioRepository>(),
-        sp.GetRequiredService<IEmailService>(),
-        sp.GetRequiredService<IEmailTemplateRenderer>(),
-        sp.GetRequiredService<IUnitOfWork>(),
-        sp.GetRequiredService<IClock>()));
+
+// Serviços de e-mail e infraestrutura necessários pelo AprovarReset2FAHandler
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddSingleton<IEmailTemplateRenderer, TemplateRenderer>();
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddSingleton<IClock, LicenciamentoSoftware.Infrastructure.Security.SystemClock>();
+
+builder.Services.AddScoped<AprovarReset2FAHandler>();
 
 // ── HTTP client para verificar health dos serviços ───────────────────────────
 builder.Services.AddHttpClient("health", c =>
