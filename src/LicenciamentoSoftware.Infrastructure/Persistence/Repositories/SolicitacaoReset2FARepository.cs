@@ -23,11 +23,12 @@ public sealed class SolicitacaoReset2FARepository : ISolicitacaoReset2FAReposito
             VALUES (@IdUsuario, @TokenHash, @TokenExpiraEm, @IpOrigem)
             """;
 
-        await _uow.Connection.ExecuteAsync(
+        // Operação independente — abre sua própria conexão sem precisar de UnitOfWork
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(
             new CommandDefinition(sql,
                 new { IdUsuario = idUsuario, TokenHash = tokenHash,
                       TokenExpiraEm = expiraEm, IpOrigem = ipOrigem },
-                transaction: _uow.Transaction,
                 cancellationToken: ct));
     }
 

@@ -193,7 +193,7 @@ server {
 NGINXEOF
 
 # Config do BFF Web (Blazor WASM + BFF)
-cat > /etc/nginx/sites-available/web-licensemanager <<NGINXEOF
+cat > /etc/nginx/sites-available/licenciamento-web <<NGINXEOF
 server {
     listen 80;
     server_name $WEB_DOMAIN;
@@ -209,7 +209,7 @@ server {
     add_header X-Content-Type-Options    "nosniff"                            always;
     add_header Referrer-Policy           "strict-origin-when-cross-origin"    always;
     add_header Permissions-Policy        "camera=(), microphone=(), geolocation=()" always;
-    add_header Content-Security-Policy   "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://$API_DOMAIN https://cloudflareinsights.com;" always;
+    add_header Content-Security-Policy   "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://$API_DOMAIN https://cloudflareinsights.com;" always;
 
     location / {
         proxy_pass         http://localhost:$WEB_PORT;
@@ -231,8 +231,8 @@ server {
 NGINXEOF
 
 # Ativa os sites
-ln -sf /etc/nginx/sites-available/api-licensemanager /etc/nginx/sites-enabled/
-ln -sf /etc/nginx/sites-available/web-licensemanager /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/licenciamento-api /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/licenciamento-web /etc/nginx/sites-enabled/
 
 # Testa configuração
 nginx -t && systemctl reload nginx

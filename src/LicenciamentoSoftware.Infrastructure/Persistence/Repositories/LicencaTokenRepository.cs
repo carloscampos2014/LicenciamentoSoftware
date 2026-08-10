@@ -129,7 +129,7 @@ public sealed class LicencaTokenRepository : ILicencaTokenRepository
             SELECT lt.id                AS "IdToken",
                    lt.id_licenca        AS "IdLicenca",
                    l.id_cliente         AS "IdCliente",
-                   a.nome               AS "NomeAplicacao",
+                   a.titulo             AS "NomeAplicacao",
                    lt.expiracao_minutos AS "ExpiracaoMinutos",
                    lt.criado_em         AS "CriadoEm",
                    lt.ativo             AS "Ativo"
