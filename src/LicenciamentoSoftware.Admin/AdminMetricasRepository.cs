@@ -127,6 +127,17 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
     }
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Solicitações de reset de 2FA pendentes (contagem para o dashboard)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public async Task<int> ContarReset2FAPendentesAsync()
+    {
+        const string sql = "SELECT COUNT(*) FROM solicitacao_reset_2fa WHERE status = 'Pendente'";
+        using var conn = factory.CreateConnection();
+        return await conn.ExecuteScalarAsync<int>(sql);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Listagem de usuários com status 2FA (para reset via Admin)
     // ─────────────────────────────────────────────────────────────────────────
 

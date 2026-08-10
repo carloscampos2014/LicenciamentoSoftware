@@ -22,11 +22,21 @@ public static class AdminController
         IConfiguration config)
     {
         // Busca em paralelo para minimizar latência
-        var metricas    = await repo.BuscarMetricasGeraisAsync();
-        var erros       = await repo.BuscarErrosPorMotivoAsync();
-        var ultimosLogs = await repo.BuscarUltimosLoginsAsync();
-        var porTipo     = await repo.BuscarLicencasPorTipoAsync();
-        var tamanhoBd   = await repo.BuscarTamanhoBancoAsync();
+        var metricasTask    = repo.BuscarMetricasGeraisAsync();
+        var errosTask       = repo.BuscarErrosPorMotivoAsync();
+        var ultimosLogsTask = repo.BuscarUltimosLoginsAsync();
+        var porTipoTask     = repo.BuscarLicencasPorTipoAsync();
+        var tamanhoBdTask   = repo.BuscarTamanhoBancoAsync();
+        var pendentesTask   = repo.ContarReset2FAPendentesAsync();
+
+        await Task.WhenAll(metricasTask, errosTask, ultimosLogsTask, porTipoTask, tamanhoBdTask, pendentesTask);
+
+        var metricas    = metricasTask.Result;
+        var erros       = errosTask.Result;
+        var ultimosLogs = ultimosLogsTask.Result;
+        var porTipo     = porTipoTask.Result;
+        var tamanhoBd   = tamanhoBdTask.Result;
+        var pendentes2FA = pendentesTask.Result;
 
         // Status dos serviços
         var client = httpFactory.CreateClient("health");
@@ -40,7 +50,7 @@ public static class AdminController
         var agora = DateTime.UtcNow.ToString("dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture) + " UTC";
 
         var html = GerarHtml(metricas, erros, ultimosLogs, porTipo, tamanhoBd,
-                             apiUp, bffUp, backupStatus, agora);
+                             apiUp, bffUp, backupStatus, agora, pendentes2FA);
 
         return Results.Content(html, "text/html; charset=utf-8");
     }
@@ -159,7 +169,8 @@ public static class AdminController
     private static string GerarHtml(
         MetricasGerais m, IReadOnlyList<ErroMotivo> erros,
         IReadOnlyList<UltimoLogin> logins, IReadOnlyList<LicencaPorTipo> porTipo,
-        string tamanhoBd, bool apiUp, bool bffUp, BackupStatus backup, string agora)
+        string tamanhoBd, bool apiUp, bool bffUp, BackupStatus backup, string agora,
+        int pendentes2FA = 0)
     {
         var sb  = new StringBuilder();
         var ic  = CultureInfo.InvariantCulture;
@@ -218,6 +229,30 @@ public static class AdminController
             </script>
             <div class="container-fluid py-4">
             """);
+
+        // ── Alerta de reset 2FA pendentes ─────────────────────────────────────
+        if (pendentes2FA > 0)
+        {
+            sb.AppendLine(ic, $"""
+                <div class='alert alert-warning d-flex align-items-center justify-content-between mb-4 shadow-sm' role='alert'>
+                  <div>
+                    <strong>⚠️ {pendentes2FA} solicitaç{(pendentes2FA > 1 ? "ões" : "ão")} de reset de 2FA pendente{(pendentes2FA > 1 ? "s" : "")}</strong>
+                    <span class='ms-2 text-muted small'>Aguardando aprovação do administrador</span>
+                  </div>
+                  <a href='/reset-2fa/pendentes' class='btn btn-warning btn-sm fw-bold ms-3' style='white-space:nowrap'>
+                    🔑 Ver solicitações →
+                  </a>
+                </div>
+                """);
+        }
+        else
+        {
+            sb.AppendLine("""
+                <div class='mb-3 text-end'>
+                  <a href='/reset-2fa/pendentes' class='text-muted small text-decoration-none'>🔑 Solicitações de reset 2FA</a>
+                </div>
+                """);
+        }
 
         // ── Métricas gerais ───────────────────────────────────────────────────
         sb.AppendLine("<h5 class='text-muted mb-3'>Visão Geral</h5>");
