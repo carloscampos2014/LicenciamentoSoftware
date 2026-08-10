@@ -5,6 +5,8 @@ using LicenciamentoSoftware.Maui.ViewModels.Base;
 using LicenciamentoSoftware.Maui.ViewModels.ClientesFinais;
 using LicenciamentoSoftware.Maui.ViewModels.Licencas;
 using LicenciamentoSoftware.Maui.ViewModels.MinhaEmpresa;
+using LicenciamentoSoftware.Maui.ViewModels.MinhaConta;
+using LicenciamentoSoftware.Maui.Views.MinhaConta;
 using LicenciamentoSoftware.Maui.ViewModels.Usuarios;
 using LicenciamentoSoftware.Maui.Views;
 using LicenciamentoSoftware.Maui.Views.Aplicacoes;
@@ -92,6 +94,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ListaAplicacoesViewModel>();
         builder.Services.AddSingleton<ListaLicencasViewModel>();
         builder.Services.AddSingleton<MinhaEmpresaViewModel>();
+        builder.Services.AddSingleton<MinhaContaViewModel>();
 
         // Emitir — Transient (wizard sempre começa do zero)
         builder.Services.AddTransient<EmitirLicencaViewModel>();
@@ -110,6 +113,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<ListaAplicacoesPage>();
         builder.Services.AddSingleton<ListaLicencasPage>();
         builder.Services.AddSingleton<MinhaEmpresaPage>();
+        builder.Services.AddSingleton<MinhaContaPage>();
 
         // Emitir — Transient (sempre novo)
         builder.Services.AddTransient<EmitirLicencaPage>();

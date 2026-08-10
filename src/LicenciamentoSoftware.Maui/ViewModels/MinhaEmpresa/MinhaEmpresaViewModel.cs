@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using LicenciamentoSoftware.Client.Models.Clientes;
 using LicenciamentoSoftware.Maui.Services;
 using LicenciamentoSoftware.Maui.ViewModels.Base;
+
 namespace LicenciamentoSoftware.Maui.ViewModels.MinhaEmpresa;
 
 public partial class MinhaEmpresaViewModel(
@@ -18,17 +19,6 @@ public partial class MinhaEmpresaViewModel(
     [ObservableProperty] string? _erroSalvar;
     [ObservableProperty] bool _sucessoSalvar;
 
-    // ── 2FA ───────────────────────────────────────────────────────────────────
-
-    [ObservableProperty] bool? _totpAtivo;
-    [ObservableProperty] bool _exibirSetup2FA;
-    [ObservableProperty] bool _exibirDesativar2FA;
-    [ObservableProperty] string? _segredoTotp;
-    [ObservableProperty] string? _erroTotp;
-    [ObservableProperty] string? _sucessoTotp;
-    [ObservableProperty] string _codigoConfirmacaoTotp = string.Empty;
-    [ObservableProperty] string _codigoDesativarTotp   = string.Empty;
-
     // ── Encerrar conta ────────────────────────────────────────────────────────
 
     [ObservableProperty] bool _exibirModalEncerrar;
@@ -40,10 +30,9 @@ public partial class MinhaEmpresaViewModel(
 
     protected override async Task OnCarregarAsync()
     {
-        Titulo = "Minha Conta";
+        Titulo = "Minha Empresa";
         Ocupado = true;
         ErroSalvar = null;
-        ErroTotp = null;
 
         try
         {
@@ -58,8 +47,6 @@ public partial class MinhaEmpresaViewModel(
                     FormTelefone    = Empresa.Telefone;
                 }
             }
-
-            TotpAtivo = await factory.Totp.BuscarStatusAsync();
         }
         finally
         {
@@ -110,106 +97,6 @@ public partial class MinhaEmpresaViewModel(
         }
     }
 
-    // ── 2FA — Ativar ──────────────────────────────────────────────────────────
-
-    [RelayCommand]
-    async Task IniciarSetup2FAAsync()
-    {
-        ErroTotp = null;
-        SucessoTotp = null;
-        Ocupado = true;
-        try
-        {
-            var idUsuario = authService.ObterIdUsuario();
-            var email     = authService.ObterEmail() ?? authService.Nome ?? string.Empty;
-            if (idUsuario is null) { ErroTotp = "Sessão inválida."; return; }
-
-            var (segredo, _, erro) = await factory.Totp.IniciarSetupAsync(idUsuario.Value, email);
-
-            if (erro is not null) { ErroTotp = erro; return; }
-
-            SegredoTotp = segredo;
-            ExibirSetup2FA = true;
-        }
-        finally { Ocupado = false; }
-    }
-
-    [RelayCommand]
-    async Task ConfirmarSetup2FAAsync()
-    {
-        if (CodigoConfirmacaoTotp.Length != 6) return;
-        ErroTotp = null;
-        Ocupado = true;
-        try
-        {
-            var (sucesso, erro) = await factory.Totp.ConfirmarAsync(CodigoConfirmacaoTotp);
-            if (sucesso)
-            {
-                TotpAtivo = true;
-                ExibirSetup2FA = false;
-                SegredoTotp = null;
-                CodigoConfirmacaoTotp = string.Empty;
-                SucessoTotp = "Autenticação de dois fatores ativada com sucesso.";
-            }
-            else
-            {
-                ErroTotp = erro ?? "Código inválido.";
-            }
-        }
-        finally { Ocupado = false; }
-    }
-
-    [RelayCommand]
-    void CancelarSetup2FA()
-    {
-        ExibirSetup2FA = false;
-        SegredoTotp = null;
-        CodigoConfirmacaoTotp = string.Empty;
-        ErroTotp = null;
-    }
-
-    // ── 2FA — Desativar ───────────────────────────────────────────────────────
-
-    [RelayCommand]
-    void MostrarDesativar2FA()
-    {
-        CodigoDesativarTotp = string.Empty;
-        ErroTotp = null;
-        ExibirDesativar2FA = true;
-    }
-
-    [RelayCommand]
-    async Task ConfirmarDesativar2FAAsync()
-    {
-        if (CodigoDesativarTotp.Length != 6) return;
-        ErroTotp = null;
-        Ocupado = true;
-        try
-        {
-            var (sucesso, erro) = await factory.Totp.DesativarAsync(CodigoDesativarTotp);
-            if (sucesso)
-            {
-                TotpAtivo = false;
-                ExibirDesativar2FA = false;
-                CodigoDesativarTotp = string.Empty;
-                SucessoTotp = "Autenticação de dois fatores desativada.";
-            }
-            else
-            {
-                ErroTotp = erro ?? "Código inválido.";
-            }
-        }
-        finally { Ocupado = false; }
-    }
-
-    [RelayCommand]
-    void CancelarDesativar2FA()
-    {
-        ExibirDesativar2FA = false;
-        CodigoDesativarTotp = string.Empty;
-        ErroTotp = null;
-    }
-
     // ── Encerrar conta ────────────────────────────────────────────────────────
 
     [RelayCommand]
@@ -241,7 +128,6 @@ public partial class MinhaEmpresaViewModel(
 
             if (sucesso)
             {
-                // Logout — conta encerrada, sessão deve ser encerrada
                 await authService.LogoutAsync();
                 await Shell.Current.GoToAsync("//login");
             }
@@ -251,13 +137,5 @@ public partial class MinhaEmpresaViewModel(
             }
         }
         finally { Ocupado = false; }
-    }
-
-    /// <summary>Copia o segredo TOTP para a área de transferência.</summary>
-    [RelayCommand]
-    async Task CopiarSegredoAsync()
-    {
-        if (SegredoTotp is null) return;
-        await Clipboard.SetTextAsync(SegredoTotp);
     }
 }
