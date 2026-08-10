@@ -36,16 +36,9 @@
         <span class="dismiss" onclick="this.parentElement.style.display='none'">&#10006;</span>
     </div>
 
-    <script src="js/bootstrap.bundle.min.js"></script>
-    <script src="_framework/blazor.webassembly.js"></script>
-    <script>
-        // Registrar Service Worker para PWA
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(reg => console.log('SW registrado:', reg.scope))
-                .catch(err => console.warn('SW falhou:', err));
-        }
-    </script>
+    <script src="js/bootstrap.bundle.min.js" data-cfasync="false"></script>
+    <script src="_framework/blazor.webassembly.js" data-cfasync="false"></script>
+    <script src="js/sw-register.js" data-cfasync="false"></script>
 </body>
 
 </html>
