@@ -70,7 +70,7 @@ jobs:
           echo "✅ Nenhuma vulnerabilidade conhecida encontrada."
 
       - name: Upload relatório de vulnerabilidades
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: vulnerability-report
