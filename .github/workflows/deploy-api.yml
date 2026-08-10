@@ -120,7 +120,7 @@ jobs:
           EmailSettings__Habilitado=true
           EmailSettings__Host=smtp.gmail.com
           EmailSettings__Porta=587
-          EmailSettings__UsarSsl=true
+          EmailSettings__UsarSsl=false
           EmailSettings__Usuario=${{ secrets.EMAIL_USUARIO }}
           EmailSettings__Senha=${{ secrets.EMAIL_SENHA }}
           EmailSettings__EmailRemetente=${{ secrets.EMAIL_USUARIO }}
