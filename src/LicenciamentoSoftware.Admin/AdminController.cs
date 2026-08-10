@@ -226,6 +226,26 @@ public static class AdminController
                   if (s <= 0) { clearInterval(iv); location.reload(); }
                 }, 1000);
               })();
+
+              function executarBackup(btn) {
+                btn.disabled = true;
+                btn.textContent = '⏳ Executando...';
+                fetch('/backup/executar', { method: 'POST' })
+                  .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, d: d }; }); })
+                  .then(function(res) {
+                    if (res.ok) {
+                      alert('✅ Backup concluído!\n\n' + (res.d.saida || '').trim());
+                    } else {
+                      alert('❌ Erro ao executar backup:\n\n' + (res.d.detail || JSON.stringify(res.d)));
+                    }
+                    location.reload();
+                  })
+                  .catch(function(e) {
+                    alert('❌ Erro de conexão: ' + e);
+                    btn.disabled = false;
+                    btn.textContent = '⚙️ Executar backup agora';
+                  });
+              }
             </script>
             <div class="container-fluid py-4">
             """);
@@ -318,9 +338,9 @@ public static class AdminController
                     <span class='text-muted small'>Último: {backup.DataHora ?? "N/D"} &nbsp;|&nbsp; Arquivo: {backup.Arquivo ?? "N/D"} &nbsp;|&nbsp; Tamanho: {backup.Tamanho ?? "N/D"}</span>
                   </div>
                   <div class='col-auto'>
-                    <form method='post' action='/backup/executar'>
-                      <button type='submit' class='btn btn-outline-secondary btn-sm'>⚙️ Executar backup agora</button>
-                    </form>
+                    <button class='btn btn-outline-secondary btn-sm' onclick='executarBackup(this)'>
+                      ⚙️ Executar backup agora
+                    </button>
                   </div>
                 </div>
               </div>
