@@ -398,11 +398,15 @@ Acesso: `ssh -L 16000:localhost:5020 <vm>` â†’ `http://localhost:16000`
 
 ---
 
-## Fase 17 — Segurança de conta e paridade MAUI
+## Fase 17 — Segurança de conta e paridade MAUI ✅ Concluída
 
 **Objetivo:** fechar gaps de segurança de acesso (recuperação de senha, troca de senha, reset de 2FA) e garantir paridade funcional do app MAUI com o portal Web.
 
-1. **[#168]** Reset do 2FA via Painel Admin — endpoint POST /admin/usuarios/{id}/reset-2fa + botão no painel Admin para operador redefinir o TOTP de usuário bloqueado.
-2. **[#169]** Alterar própria senha — endpoint PUT /auth/minha-senha + seção em /minha-conta (Web) e MinhaContaPage (MAUI). Invalida refresh tokens ativos.
-3. **[#170]** Recuperação de senha via e-mail — endpoints POST /auth/esqueci-senha + POST /auth/redefinir-senha, migration senha_redefinicao, template de e-mail, páginas no Web e link no MAUI.
-4. **[#171]** Página "Minha Empresa" no MAUI — MinhaEmpresaPage.xaml + MinhaEmpresaViewModel.cs com edição de dados da empresa e encerramento de conta, paridade com /minha-empresa do Web.
+1. ✅ **[#168]** Reset do 2FA via Painel Admin — endpoint POST /admin/usuarios/{id}/reset-2fa + botão no painel Admin para operador redefinir o TOTP de usuário bloqueado. Migration V009 (solicitacao_reset_2fa). Fluxo de 3 etapas: solicitar → confirmar por e-mail → aprovar no Admin.
+2. ✅ **[#169]** Alterar própria senha — endpoint PUT /auth/minha-senha + seção em /minha-conta (Web) e MinhaContaPage (MAUI). Invalida refresh tokens ativos.
+3. ✅ **[#170]** Recuperação de senha via e-mail — endpoints POST /auth/esqueci-senha + POST /auth/redefinir-senha, migration V008 (senha_redefinicao), template de e-mail RecuperacaoSenha.html, páginas /esqueci-senha e /redefinir-senha no Web.
+4. ✅ **[#171]** Página "Minha Empresa" no MAUI — MinhaEmpresaPage.xaml + MinhaEmpresaViewModel.cs com edição de dados da empresa e encerramento de conta, paridade com /minha-empresa do Web.
+
+**Resultado:** 388 testes aprovados (inalterado — sem novos testes unitários nessa fase). Fluxos de segurança de conta completos em Web e MAUI. Admin pode aprovar resets de 2FA pendentes em http://localhost:16000/reset-2fa/pendentes via SSH tunnel.
+
+**Demo:** Login → tela TOTP → "Não tenho acesso ao autenticador" → informar senha → e-mail enviado → clicar link → solicitação Pendente criada → Admin aprova em /reset-2fa/pendentes → usuário recebe e-mail de confirmação → 2FA removido, pode configurar novo no próximo login.
