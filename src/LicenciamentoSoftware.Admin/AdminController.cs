@@ -307,14 +307,14 @@ public static class AdminController
         var bkIcon  = backup.Ok ? "✅" : "🔴";
 
         sb.AppendLine("""
-            <div class='row g-3 mb-4' style='align-items:start'>
+            <div class='row g-3 mb-4'>
             """);
 
         // Coluna esquerda — Status dos Serviços
         sb.AppendLine("""
-            <div class='col-12 col-md-4'>
+            <div class='col-12 col-md-4 d-flex flex-column'>
               <h5 class='text-muted mb-3'>Status dos Serviços</h5>
-              <div class='row g-3'>
+              <div class='row g-3 flex-grow-1'>
             """);
 
         void Servico(string nome, bool up) =>
@@ -336,11 +336,11 @@ public static class AdminController
 
         // Coluna direita — Backup do Banco
         sb.AppendLine(ic, $"""
-            <div class='col-12 col-md-8'>
+            <div class='col-12 col-md-8 d-flex flex-column'>
               <h5 class='text-muted mb-3'>Backup do Banco</h5>
-              <div class='card shadow-sm'>
-                <div class='card-body'>
-                  <div class='row align-items-center'>
+              <div class='card shadow-sm flex-grow-1'>
+                <div class='card-body d-flex align-items-center'>
+                  <div class='row align-items-center w-100'>
                     <div class='col'>
                       <span class='{bkClass}'>{bkIcon} {(backup.Ok ? "Backup recente OK" : "Backup desatualizado ou ausente")}</span><br>
                       <span class='text-muted small'>Último: {backup.DataHora ?? "N/D"} &nbsp;|&nbsp; Arquivo: {backup.Arquivo ?? "N/D"} &nbsp;|&nbsp; Tamanho: {backup.Tamanho ?? "N/D"}</span>
