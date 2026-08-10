@@ -302,16 +302,20 @@ public static class AdminController
 
         sb.AppendLine("</div>");
 
-        // ── Status dos serviços ───────────────────────────────────────────────
+        // ── Status dos serviços + Backup (mesma linha) ───────────────────────
+        var bkClass = backup.Ok ? "ok" : "err";
+        var bkIcon  = backup.Ok ? "✅" : "🔴";
+
         sb.AppendLine("""
-            <h5 class='text-muted mb-3'>Status dos Serviços</h5>
+            <h5 class='text-muted mb-3'>Status dos Serviços &amp; Backup</h5>
             <div class='row g-3 mb-4'>
             """);
 
+        // Cards de serviços
         void Servico(string nome, bool up) =>
             sb.AppendLine(ic, $"""
-                <div class='col-6 col-md-3'>
-                  <div class='card shadow-sm'>
+                <div class='col-6 col-md-2'>
+                  <div class='card shadow-sm h-100'>
                     <div class='card-body py-3 text-center'>
                       <div class='small text-muted'>{nome}</div>
                       <div class='{(up ? "ok" : "err")}' style='font-size:1.4rem'>{(up ? "● Online" : "● Offline")}</div>
@@ -322,30 +326,30 @@ public static class AdminController
 
         Servico("API (porta 5016)", apiUp);
         Servico("BFF (porta 5017)", bffUp);
-        sb.AppendLine("</div>");
 
-        // ── Backup ────────────────────────────────────────────────────────────
-        var bkClass = backup.Ok ? "ok" : "err";
-        var bkIcon  = backup.Ok ? "✅" : "🔴";
-
+        // Card de backup — ocupa o restante da linha
         sb.AppendLine(ic, $"""
-            <h5 class='text-muted mb-3'>Backup do Banco</h5>
-            <div class='card shadow-sm mb-4'>
-              <div class='card-body'>
-                <div class='row align-items-center'>
-                  <div class='col'>
-                    <span class='{bkClass}'>{bkIcon} {(backup.Ok ? "Backup recente OK" : "Backup desatualizado ou ausente")}</span><br>
-                    <span class='text-muted small'>Último: {backup.DataHora ?? "N/D"} &nbsp;|&nbsp; Arquivo: {backup.Arquivo ?? "N/D"} &nbsp;|&nbsp; Tamanho: {backup.Tamanho ?? "N/D"}</span>
-                  </div>
-                  <div class='col-auto'>
-                    <button class='btn btn-outline-secondary btn-sm' onclick='executarBackup(this)'>
-                      ⚙️ Executar backup agora
-                    </button>
+            <div class='col-12 col-md-8'>
+              <div class='card shadow-sm h-100'>
+                <div class='card-body py-3'>
+                  <div class='row align-items-center h-100'>
+                    <div class='col'>
+                      <div class='small text-muted mb-1'>Backup do Banco</div>
+                      <span class='{bkClass}'>{bkIcon} {(backup.Ok ? "Backup recente OK" : "Backup desatualizado ou ausente")}</span><br>
+                      <span class='text-muted small'>Último: {backup.DataHora ?? "N/D"} &nbsp;|&nbsp; Arquivo: {backup.Arquivo ?? "N/D"} &nbsp;|&nbsp; Tamanho: {backup.Tamanho ?? "N/D"}</span>
+                    </div>
+                    <div class='col-auto'>
+                      <button class='btn btn-outline-secondary btn-sm' onclick='executarBackup(this)'>
+                        ⚙️ Executar backup agora
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
             """);
+
+        sb.AppendLine("</div>");
 
         // ── Licenças por tipo ─────────────────────────────────────────────────
         if (porTipo.Count > 0)
