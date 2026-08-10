@@ -147,4 +147,30 @@ public sealed class AuthApiService(HttpClient http)
 
     private sealed record ErrosResponse(IReadOnlyList<string> Erros);
     private sealed record ErroSimplesResponse(string Erro);
+
+    /// <summary>Altera a senha do usuário autenticado.</summary>
+    public async Task<(bool Sucesso, string? Erro)> AlterarSenhaAsync(
+        string senhaAtual,
+        string novaSenha,
+        string confirmacaoNovaSenha,
+        CancellationToken ct = default)
+    {
+        var response = await http.PutAsJsonAsync(
+            "auth/minha-senha",
+            new { SenhaAtual = senhaAtual, NovaSenha = novaSenha, ConfirmacaoNovaSenha = confirmacaoNovaSenha },
+            ct);
+
+        if (response.IsSuccessStatusCode) return (true, null);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            return (false, "Senha atual incorreta.");
+
+        if (response.StatusCode == System.Net.HttpStatusCode.UnprocessableEntity)
+        {
+            var body = await response.Content.ReadFromJsonAsync<ErroSimplesResponse>(ct);
+            return (false, body?.Erro ?? "Dados inválidos.");
+        }
+
+        return (false, "Erro ao alterar senha. Tente novamente.");
+    }
 }

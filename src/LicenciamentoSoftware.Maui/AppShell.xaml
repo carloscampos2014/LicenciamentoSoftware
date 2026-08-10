@@ -8,6 +8,8 @@
        xmlns:usuarios="clr-namespace:LicenciamentoSoftware.Maui.Views.Usuarios"
        xmlns:aplicacoes="clr-namespace:LicenciamentoSoftware.Maui.Views.Aplicacoes"
        xmlns:minhaconta="clr-namespace:LicenciamentoSoftware.Maui.Views.MinhaEmpresa"
+       xmlns:minhaempresa="clr-namespace:LicenciamentoSoftware.Maui.Views.MinhaEmpresa"
+       xmlns:contaview="clr-namespace:LicenciamentoSoftware.Maui.Views.MinhaConta"
        x:Class="LicenciamentoSoftware.Maui.AppShell"
        Shell.FlyoutBehavior="Flyout"
        FlyoutBackgroundColor="#ffffff">
@@ -71,7 +73,11 @@
     </FlyoutItem>
 
     <FlyoutItem Title="Minha Conta" Icon="usuarios.svg" Route="minhaconta">
-        <ShellContent ContentTemplate="{DataTemplate minhaconta:MinhaEmpresaPage}" />
+        <ShellContent ContentTemplate="{DataTemplate contaview:MinhaContaPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Minha Empresa" Icon="aplicacoes.svg" Route="minhaempresa">
+        <ShellContent ContentTemplate="{DataTemplate minhaempresa:MinhaEmpresaPage}" />
     </FlyoutItem>
 
 </Shell>
