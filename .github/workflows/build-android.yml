@@ -125,7 +125,7 @@ jobs:
           ls -lh ./artifacts/
 
       - name: Publicar artefatos
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: LicenseManager-Android-${{ steps.version.outputs.DISPLAY_VERSION }}
           path: ./artifacts/
