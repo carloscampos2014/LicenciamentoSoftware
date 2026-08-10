@@ -358,39 +358,96 @@ public static class AdminController
 
         sb.AppendLine("</div>"); // fecha row externa
 
-        // ── Licenças por tipo ─────────────────────────────────────────────────
+        // ── Licenças por tipo + Erros por motivo ─────────────────────────────
         if (porTipo.Count > 0)
         {
+            var totalLicencas = porTipo.Sum(t => t.Total);
+            var coresTipo = new[] { "#6c63ff", "#10b981", "#f59e0b", "#3b82f6", "#ef4444" };
+
             sb.AppendLine("""
                 <div class='row g-3 mb-4'>
+                """);
+
+            // ── Licenças por Tipo — barras de progresso ───────────────────────
+            sb.AppendLine("""
                   <div class='col-md-4'>
                     <h5 class='text-muted mb-3'>Licenças por Tipo</h5>
-                    <div class='card shadow-sm'>
-                      <div class='card-body p-0'>
-                        <table class='table table-sm mb-0'>
-                          <thead><tr><th>Tipo</th><th class='text-end'>Total</th></tr></thead>
-                          <tbody>
+                    <div class='card shadow-sm h-100'>
+                      <div class='card-body'>
                 """);
-            foreach (var t in porTipo)
-                sb.AppendLine(ic, $"<tr><td>{t.Tipo}</td><td class='text-end fw-bold'>{t.Total.ToString(ic)}</td></tr>");
-            sb.AppendLine("</tbody></table></div></div></div>");
 
-            // ── Erros por motivo ──────────────────────────────────────────────
+            for (var i = 0; i < porTipo.Count; i++)
+            {
+                var t     = porTipo[i];
+                var cor   = coresTipo[i % coresTipo.Length];
+                var pct   = totalLicencas > 0 ? (int)(t.Total * 100 / totalLicencas) : 0;
+                sb.AppendLine(ic, $"""
+                        <div class='mb-3'>
+                          <div class='d-flex justify-content-between mb-1'>
+                            <span style='font-size:.85rem;font-weight:600;color:#495057'>{t.Tipo}</span>
+                            <span style='font-size:.85rem;font-weight:700;color:{cor}'>{t.Total.ToString(ic)}</span>
+                          </div>
+                          <div class='progress' style='height:8px;border-radius:4px;background:#e9ecef'>
+                            <div class='progress-bar' role='progressbar'
+                                 style='width:{pct}%;background:{cor};border-radius:4px'
+                                 aria-valuenow='{pct}' aria-valuemin='0' aria-valuemax='100'></div>
+                          </div>
+                        </div>
+                    """);
+            }
+
+            sb.AppendLine("""
+                      </div>
+                    </div>
+                  </div>
+                """);
+
+            // ── Erros por Motivo (24h) — badges coloridos ─────────────────────
             sb.AppendLine("""
                   <div class='col-md-4'>
                     <h5 class='text-muted mb-3'>Erros por Motivo (24h)</h5>
-                    <div class='card shadow-sm'>
-                      <div class='card-body p-0'>
-                        <table class='table table-sm mb-0'>
-                          <thead><tr><th>Motivo</th><th class='text-end'>Total</th></tr></thead>
-                          <tbody>
+                    <div class='card shadow-sm h-100'>
+                      <div class='card-body'>
                 """);
+
             if (erros.Count == 0)
-                sb.AppendLine("<tr><td colspan='2' class='text-center text-muted'>Nenhum erro ✅</td></tr>");
+            {
+                sb.AppendLine("""
+                        <div class='d-flex flex-column align-items-center justify-content-center h-100 py-3'>
+                          <span style='font-size:2rem'>✅</span>
+                          <span class='text-muted mt-2' style='font-size:.875rem'>Nenhum erro nas últimas 24h</span>
+                        </div>
+                    """);
+            }
             else
+            {
+                var maxErro = erros.Max(e => e.Total);
                 foreach (var e in erros)
-                    sb.AppendLine(ic, $"<tr><td>{e.Motivo}</td><td class='text-end text-danger fw-bold'>{e.Total.ToString(ic)}</td></tr>");
-            sb.AppendLine("</tbody></table></div></div></div></div>");
+                {
+                    var pct = maxErro > 0 ? (int)(e.Total * 100 / maxErro) : 0;
+                    sb.AppendLine(ic, $"""
+                            <div class='mb-3'>
+                              <div class='d-flex justify-content-between mb-1'>
+                                <span style='font-size:.82rem;color:#495057'>{e.Motivo}</span>
+                                <span class='badge' style='background:#dc3545;font-size:.8rem'>{e.Total.ToString(ic)}</span>
+                              </div>
+                              <div class='progress' style='height:6px;border-radius:3px;background:#f8d7da'>
+                                <div class='progress-bar bg-danger' role='progressbar'
+                                     style='width:{pct}%;border-radius:3px'
+                                     aria-valuenow='{pct}' aria-valuemin='0' aria-valuemax='100'></div>
+                              </div>
+                            </div>
+                        """);
+                }
+            }
+
+            sb.AppendLine("""
+                      </div>
+                    </div>
+                  </div>
+                """);
+
+            sb.AppendLine("</div>"); // fecha row
         }
 
         // ── Últimos logins ────────────────────────────────────────────────────
