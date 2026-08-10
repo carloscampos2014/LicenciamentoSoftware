@@ -4,84 +4,15 @@
 @inject JwtAuthStateProvider AuthProvider
 @inject NavigationManager Nav
 @inject TotpApiService TotpService
-@inject ClienteApiService ClienteService
-@using LicenciamentoSoftware.Client.Models.Clientes
 
 <PageTitle>Minha Conta — LicenseManager</PageTitle>
 
 <div class="page-header">
     <h1 class="page-title">Minha Conta</h1>
-    <p class="page-subtitle">Gerencie suas preferências e dados pessoais.</p>
+    <p class="page-subtitle">Gerencie sua segurança e dados pessoais.</p>
 </div>
 
 <div style="max-width:600px">
-
-    <!-- Seção Minha Empresa -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <h2 style="font-size:1rem;font-weight:700;color:#212529;margin-bottom:.25rem">
-                Minha Empresa
-            </h2>
-            <p class="text-muted mb-3" style="font-size:.875rem">
-                Atualize os dados cadastrais da sua empresa.
-            </p>
-
-            @if (_carregandoEmpresa)
-            {
-                <div class="text-center py-3">
-                    <div class="spinner-border spinner-border-sm text-primary"></div>
-                </div>
-            }
-            else if (_empresa is not null)
-            {
-                <div class="form-group">
-                    <label class="form-label">Razão Social *</label>
-                    <input class="form-control" @bind="_empresaForm.RazaoSocial" />
-                </div>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label class="form-label">Tipo</label>
-                        <input class="form-control" value="@(_empresa.TipoInscricao == 1 ? "CPF" : "CNPJ")" disabled />
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">@(_empresa.TipoInscricao == 1 ? "CPF" : "CNPJ")</label>
-                        <input class="form-control" value="@_empresa.NumeroInscricao" disabled />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">E-mail da empresa *</label>
-                    <input class="form-control" type="email" @bind="_empresaForm.Email" />
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Telefone</label>
-                    <input class="form-control" @bind="_empresaForm.Telefone" placeholder="(00) 00000-0000" />
-                </div>
-
-                @if (_erroEmpresa is not null)
-                {
-                    <div class="alert alert-danger py-2 px-3 mb-3" style="font-size:.875rem">@_erroEmpresa</div>
-                }
-                @if (_sucessoEmpresa)
-                {
-                    <div class="alert alert-success py-2 px-3 mb-3" style="font-size:.875rem">
-                        Dados atualizados com sucesso.
-                    </div>
-                }
-
-                <button class="btn btn-primary btn-sm" @onclick="SalvarEmpresa"
-                        disabled="@_salvandoEmpresa">
-                    @if (_salvandoEmpresa) { <span class="spinner-border spinner-border-sm me-2"></span> }
-                    Salvar alterações
-                </button>
-            }
-            else
-            {
-                <p class="text-muted" style="font-size:.875rem">
-                    Não foi possível carregar os dados da empresa.
-                </p>
-            }
-        </div>
-    </div>
 
     <!-- Seção 2FA -->
     <div class="card mb-4" id="2fa">
@@ -297,14 +228,6 @@
 }
 
 @code {
-    // ── Empresa ───────────────────────────────────────────────────────────────
-    private ClienteResult? _empresa;
-    private bool _carregandoEmpresa = true;
-    private bool _salvandoEmpresa;
-    private bool _sucessoEmpresa;
-    private string? _erroEmpresa;
-    private readonly EmpresaFormModel _empresaForm = new();
-
     // ── 2FA ──────────────────────────────────────────────────────────────────
     private bool? _totpAtivo;
     private bool _mostrarSetup2FA;
@@ -330,61 +253,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var totpTask   = TotpService.BuscarStatusAsync();
-        var empresaTask = CarregarEmpresaAsync();
-        _totpAtivo = await totpTask;
-        await empresaTask;
-    }
-
-    // ── Empresa ───────────────────────────────────────────────────────────────
-
-    private async Task CarregarEmpresaAsync()
-    {
-        try
-        {
-            var idCliente = AuthProvider.ObterIdCliente();
-            if (idCliente is null) return;
-            _empresa = await ClienteService.BuscarPorIdAsync(idCliente.Value);
-            if (_empresa is not null)
-            {
-                _empresaForm.RazaoSocial = _empresa.RazaoSocial;
-                _empresaForm.Email       = _empresa.Email;
-                _empresaForm.Telefone    = _empresa.Telefone;
-            }
-        }
-        catch { /* falha silenciosa — seção mostra mensagem */ }
-        finally { _carregandoEmpresa = false; }
-    }
-
-    private async Task SalvarEmpresa()
-    {
-        _salvandoEmpresa = true;
-        _erroEmpresa = null;
-        _sucessoEmpresa = false;
-        try
-        {
-            var idCliente = AuthProvider.ObterIdCliente();
-            if (idCliente is null) { _erroEmpresa = "Sessão inválida."; return; }
-
-            var (sucesso, erro) = await ClienteService.AtualizarAsync(
-                idCliente.Value,
-                new AtualizarClienteRequest(
-                    _empresaForm.RazaoSocial,
-                    _empresaForm.Email,
-                    string.IsNullOrWhiteSpace(_empresaForm.Telefone) ? null : _empresaForm.Telefone));
-
-            if (sucesso)
-            {
-                _sucessoEmpresa = true;
-                // Recarregar para sincronizar
-                _empresa = await ClienteService.BuscarPorIdAsync(idCliente.Value);
-            }
-            else
-            {
-                _erroEmpresa = erro;
-            }
-        }
-        finally { _salvandoEmpresa = false; }
+        _totpAtivo = await TotpService.BuscarStatusAsync();
     }
 
     // ── Setup 2FA ─────────────────────────────────────────────────────────────
@@ -540,16 +409,9 @@
 
     private sealed record ErroResponse(string Erro);
 
-    private sealed class EmpresaFormModel
-    {
-        public string RazaoSocial { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-        public string? Telefone { get; set; }
-    }
-
-    // ── Alterar senha (Fase 17) ───────────────────────────────────────────────
-    private string _senhaAtual      = string.Empty;
-    private string _novaSenha       = string.Empty;
+    // ── Alterar senha ─────────────────────────────────────────────────────────
+    private string _senhaAtual       = string.Empty;
+    private string _novaSenha        = string.Empty;
     private string _confirmacaoSenha = string.Empty;
     private string? _erroSenha;
     private bool _sucessoSenha;
@@ -557,7 +419,7 @@
 
     private async Task AlterarSenha()
     {
-        _erroSenha  = null;
+        _erroSenha    = null;
         _sucessoSenha = false;
         if (string.IsNullOrWhiteSpace(_senhaAtual)) { _erroSenha = "Informe a senha atual."; return; }
         if (string.IsNullOrWhiteSpace(_novaSenha) || _novaSenha.Length < 8)
@@ -576,7 +438,7 @@
 
             if (response.IsSuccessStatusCode)
             {
-                _sucessoSenha = true;
+                _sucessoSenha     = true;
                 _senhaAtual       = string.Empty;
                 _novaSenha        = string.Empty;
                 _confirmacaoSenha = string.Empty;
@@ -590,5 +452,3 @@
         finally { _salvandoSenha = false; }
     }
 }
-
-@* Variáveis e método para alterar senha — adicionados na Fase 17 *@
