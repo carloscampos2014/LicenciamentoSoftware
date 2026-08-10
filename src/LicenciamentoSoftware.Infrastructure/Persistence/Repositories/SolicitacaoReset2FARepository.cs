@@ -19,8 +19,8 @@ public sealed class SolicitacaoReset2FARepository : ISolicitacaoReset2FAReposito
         string? ipOrigem, CancellationToken ct = default)
     {
         const string sql = """
-            INSERT INTO solicitacao_reset_2fa (id_usuario, token_hash, token_expira_em, ip_origem)
-            VALUES (@IdUsuario, @TokenHash, @TokenExpiraEm, @IpOrigem)
+            INSERT INTO solicitacao_reset_2fa (id_usuario, token_hash, token_expira_em, ip_origem, status)
+            VALUES (@IdUsuario, @TokenHash, @TokenExpiraEm, @IpOrigem, 'AguardandoConfirmacao')
             """;
 
         // Operação independente — abre sua própria conexão sem precisar de UnitOfWork
