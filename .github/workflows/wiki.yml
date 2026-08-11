@@ -48,20 +48,8 @@ jobs:
           cp docs/contributing.md         wiki/Contribuindo.md
 
           # Instalação
-          cp docs/installation/windows.md wiki/Instalacao-Windows.md
-          cp docs/installation/android.md wiki/Instalacao-Android.md
-
-          # SDKs
-          cp docs/sdks/index.md           wiki/SDKs.md
-          cp docs/sdks/csharp.md          wiki/SDK-CSharp.md
-          cp docs/sdks/java.md            wiki/SDK-Java.md
-          cp docs/sdks/python.md          wiki/SDK-Python.md
-          cp docs/sdks/javascript.md      wiki/SDK-JavaScript.md
-          cp docs/sdks/rust.md            wiki/SDK-Rust.md
-          cp docs/sdks/ruby.md            wiki/SDK-Ruby.md
-          cp docs/sdks/php.md             wiki/SDK-PHP.md
-          cp docs/sdks/delphi.md          wiki/SDK-Delphi.md
-          cp docs/sdks/vb6.md             wiki/SDK-VB6.md
+          cp docs/instalacao-windows.md   wiki/Instalacao-Windows.md
+          cp docs/instalacao-android.md   wiki/Instalacao-Android.md
 
       - name: Commit e push na wiki
         run: |
