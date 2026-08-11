@@ -1,31 +1,31 @@
-﻿# EspecificaÃ§Ã£o do Frontend Web â€” LicenciamentoSoftware
+# Especificação do Frontend Web — LicenciamentoSoftware
 
-**VersÃ£o:** 1.0  
+**Versão:** 1.0  
 **Fase:** 9  
 **Projeto:** `LicenciamentoSoftware.Web` + `LicenciamentoSoftware.Web.Server`  
 **Stack:** Blazor WASM (.NET 10) + ASP.NET Core BFF + YARP  
 
 ---
 
-## 1. VisÃ£o Geral
+## 1. Visão Geral
 
-O frontend web Ã© um **portal de gestÃ£o** destinado aos clientes da plataforma (empresas que contratam o sistema de licenciamento). Cada empresa gerencia seus prÃ³prios dados de forma isolada â€” nenhum dado de uma empresa Ã© visÃ­vel para outra.
+O frontend web é um **portal de gestão** destinado aos clientes da plataforma (empresas que contratam o sistema de licenciamento). Cada empresa gerencia seus próprios dados de forma isolada — nenhum dado de uma empresa é visível para outra.
 
 ### 1.1 O que o portal permite
 
 - Cadastrar a empresa e criar a conta de administrador
 - Fazer login com e-mail, senha e segundo fator TOTP
-- Gerenciar clientes finais, usuÃ¡rios internos e aplicaÃ§Ãµes
-- Emitir e gerenciar licenÃ§as de software por tipo
-- Gerar e renovar tokens HMAC para autenticaÃ§Ã£o dos aplicativos clientes
-- Monitorar sessÃµes ativas e instalaÃ§Ãµes registradas
-- Executar operaÃ§Ãµes manuais: renovar perÃ­odo, encerrar sessÃ£o, liberar instalaÃ§Ã£o
+- Gerenciar clientes finais, usuários internos e aplicações
+- Emitir e gerenciar licenças de software por tipo
+- Gerar e renovar tokens HMAC para autenticação dos aplicativos clientes
+- Monitorar sessões ativas e instalações registradas
+- Executar operações manuais: renovar período, encerrar sessão, liberar instalação
 
-### 1.2 O que o portal NÃƒO faz
+### 1.2 O que o portal NÃO faz
 
-- **NÃ£o Ã© o portal do cliente final** â€” o usuÃ¡rio final (Pedro da Empresa XYZ) nÃ£o usa este portal. Ele usa o aplicativo cliente que valida licenÃ§a via API HMAC
-- **NÃ£o tem painel de administraÃ§Ã£o de plataforma** â€” nÃ£o existe um superadmin que gerencia todas as empresas
-- **NÃ£o expÃµe a API de validaÃ§Ã£o** â€” os endpoints `/api/validacao/*` sÃ£o usados pelos aplicativos, nÃ£o pelo portal
+- **Não é o portal do cliente final** — o usuário final (Pedro da Empresa XYZ) não usa este portal. Ele usa o aplicativo cliente que valida licença via API HMAC
+- **Não tem painel de administração de plataforma** — não existe um superadmin que gerencia todas as empresas
+- **Não expõe a API de validação** — os endpoints `/api/validacao/*` são usados pelos aplicativos, não pelo portal
 
 ---
 
@@ -34,47 +34,47 @@ O frontend web Ã© um **portal de gestÃ£o** destinado aos clientes da platafo
 ### 2.1 Projetos envolvidos
 
 ```
-LicenciamentoSoftware.Web          Blazor WASM â€” pÃ¡ginas e componentes (roda no browser)
-LicenciamentoSoftware.Web.Server   BFF â€” serve o WASM, gerencia cookies, proxy para API
-LicenciamentoSoftware.Client       Biblioteca HTTP â€” DTOs e services compartilhados
+LicenciamentoSoftware.Web          Blazor WASM — páginas e componentes (roda no browser)
+LicenciamentoSoftware.Web.Server   BFF — serve o WASM, gerencia cookies, proxy para API
+LicenciamentoSoftware.Client       Biblioteca HTTP — DTOs e services compartilhados
 ```
 
-### 2.2 Fluxo de comunicaÃ§Ã£o
+### 2.2 Fluxo de comunicação
 
 ```
 Browser
-  â”‚  Baixa os arquivos WASM (.js, .wasm, .dll)
-  â”‚  e executa o C# localmente
-  â”‚
-  â†• HTTPS / mesma origem (localhost:7152)
-  â”‚
+  │  Baixa os arquivos WASM (.js, .wasm, .dll)
+  │  e executa o C# localmente
+  │
+  ↕ HTTPS / mesma origem (localhost:7152)
+  │
 Web.Server (BFF)
-  â”‚  â”œâ”€â”€ Serve os arquivos estÃ¡ticos do WASM
-  â”‚  â”œâ”€â”€ POST /bff/login      â†’ autentica, emite cookie HttpOnly
-  â”‚  â”œâ”€â”€ POST /bff/login/2fa  â†’ valida TOTP, emite cookie HttpOnly
-  â”‚  â”œâ”€â”€ POST /bff/refresh    â†’ renova access token via cookie
-  â”‚  â”œâ”€â”€ POST /bff/logout     â†’ revoga sessÃ£o, apaga cookie
-  â”‚  â”œâ”€â”€ POST /bff/cadastrar  â†’ proxy pÃºblico para /auth/cadastrar
-  â”‚  â””â”€â”€ /* (demais rotas)    â†’ YARP repassa para a API com Authorization header
-  â”‚
-  â†• HTTPS (localhost:7075)
-  â”‚
+  │  ├── Serve os arquivos estáticos do WASM
+  │  ├── POST /bff/login      → autentica, emite cookie HttpOnly
+  │  ├── POST /bff/login/2fa  → valida TOTP, emite cookie HttpOnly
+  │  ├── POST /bff/refresh    → renova access token via cookie
+  │  ├── POST /bff/logout     → revoga sessão, apaga cookie
+  │  ├── POST /bff/cadastrar  → proxy público para /auth/cadastrar
+  │  └── /* (demais rotas)    → YARP repassa para a API com Authorization header
+  │
+  ↕ HTTPS (localhost:7075)
+  │
 API (LicenciamentoSoftware.Api)
-     â””â”€â”€ Processa as requisiÃ§Ãµes com JWT Bearer
+     └── Processa as requisições com JWT Bearer
 ```
 
-### 2.3 SeguranÃ§a dos tokens
+### 2.3 Segurança dos tokens
 
 | Token | Onde fica | Acesso JavaScript |
 |---|---|---|
-| Access Token (JWT, 60 min) | MemÃ³ria C# no WASM | ImpossÃ­vel â€” nunca serializado |
-| Refresh Token | Cookie `HttpOnly; Secure; SameSite=Strict` | ImpossÃ­vel â€” HttpOnly |
+| Access Token (JWT, 60 min) | Memória C# no WASM | Impossível — nunca serializado |
+| Refresh Token | Cookie `HttpOnly; Secure; SameSite=Strict` | Impossível — HttpOnly |
 
 **Por que BFF?**  
-Em SPA puro o refresh token precisaria de `localStorage` (exposto a XSS) ou `sessionStorage` (sem persistÃªncia). O BFF elimina esse problema: o cookie HttpOnly Ã© invisÃ­vel para qualquer JavaScript, inclusive o prÃ³prio cÃ³digo da aplicaÃ§Ã£o.
+Em SPA puro o refresh token precisaria de `localStorage` (exposto a XSS) ou `sessionStorage` (sem persistência). O BFF elimina esse problema: o cookie HttpOnly é invisível para qualquer JavaScript, inclusive o próprio código da aplicação.
 
-**Fluxo de renovaÃ§Ã£o silenciosa:**  
-Quando o access token expira (401), o `BearerTokenHandler` chama automaticamente `POST /bff/refresh`. O browser envia o cookie automaticamente (mesma origem). Um novo access token Ã© emitido sem que o usuÃ¡rio perceba.
+**Fluxo de renovação silenciosa:**  
+Quando o access token expira (401), o `BearerTokenHandler` chama automaticamente `POST /bff/refresh`. O browser envia o cookie automaticamente (mesma origem). Um novo access token é emitido sem que o usuário perceba.
 
 ---
 
@@ -82,354 +82,354 @@ Quando o access token expira (401), o `BearerTokenHandler` chama automaticamente
 
 ```
 src/LicenciamentoSoftware.Web/
-â”œâ”€â”€ App.razor                          Roteador principal com AuthorizeRouteView
-â”œâ”€â”€ _Imports.razor                     Usings globais
-â”œâ”€â”€ Program.cs                         Bootstrap: DI, HttpClients, AuthProvider
-â”‚
-â”œâ”€â”€ Layout/
-â”‚   â”œâ”€â”€ MainLayout.razor               Shell autenticado (sidebar + conteÃºdo)
-â”‚   â””â”€â”€ PublicLayout.razor             Shell pÃºblico (login, cadastro, totp)
-â”‚
-â”œâ”€â”€ Shared/
-â”‚   â”œâ”€â”€ ApiError.razor                 Exibe erros de validaÃ§Ã£o da API (400/409/422)
-â”‚   â”œâ”€â”€ ConfirmDialog.razor            Modal de confirmaÃ§Ã£o para aÃ§Ãµes destrutivas
-â”‚   â”œâ”€â”€ Modal.razor                    Modal genÃ©rico reutilizÃ¡vel com ChildContent + Footer
-â”‚   â”œâ”€â”€ Paginacao.razor                Componente de paginaÃ§Ã£o numÃ©rica
-â”‚   â””â”€â”€ RedirectToLogin.razor         Redireciona para /login quando nÃ£o autenticado
-â”‚
-â”œâ”€â”€ Pages/
-â”‚   â”œâ”€â”€ Index.razor                    Redirect para /clientes-finais ou /login
-â”‚   â”œâ”€â”€ Login.razor                    FormulÃ¡rio de login (layout pÃºblico)
-â”‚   â”œâ”€â”€ Totp.razor                     VerificaÃ§Ã£o de segundo fator TOTP
-â”‚   â”œâ”€â”€ Cadastro.razor                 Cadastro pÃºblico de empresa + responsÃ¡vel
-â”‚   â”œâ”€â”€ Logout.razor                   Encerra sessÃ£o e redireciona
-â”‚   â”‚
-â”‚   â”œâ”€â”€ ClientesFinais/
-â”‚   â”‚   â””â”€â”€ Lista.razor               Grid de cards + modal criar/editar/desativar
-â”‚   â”œâ”€â”€ Usuarios/
-â”‚   â”‚   â””â”€â”€ Lista.razor               Grid de cards + modal criar/editar/desativar
-â”‚   â”œâ”€â”€ Aplicacoes/
-â”‚   â”‚   â””â”€â”€ Lista.razor               Grid de cards + modal criar/editar/desativar
-â”‚   â””â”€â”€ Licencas/
-â”‚       â””â”€â”€ Lista.razor               Grid de cards + modal emitir + modal detalhe
-â”‚
-â”œâ”€â”€ Services/
-â”‚   â”œâ”€â”€ JwtAuthStateProvider.cs       AuthenticationStateProvider â€” access token em memÃ³ria
-â”‚   â”œâ”€â”€ BearerTokenHandler.cs         DelegatingHandler â€” adiciona Authorization header
-â”‚   â”œâ”€â”€ TokenRefreshHandler.cs        DelegatingHandler â€” renova token silenciosamente em 401
-â”‚   â””â”€â”€ ApiHttpClientFactory.cs       Factory singleton â€” HttpClients com DefaultRequestHeaders
-â”‚
-â””â”€â”€ wwwroot/
-    â”œâ”€â”€ index.html                     Entry point HTML do WASM
-    â””â”€â”€ css/
-        â””â”€â”€ app.css                    Estilos globais (sidebar, cards, badges, modais)
+├── App.razor                          Roteador principal com AuthorizeRouteView
+├── _Imports.razor                     Usings globais
+├── Program.cs                         Bootstrap: DI, HttpClients, AuthProvider
+│
+├── Layout/
+│   ├── MainLayout.razor               Shell autenticado (sidebar + conteúdo)
+│   └── PublicLayout.razor             Shell público (login, cadastro, totp)
+│
+├── Shared/
+│   ├── ApiError.razor                 Exibe erros de validação da API (400/409/422)
+│   ├── ConfirmDialog.razor            Modal de confirmação para ações destrutivas
+│   ├── Modal.razor                    Modal genérico reutilizável com ChildContent + Footer
+│   ├── Paginacao.razor                Componente de paginação numérica
+│   └── RedirectToLogin.razor         Redireciona para /login quando não autenticado
+│
+├── Pages/
+│   ├── Index.razor                    Redirect para /clientes-finais ou /login
+│   ├── Login.razor                    Formulário de login (layout público)
+│   ├── Totp.razor                     Verificação de segundo fator TOTP
+│   ├── Cadastro.razor                 Cadastro público de empresa + responsável
+│   ├── Logout.razor                   Encerra sessão e redireciona
+│   │
+│   ├── ClientesFinais/
+│   │   └── Lista.razor               Grid de cards + modal criar/editar/desativar
+│   ├── Usuarios/
+│   │   └── Lista.razor               Grid de cards + modal criar/editar/desativar
+│   ├── Aplicacoes/
+│   │   └── Lista.razor               Grid de cards + modal criar/editar/desativar
+│   └── Licencas/
+│       └── Lista.razor               Grid de cards + modal emitir + modal detalhe
+│
+├── Services/
+│   ├── JwtAuthStateProvider.cs       AuthenticationStateProvider — access token em memória
+│   ├── BearerTokenHandler.cs         DelegatingHandler — adiciona Authorization header
+│   ├── TokenRefreshHandler.cs        DelegatingHandler — renova token silenciosamente em 401
+│   └── ApiHttpClientFactory.cs       Factory singleton — HttpClients com DefaultRequestHeaders
+│
+└── wwwroot/
+    ├── index.html                     Entry point HTML do WASM
+    └── css/
+        └── app.css                    Estilos globais (sidebar, cards, badges, modais)
 
 src/LicenciamentoSoftware.Web.Server/
-â”œâ”€â”€ Program.cs                         Bootstrap: BFF, YARP, cookie policy
-â”œâ”€â”€ appsettings.json                   ApiSettings:BaseUrl, ReverseProxy config
-â”œâ”€â”€ Configuration/
-â”‚   â””â”€â”€ BffServiceExtensions.cs       Helpers de configuraÃ§Ã£o (cookie policy, HttpClients)
-â””â”€â”€ Controllers/
-    â””â”€â”€ BffController.cs              Endpoints /bff/* (login, 2fa, refresh, logout, cadastrar)
+├── Program.cs                         Bootstrap: BFF, YARP, cookie policy
+├── appsettings.json                   ApiSettings:BaseUrl, ReverseProxy config
+├── Configuration/
+│   └── BffServiceExtensions.cs       Helpers de configuração (cookie policy, HttpClients)
+└── Controllers/
+    └── BffController.cs              Endpoints /bff/* (login, 2fa, refresh, logout, cadastrar)
 
 src/LicenciamentoSoftware.Client/
-â”œâ”€â”€ Models/
-â”‚   â”œâ”€â”€ Auth/                         LoginRequest, LoginResponse, AutoCadastroRequest
-â”‚   â”œâ”€â”€ Common/                       PagedResult<T>
-â”‚   â”œâ”€â”€ ClientesFinais/               ClienteFinalResult, CriarClienteFinalRequest, Atualizar...
-â”‚   â”œâ”€â”€ Usuarios/                     UsuarioResult, CriarUsuarioRequest, Atualizar...
-â”‚   â”œâ”€â”€ Aplicacoes/                   AplicacaoResult, CriarAplicacaoRequest, Atualizar...
-â”‚   â”œâ”€â”€ TiposLicenca/                 TipoLicencaResult
-â”‚   â””â”€â”€ Licencas/                     LicencaResult, EmitirLicencaRequest, RenovarPeriodoRequest, TokenInfoResult
-â””â”€â”€ Services/
-    â”œâ”€â”€ AuthApiService.cs             login, verify-2fa, refresh, logout, cadastrar
-    â”œâ”€â”€ ClienteFinalApiService.cs     CRUD + paginaÃ§Ã£o
-    â”œâ”€â”€ UsuarioApiService.cs          CRUD + paginaÃ§Ã£o
-    â”œâ”€â”€ AplicacaoApiService.cs        CRUD + paginaÃ§Ã£o
-    â”œâ”€â”€ TipoLicencaApiService.cs      listagem
-    â””â”€â”€ LicencaApiService.cs          emitir, listar, desativar, renovar, sessÃµes, instalaÃ§Ãµes, token
+├── Models/
+│   ├── Auth/                         LoginRequest, LoginResponse, AutoCadastroRequest
+│   ├── Common/                       PagedResult<T>
+│   ├── ClientesFinais/               ClienteFinalResult, CriarClienteFinalRequest, Atualizar...
+│   ├── Usuarios/                     UsuarioResult, CriarUsuarioRequest, Atualizar...
+│   ├── Aplicacoes/                   AplicacaoResult, CriarAplicacaoRequest, Atualizar...
+│   ├── TiposLicenca/                 TipoLicencaResult
+│   └── Licencas/                     LicencaResult, EmitirLicencaRequest, RenovarPeriodoRequest, TokenInfoResult
+└── Services/
+    ├── AuthApiService.cs             login, verify-2fa, refresh, logout, cadastrar
+    ├── ClienteFinalApiService.cs     CRUD + paginação
+    ├── UsuarioApiService.cs          CRUD + paginação
+    ├── AplicacaoApiService.cs        CRUD + paginação
+    ├── TipoLicencaApiService.cs      listagem
+    └── LicencaApiService.cs          emitir, listar, desativar, renovar, sessões, instalações, token
 ```
 
 ---
 
-## 4. AutenticaÃ§Ã£o e autorizaÃ§Ã£o
+## 4. Autenticação e autorização
 
 ### 4.1 Fluxo de login
 
 ```
 1. POST /bff/login {email, senha}
-   â”œâ”€â”€ Sucesso sem 2FA â†’ BFF emite cookie HttpOnly + retorna {accessToken, nome, papel}
-   â”‚   WASM: JwtAuthStateProvider.MarcarAutenticado() â†’ redireciona para /
-   â””â”€â”€ Requer 2FA â†’ BFF retorna {requer2FA: true, tokenTemporario}
+   ├── Sucesso sem 2FA → BFF emite cookie HttpOnly + retorna {accessToken, nome, papel}
+   │   WASM: JwtAuthStateProvider.MarcarAutenticado() → redireciona para /
+   └── Requer 2FA → BFF retorna {requer2FA: true, tokenTemporario}
        WASM: redireciona para /totp?token=...
 
 2. POST /bff/login/2fa {tokenTemporario, codigo}
-   â””â”€â”€ Sucesso â†’ BFF emite cookie HttpOnly + retorna {accessToken, nome, papel}
-       WASM: JwtAuthStateProvider.MarcarAutenticado() â†’ redireciona para /
+   └── Sucesso → BFF emite cookie HttpOnly + retorna {accessToken, nome, papel}
+       WASM: JwtAuthStateProvider.MarcarAutenticado() → redireciona para /
 ```
 
-### 4.2 RenovaÃ§Ã£o silenciosa
+### 4.2 Renovação silenciosa
 
 ```
-Qualquer requisiÃ§Ã£o autenticada
-  â†’ BearerTokenHandler adiciona Authorization: Bearer {accessToken}
-  â†’ Se retornar 401:
+Qualquer requisição autenticada
+  → BearerTokenHandler adiciona Authorization: Bearer {accessToken}
+  → Se retornar 401:
       TokenRefreshHandler chama POST /bff/refresh
       Browser envia cookie automaticamente
-      BFF valida cookie â†’ retorna novo accessToken
+      BFF valida cookie → retorna novo accessToken
       JwtAuthStateProvider.AtualizarToken()
-      RequisiÃ§Ã£o original Ã© retentada com novo token
+      Requisição original é retentada com novo token
 ```
 
-### 4.3 ProteÃ§Ã£o de rotas
+### 4.3 Proteção de rotas
 
-Todas as pÃ¡ginas protegidas usam `@attribute [Authorize]`. O `App.razor` usa `AuthorizeRouteView` com `<NotAuthorized>` que renderiza `<RedirectToLogin />`, redirecionando para `/login?returnUrl=...`.
+Todas as páginas protegidas usam `@attribute [Authorize]`. O `App.razor` usa `AuthorizeRouteView` com `<NotAuthorized>` que renderiza `<RedirectToLogin />`, redirecionando para `/login?returnUrl=...`.
 
 ### 4.4 Logout
 
 ```
 POST /bff/logout
-  â†’ BFF revoga refresh token na API
-  â†’ BFF apaga cookie
-  â†’ JwtAuthStateProvider.MarcarDesautenticado()
-  â†’ Redireciona para /login
+  → BFF revoga refresh token na API
+  → BFF apaga cookie
+  → JwtAuthStateProvider.MarcarDesautenticado()
+  → Redireciona para /login
 ```
 
 ---
 
-## 5. PÃ¡ginas e funcionalidades
+## 5. Páginas e funcionalidades
 
-### 5.1 PÃ¡gina de Login (`/login`)
+### 5.1 Página de Login (`/login`)
 
 **Layout:** PublicLayout (sem sidebar)  
-**Visual:** painel roxo esquerdo (branding) + formulÃ¡rio direito
+**Visual:** painel roxo esquerdo (branding) + formulário direito
 
 **Campos:**
 - E-mail (tipo email, autocomplete)
 - Senha (tipo password, autocomplete)
-- Enter submete o formulÃ¡rio
+- Enter submete o formulário
 
 **Fluxo:**
-1. UsuÃ¡rio preenche credenciais e clica "Entrar"
-2. Se bem-sucedido â†’ redireciona para `returnUrl` ou `/`
-3. Se 2FA necessÃ¡rio â†’ redireciona para `/totp?token=...`
-4. Se erro â†’ exibe mensagem inline
+1. Usuário preenche credenciais e clica "Entrar"
+2. Se bem-sucedido → redireciona para `returnUrl` ou `/`
+3. Se 2FA necessário → redireciona para `/totp?token=...`
+4. Se erro → exibe mensagem inline
 
-**Links:** "Cadastre-se gratuitamente" â†’ `/cadastro`
+**Links:** "Cadastre-se gratuitamente" → `/cadastro`
 
 ---
 
-### 5.2 PÃ¡gina de VerificaÃ§Ã£o TOTP (`/totp`)
+### 5.2 Página de Verificação TOTP (`/totp`)
 
 **Layout:** PublicLayout  
-**ParÃ¢metro de query:** `token` (token temporÃ¡rio de desafio 2FA)
+**Parâmetro de query:** `token` (token temporário de desafio 2FA)
 
 **Campos:**
-- CÃ³digo TOTP (6 dÃ­gitos, `autocomplete="one-time-code"`)
+- Código TOTP (6 dígitos, `autocomplete="one-time-code"`)
 
 **Fluxo:**
-1. UsuÃ¡rio digita cÃ³digo do autenticador
-2. POST `/bff/login/2fa` â†’ se vÃ¡lido, autentica e redireciona para `/`
-3. Se invÃ¡lido â†’ exibe erro inline
+1. Usuário digita código do autenticador
+2. POST `/bff/login/2fa` → se válido, autentica e redireciona para `/`
+3. Se inválido → exibe erro inline
 
 ---
 
-### 5.3 PÃ¡gina de Cadastro (`/cadastro`)
+### 5.3 Página de Cadastro (`/cadastro`)
 
 **Layout:** PublicLayout  
-**Acesso:** PÃºblico (anÃ´nimo)
+**Acesso:** Público (anônimo)
 
-**Campos â€” Dados da empresa:**
-- RazÃ£o Social *
-- Tipo de inscriÃ§Ã£o (CPF / CNPJ)
-- NÃºmero CPF/CNPJ *
+**Campos — Dados da empresa:**
+- Razão Social *
+- Tipo de inscrição (CPF / CNPJ)
+- Número CPF/CNPJ *
 - E-mail da empresa *
 - Telefone (opcional)
 
-**Campos â€” ResponsÃ¡vel pela conta:**
+**Campos — Responsável pela conta:**
 - Nome completo *
 - E-mail de acesso *
-- Senha * (mÃ­nimo 8 caracteres)
+- Senha * (mínimo 8 caracteres)
 - Confirmar senha *
 
 **Fluxo:**
-1. FormulÃ¡rio validado no cliente (senhas coincidem, campos obrigatÃ³rios)
-2. POST `/bff/cadastrar` â†’ proxy para `POST /auth/cadastrar`
-3. Cria `Cliente` + primeiro `UsuÃ¡rio` como `AdministradorCliente` em uma transaÃ§Ã£o
-4. Sucesso â†’ tela de confirmaÃ§Ã£o com link para `/login`
-5. Conflito (409) â†’ erro de CPF/CNPJ ou e-mail duplicado
-6. InvÃ¡lido (422) â†’ lista de erros de validaÃ§Ã£o
+1. Formulário validado no cliente (senhas coincidem, campos obrigatórios)
+2. POST `/bff/cadastrar` → proxy para `POST /auth/cadastrar`
+3. Cria `Cliente` + primeiro `Usuário` como `AdministradorCliente` em uma transação
+4. Sucesso → tela de confirmação com link para `/login`
+5. Conflito (409) → erro de CPF/CNPJ ou e-mail duplicado
+6. Inválido (422) → lista de erros de validação
 
 ---
 
 ### 5.4 Clientes Finais (`/clientes-finais`)
 
 **Layout:** MainLayout (autenticado)  
-**Acesso:** Qualquer usuÃ¡rio autenticado
+**Acesso:** Qualquer usuário autenticado
 
 **Listagem:**
 - Grid de cards (3 colunas em desktop)
-- Busca por razÃ£o social (Enter ou botÃ£o)
-- PaginaÃ§Ã£o numÃ©rica
-- Card exibe: razÃ£o social, badge ativo/inativo, e-mail, telefone, CPF/CNPJ
+- Busca por razão social (Enter ou botão)
+- Paginação numérica
+- Card exibe: razão social, badge ativo/inativo, e-mail, telefone, CPF/CNPJ
 
 **Criar (modal "Novo Cliente"):**
-- RazÃ£o Social *
-- Tipo (CPF/CNPJ) + NÃºmero *
+- Razão Social *
+- Tipo (CPF/CNPJ) + Número *
 - E-mail *
 - Telefone
 
 **Editar (modal "Editar Cliente"):**
-- RazÃ£o Social, E-mail, Telefone (CPF/CNPJ nÃ£o editÃ¡vel apÃ³s criaÃ§Ã£o)
+- Razão Social, E-mail, Telefone (CPF/CNPJ não editável após criação)
 
 **Desativar:**
 - ConfirmDialog antes de executar
-- ExclusÃ£o lÃ³gica (`ativo = false`)
+- Exclusão lógica (`ativo = false`)
 
-**Isolamento de tenant:** `IdCliente` vem do JWT, nunca do formulÃ¡rio.
+**Isolamento de tenant:** `IdCliente` vem do JWT, nunca do formulário.
 
 ---
 
-### 5.5 UsuÃ¡rios (`/usuarios`)
+### 5.5 Usuários (`/usuarios`)
 
 **Layout:** MainLayout  
-**Acesso:** Qualquer usuÃ¡rio autenticado
+**Acesso:** Qualquer usuário autenticado
 
 **Listagem:**
 - Grid de cards com avatar de iniciais
 - Card exibe: nome, e-mail, papel, badge ativo/inativo
 
-**Criar (modal "Novo UsuÃ¡rio"):**
+**Criar (modal "Novo Usuário"):**
 - Nome *, E-mail *, Senha *
 
-**Editar (modal "Editar UsuÃ¡rio"):**
-- Nome, E-mail (senha nÃ£o editÃ¡vel via ediÃ§Ã£o)
+**Editar (modal "Editar Usuário"):**
+- Nome, E-mail (senha não editável via edição)
 
-**ObservaÃ§Ã£o:** O `IdCliente` vem do JWT. Todos os usuÃ¡rios criados pertencem ao mesmo tenant.
+**Observação:** O `IdCliente` vem do JWT. Todos os usuários criados pertencem ao mesmo tenant.
 
 ---
 
-### 5.6 AplicaÃ§Ãµes (`/aplicacoes`)
+### 5.6 Aplicações (`/aplicacoes`)
 
 **Layout:** MainLayout  
-**Acesso:** Qualquer usuÃ¡rio autenticado
+**Acesso:** Qualquer usuário autenticado
 
 **Listagem:**
 - Grid de cards
-- Card exibe: tÃ­tulo, tipo de licenÃ§a (badge colorido), descriÃ§Ã£o, status
+- Card exibe: título, tipo de licença (badge colorido), descrição, status
 
-**Criar (modal "Nova AplicaÃ§Ã£o"):**
-- TÃ­tulo *, DescriÃ§Ã£o, Tipo de LicenÃ§a * (dropdown carregado de `/tipos-licenca`)
+**Criar (modal "Nova Aplicação"):**
+- Título *, Descrição, Tipo de Licença * (dropdown carregado de `/tipos-licenca`)
 
-**Editar (modal "Editar AplicaÃ§Ã£o"):**
-- TÃ­tulo, DescriÃ§Ã£o (tipo nÃ£o editÃ¡vel apÃ³s criaÃ§Ã£o)
+**Editar (modal "Editar Aplicação"):**
+- Título, Descrição (tipo não editável após criação)
 
 **Badges de tipo:**
 
 | Tipo | Cor |
 |---|---|
 | Permanente | Azul |
-| Por PerÃ­odo | Amarelo |
-| Por UsuÃ¡rios | Roxo |
-| Por InstalaÃ§Ã£o | Rosa |
+| Por Período | Amarelo |
+| Por Usuários | Roxo |
+| Por Instalação | Rosa |
 
 ---
 
-### 5.7 LicenÃ§as (`/licencas`)
+### 5.7 Licenças (`/licencas`)
 
 **Layout:** MainLayout  
-**Acesso:** Qualquer usuÃ¡rio autenticado
+**Acesso:** Qualquer usuário autenticado
 
 #### 5.7.1 Listagem
 
 - Grid de cards
 - Busca por cliente/aplicativo
-- Card exibe: razÃ£o social do cliente final, aplicaÃ§Ã£o, tipo (badge), status, resumo (perÃ­odo/usuÃ¡rios/instalaÃ§Ãµes), chave abreviada
+- Card exibe: razão social do cliente final, aplicação, tipo (badge), status, resumo (período/usuários/instalações), chave abreviada
 
-#### 5.7.2 EmissÃ£o (modal "Nova LicenÃ§a")
+#### 5.7.2 Emissão (modal "Nova Licença")
 
-**Passo 1 â€” SeleÃ§Ã£o:**
-- Dropdown de AplicaÃ§Ã£o (carregado com tipo embutido no label)
+**Passo 1 — Seleção:**
+- Dropdown de Aplicação (carregado com tipo embutido no label)
 - Dropdown de Cliente Final
-- Tipo detectado automaticamente ao selecionar a aplicaÃ§Ã£o
+- Tipo detectado automaticamente ao selecionar a aplicação
 
-**Passo 2 â€” Campos dinÃ¢micos por tipo:**
+**Passo 2 — Campos dinâmicos por tipo:**
 
 | Tipo | Campos extras |
 |---|---|
 | Permanente | Nenhum |
-| Por PerÃ­odo | Data inÃ­cio *, Data fim *, RenovaÃ§Ã£o automÃ¡tica (checkbox) |
-| Por UsuÃ¡rios | MÃ¡x. usuÃ¡rios *, MÃ¡x. sessÃµes por usuÃ¡rio |
-| Por InstalaÃ§Ã£o | MÃ¡x. instalaÃ§Ãµes * |
+| Por Período | Data início *, Data fim *, Renovação automática (checkbox) |
+| Por Usuários | Máx. usuários *, Máx. sessões por usuário |
+| Por Instalação | Máx. instalações * |
 
-**OpÃ§Ã£o:** "Gerar token HMAC junto com a licenÃ§a" (checkbox)
+**Opção:** "Gerar token HMAC junto com a licença" (checkbox)
 
-**PÃ³s-emissÃ£o:**
+**Pós-emissão:**
 - Tela de sucesso dentro do modal
-- Se token foi gerado: exibe valor com botÃ£o "Copiar"
-- Aviso: "Exibido uma Ãºnica vez. Guarde com seguranÃ§a."
+- Se token foi gerado: exibe valor com botão "Copiar"
+- Aviso: "Exibido uma única vez. Guarde com segurança."
 
-#### 5.7.3 Detalhe (modal "Detalhe da LicenÃ§a")
+#### 5.7.3 Detalhe (modal "Detalhe da Licença")
 
-Abre ao clicar "Detalhes" em qualquer card da lista. Carrega o detalhe completo da licenÃ§a via `GET /licencas/{id}`.
+Abre ao clicar "Detalhes" em qualquer card da lista. Carrega o detalhe completo da licença via `GET /licencas/{id}`.
 
-**ConteÃºdo do modal (adapta-se ao tipo):**
+**Conteúdo do modal (adapta-se ao tipo):**
 
-**CabeÃ§alho:**
-- Nome do cliente final + aplicaÃ§Ã£o
-- Badges: status (Ativa/Inativa) + tipo de licenÃ§a
+**Cabeçalho:**
+- Nome do cliente final + aplicação
+- Badges: status (Ativa/Inativa) + tipo de licença
 
-**SeÃ§Ã£o PerÃ­odo** (apenas tipo "Por PerÃ­odo"):
-- Datas inÃ­cio/fim, renovaÃ§Ã£o automÃ¡tica
-- Campo "Nova data fim" + botÃ£o "Renovar perÃ­odo"
+**Seção Período** (apenas tipo "Por Período"):
+- Datas início/fim, renovação automática
+- Campo "Nova data fim" + botão "Renovar período"
 
-**SeÃ§Ã£o UsuÃ¡rios** (apenas tipo "Por UsuÃ¡rios"):
-- MÃ¡x. simultÃ¢neos, sessÃµes por usuÃ¡rio
+**Seção Usuários** (apenas tipo "Por Usuários"):
+- Máx. simultâneos, sessões por usuário
 
-**SeÃ§Ã£o SessÃµes ativas** (quando hÃ¡ sessÃµes):
-- Tabela: identificador do usuÃ¡rio, data login, Ãºltima atividade
-- BotÃ£o "Encerrar" por linha (com ConfirmDialog)
+**Seção Sessões ativas** (quando há sessões):
+- Tabela: identificador do usuário, data login, última atividade
+- Botão "Encerrar" por linha (com ConfirmDialog)
 
-**SeÃ§Ã£o InstalaÃ§Ãµes** (quando hÃ¡ instalaÃ§Ãµes):
-- Tabela: identificador da mÃ¡quina, data de registro
-- BotÃ£o "Liberar" por linha (com ConfirmDialog)
-- Contador: ativas/mÃ¡ximo
+**Seção Instalações** (quando há instalações):
+- Tabela: identificador da máquina, data de registro
+- Botão "Liberar" por linha (com ConfirmDialog)
+- Contador: ativas/máximo
 
-**SeÃ§Ã£o Token HMAC:**
-- Status: "Sem token" / "Ativo Â· exp. dd/MM/yyyy" / "Expirado"
-- BotÃ£o "Gerar token" (se sem token ou expirado)
-- BotÃ£o "Renovar token" (se ativo â€” revoga o anterior)
-- ApÃ³s gerar/renovar: exibe valor com botÃ£o "Copiar" e aviso de exibiÃ§Ã£o Ãºnica
+**Seção Token HMAC:**
+- Status: "Sem token" / "Ativo · exp. dd/MM/yyyy" / "Expirado"
+- Botão "Gerar token" (se sem token ou expirado)
+- Botão "Renovar token" (se ativo — revoga o anterior)
+- Após gerar/renovar: exibe valor com botão "Copiar" e aviso de exibição única
 
 ---
 
 ### 5.8 Dashboard (`/dashboard`)
 
-**Layout:** MainLayout (autenticado) â€” primeiro item do menu
+**Layout:** MainLayout (autenticado) — primeiro item do menu
 
 **Carregamento:** resumo e alertas carregados em paralelo via `Task.WhenAll`. Skeleton loader exibido durante carregamento.
 
-**Cards de mÃ©tricas (sempre visÃ­veis apÃ³s carregamento):**
+**Cards de métricas (sempre visíveis após carregamento):**
 
-| Card | MÃ©trica | Alerta visual |
+| Card | Métrica | Alerta visual |
 |---|---|---|
-| Clientes Finais | Total ativos + novos 30d | â€” |
-| AplicaÃ§Ãµes | Total ativas | â€” |
-| LicenÃ§as Ativas | Total + inativas | â€” |
+| Clientes Finais | Total ativos + novos 30d | — |
+| Aplicações | Total ativas | — |
+| Licenças Ativas | Total + inativas | — |
 | Expirando em 7 dias | Contagem | Laranja se > 0 |
-| SessÃµes abertas agora | Total ativas | â€” |
+| Sessões abertas agora | Total ativas | — |
 | Tokens expirando em 7 dias | Contagem | Laranja se > 0 |
-| Novas licenÃ§as (30 dias) | Contagem | â€” |
+| Novas licenças (30 dias) | Contagem | — |
 
-**Breakdown por tipo:** badges coloridos mostrando Permanente / Por PerÃ­odo / Por UsuÃ¡rios / Por InstalaÃ§Ã£o.
+**Breakdown por tipo:** badges coloridos mostrando Permanente / Por Período / Por Usuários / Por Instalação.
 
-**SeÃ§Ã£o de alertas** (oculta quando nÃ£o hÃ¡ dados):
-- Erros de validaÃ§Ã£o nas Ãºltimas 24h com breakdown por motivo
-- LicenÃ§as no limite de capacidade (usuÃ¡rios ou instalaÃ§Ãµes)
-- SessÃµes inativas prolongadas (> 2Ã— TempoLimiteSessaoHoras)
-- InstalaÃ§Ãµes adormecidas (> 30 dias sem validaÃ§Ã£o)
+**Seção de alertas** (oculta quando não há dados):
+- Erros de validação nas últimas 24h com breakdown por motivo
+- Licenças no limite de capacidade (usuários ou instalações)
+- Sessões inativas prolongadas (> 2× TempoLimiteSessaoHoras)
+- Instalações adormecidas (> 30 dias sem validação)
 
-**Componente `MetricaCard.razor`:** reutilizÃ¡vel, aceita `Titulo`, `Valor`, `Subtitulo`, `Cor`, `Icone` e `Alerta`. Inclui skeleton loader via CSS animation.
+**Componente `MetricaCard.razor`:** reutilizável, aceita `Titulo`, `Valor`, `Subtitulo`, `Cor`, `Icone` e `Alerta`. Inclui skeleton loader via CSS animation.
 
 ---
 
@@ -438,9 +438,9 @@ Abre ao clicar "Detalhes" em qualquer card da lista. Carrega o detalhe completo 
 ### 6.1 Modal.razor
 
 ```razor
-<Modal Visivel="@_aberto" Titulo="TÃ­tulo" OnFechar="Fechar">
+<Modal Visivel="@_aberto" Titulo="Título" OnFechar="Fechar">
     <ChildContent>
-        <!-- conteÃºdo do formulÃ¡rio -->
+        <!-- conteúdo do formulário -->
     </ChildContent>
     <Footer>
         <button @onclick="Fechar">Cancelar</button>
@@ -452,19 +452,19 @@ Abre ao clicar "Detalhes" em qualquer card da lista. Carrega o detalhe completo 
 - Overlay escurecido, fecha ao clicar fora
 - `max-height: 85vh` com scroll interno no body
 - Header e footer fixos, apenas o body rola
-- Largura mÃ¡xima de 560px (responsivo)
+- Largura máxima de 560px (responsivo)
 
 ### 6.2 ConfirmDialog.razor
 
 ```csharp
-_confirmDialog.Mensagem = "Mensagem de confirmaÃ§Ã£o";
+_confirmDialog.Mensagem = "Mensagem de confirmação";
 bool confirmado = await _confirmDialog.MostrarAsync();
 if (!confirmado) return;
-// executa aÃ§Ã£o
+// executa ação
 ```
 
 - Bloqueante via `TaskCompletionSource<bool>`
-- BotÃ£o de confirmaÃ§Ã£o vermelho, cancelar neutro
+- Botão de confirmação vermelho, cancelar neutro
 
 ### 6.3 ApiError.razor
 
@@ -472,8 +472,8 @@ if (!confirmado) return;
 <ApiError Erro="@_erro" Erros="@_erros" />
 ```
 
-- Exibe `Erro` (string Ãºnica) ou `Erros` (lista) como alert vermelho
-- VisÃ­vel apenas quando hÃ¡ conteÃºdo
+- Exibe `Erro` (string única) ou `Erros` (lista) como alert vermelho
+- Visível apenas quando há conteúdo
 
 ### 6.4 Paginacao.razor
 
@@ -482,58 +482,58 @@ if (!confirmado) return;
            Total="_total" OnPaginaMudou="MudarPagina" />
 ```
 
-- Exibe atÃ© 5 pÃ¡ginas numeradas com `...` implÃ­cito
-- Texto "PÃ¡gina X de Y (Z itens)"
+- Exibe até 5 páginas numeradas com `...` implícito
+- Texto "Página X de Y (Z itens)"
 - Oculto quando `TotalPaginas <= 1`
 
 ---
 
-## 7. ServiÃ§os de autenticaÃ§Ã£o
+## 7. Serviços de autenticação
 
 ### 7.1 JwtAuthStateProvider
 
-Herda de `AuthenticationStateProvider`. ImplementaÃ§Ã£o central de autenticaÃ§Ã£o.
+Herda de `AuthenticationStateProvider`. Implementação central de autenticação.
 
 **Responsabilidades:**
 - Armazena `AccessToken` em campo privado (never serialized)
-- Parseia claims do JWT payload (base64url, sem verificaÃ§Ã£o de assinatura â€” jÃ¡ validada pela API)
+- Parseia claims do JWT payload (base64url, sem verificação de assinatura — já validada pela API)
 - Notifica Blazor quando o estado muda (`NotifyAuthenticationStateChanged`)
-- ExpÃµe `AccessToken` para os handlers HTTP
-- MantÃ©m referÃªncia ao `ApiHttpClientFactory` para atualizar headers em todos os clients
+- Expõe `AccessToken` para os handlers HTTP
+- Mantém referência ao `ApiHttpClientFactory` para atualizar headers em todos os clients
 
-**MÃ©todos pÃºblicos:**
-- `MarcarAutenticado(token, nome, papel)` â€” chamado apÃ³s login bem-sucedido
-- `AtualizarToken(token, nome, papel)` â€” chamado apÃ³s refresh silencioso
-- `MarcarDesautenticado()` â€” chamado no logout
+**Métodos públicos:**
+- `MarcarAutenticado(token, nome, papel)` — chamado após login bem-sucedido
+- `AtualizarToken(token, nome, papel)` — chamado após refresh silencioso
+- `MarcarDesautenticado()` — chamado no logout
 
 ### 7.2 ApiHttpClientFactory
 
-Singleton que cria e mantÃ©m um `HttpClient` para cada service. Quando o token muda, atualiza o `DefaultRequestHeaders.Authorization` de todos os clients de uma vez.
+Singleton que cria e mantém um `HttpClient` para cada service. Quando o token muda, atualiza o `DefaultRequestHeaders.Authorization` de todos os clients de uma vez.
 
 **Por que singleton?**
-Em WASM o escopo do browser Ã© toda a vida da pÃ¡gina. Usar `Scoped` criaria uma nova instÃ¢ncia a cada navegaÃ§Ã£o de pÃ¡gina, perdendo os tokens nos headers.
+Em WASM o escopo do browser é toda a vida da página. Usar `Scoped` criaria uma nova instância a cada navegação de página, perdendo os tokens nos headers.
 
 ### 7.3 BearerTokenHandler
 
-`DelegatingHandler` que adiciona `Authorization: Bearer {token}` em toda requisiÃ§Ã£o sainte dos services. Usa `JwtAuthStateProvider.AccessToken` â€” sempre a versÃ£o mais atual em memÃ³ria.
+`DelegatingHandler` que adiciona `Authorization: Bearer {token}` em toda requisição sainte dos services. Usa `JwtAuthStateProvider.AccessToken` — sempre a versão mais atual em memória.
 
 ### 7.4 TokenRefreshHandler
 
-`DelegatingHandler` que intercepta respostas 401. Faz `POST /bff/refresh`, obtÃ©m novo token, chama `JwtAuthStateProvider.AtualizarToken()` e retenta a requisiÃ§Ã£o original.
+`DelegatingHandler` que intercepta respostas 401. Faz `POST /bff/refresh`, obtém novo token, chama `JwtAuthStateProvider.AtualizarToken()` e retenta a requisição original.
 
 ---
 
-## 8. ConfiguraÃ§Ã£o de portas (desenvolvimento)
+## 8. Configuração de portas (desenvolvimento)
 
 | Projeto | HTTP | HTTPS |
 |---|---|---|
 | `LicenciamentoSoftware.Api` | 5016 | 7075 |
 | `LicenciamentoSoftware.Web` | 5075 | 7153 (sem browser) |
-| `LicenciamentoSoftware.Web.Server` | 5074 | **7152** â† acesso do usuÃ¡rio |
+| `LicenciamentoSoftware.Web.Server` | 5074 | **7152** ← acesso do usuário |
 
-O usuÃ¡rio acessa sempre `https://localhost:7152`.  
+O usuário acessa sempre `https://localhost:7152`.  
 O `Web.Server` faz proxy interno para a API em `https://localhost:7075`.  
-O projeto `Web` nÃ£o precisa estar em Start â€” o `Web.Server` jÃ¡ inclui seus arquivos na build.
+O projeto `Web` não precisa estar em Start — o `Web.Server` já inclui seus arquivos na build.
 
 ---
 
@@ -543,11 +543,11 @@ O projeto `Web` nÃ£o precisa estar em Start â€” o `Web.Server` jÃ¡ incl
 
 | Uso | Cor |
 |---|---|
-| Cor primÃ¡ria (botÃµes, sidebar ativa, logo) | `#6c63ff` (roxo) |
-| Background da pÃ¡gina | `#f8f9fa` (cinza claro) |
+| Cor primária (botões, sidebar ativa, logo) | `#6c63ff` (roxo) |
+| Background da página | `#f8f9fa` (cinza claro) |
 | Cards | `#ffffff` (branco) com borda `#e9ecef` |
 | Texto principal | `#212529` |
-| Texto secundÃ¡rio | `#6c757d` |
+| Texto secundário | `#6c757d` |
 
 **Badges de status:**
 
@@ -556,18 +556,18 @@ O projeto `Web` nÃ£o precisa estar em Start â€” o `Web.Server` jÃ¡ incl
 | Ativo | `#d1fae5` | `#065f46` (verde) |
 | Inativo | `#f3f4f6` | `#6b7280` (cinza) |
 | Permanente | `#dbeafe` | `#1e40af` (azul) |
-| Por PerÃ­odo | `#fef3c7` | `#92400e` (amarelo) |
-| Por UsuÃ¡rios | `#ede9fe` | `#5b21b6` (roxo) |
-| Por InstalaÃ§Ã£o | `#fce7f3` | `#9d174d` (rosa) |
+| Por Período | `#fef3c7` | `#92400e` (amarelo) |
+| Por Usuários | `#ede9fe` | `#5b21b6` (roxo) |
+| Por Instalação | `#fce7f3` | `#9d174d` (rosa) |
 
 **Classes CSS principais:**
 
-| Classe | DescriÃ§Ã£o |
+| Classe | Descrição |
 |---|---|
-| `.app-shell` | Flex container principal (sidebar + conteÃºdo) |
+| `.app-shell` | Flex container principal (sidebar + conteúdo) |
 | `.sidebar` | Sidebar fixa 220px |
-| `.main-content` | Ãrea de conteÃºdo com `margin-left: 220px` |
-| `.page-header-row` | Flex entre tÃ­tulo e botÃ£o de aÃ§Ã£o |
+| `.main-content` | Área de conteúdo com `margin-left: 220px` |
+| `.page-header-row` | Flex entre título e botão de ação |
 | `.cards-grid` | Grid responsivo `minmax(280px, 1fr)` |
 | `.item-card` | Card branco com bordas e hover shadow |
 | `.badge-pill` | Badge arredondado para status e tipos |
@@ -577,69 +577,69 @@ O projeto `Web` nÃ£o precisa estar em Start â€” o `Web.Server` jÃ¡ incl
 
 ---
 
-## 10. Fluxo completo â€” exemplo de uso
+## 10. Fluxo completo — exemplo de uso
 
 ### 10.1 Primeiro acesso (novo cliente)
 
 ```
 1. Acessa https://localhost:7152
-2. NÃ£o autenticado â†’ redireciona para /login
-3. Clica "Cadastre-se" â†’ /cadastro
-4. Preenche dados da empresa + responsÃ¡vel â†’ POST /bff/cadastrar
-5. Conta criada â†’ tela de sucesso â†’ clica "Ir para login"
-6. Login com e-mail + senha â†’ POST /bff/login
-7. Se 2FA nÃ£o configurado â†’ autenticado diretamente
-8. Se 2FA configurado â†’ redireciona para /totp
+2. Não autenticado → redireciona para /login
+3. Clica "Cadastre-se" → /cadastro
+4. Preenche dados da empresa + responsável → POST /bff/cadastrar
+5. Conta criada → tela de sucesso → clica "Ir para login"
+6. Login com e-mail + senha → POST /bff/login
+7. Se 2FA não configurado → autenticado diretamente
+8. Se 2FA configurado → redireciona para /totp
 9. Dashboard em /clientes-finais
 ```
 
-### 10.2 Emitir uma licenÃ§a com token
+### 10.2 Emitir uma licença com token
 
 ```
 1. Acessa /licencas
-2. Clica "+ Nova LicenÃ§a"
-3. Modal abre â€” seleciona AplicaÃ§Ã£o (ex: "Meu CRM (Por UsuÃ¡rios)")
+2. Clica "+ Nova Licença"
+3. Modal abre — seleciona Aplicação (ex: "Meu CRM (Por Usuários)")
 4. Seleciona Cliente Final
-5. Campos de usuÃ¡rios aparecem: mÃ¡x. 10 simultÃ¢neos
+5. Campos de usuários aparecem: máx. 10 simultâneos
 6. Marca "Gerar token HMAC"
-7. Clica "Emitir licenÃ§a"
-8. Modal mostra: "LicenÃ§a emitida com sucesso!"
-9. Token exibido com botÃ£o "Copiar"
+7. Clica "Emitir licença"
+8. Modal mostra: "Licença emitida com sucesso!"
+9. Token exibido com botão "Copiar"
 10. Administrador copia o token e configura no software cliente
 11. Fecha o modal
 ```
 
-### 10.3 Gerenciar sessÃµes ativas
+### 10.3 Gerenciar sessões ativas
 
 ```
-1. Na lista de licenÃ§as, clica "Detalhes" em uma licenÃ§a "Por UsuÃ¡rios"
+1. Na lista de licenças, clica "Detalhes" em uma licença "Por Usuários"
 2. Modal abre com dados completos
-3. SeÃ§Ã£o "SessÃµes ativas" mostra as 3 sessÃµes abertas
-4. Clica "Encerrar" na sessÃ£o do usuÃ¡rio "pedro@empresa.com"
-5. ConfirmDialog: "Encerrar esta sessÃ£o?"
-6. Confirma â†’ sessÃ£o encerrada imediatamente
-7. Modal atualiza com 2 sessÃµes
+3. Seção "Sessões ativas" mostra as 3 sessões abertas
+4. Clica "Encerrar" na sessão do usuário "pedro@empresa.com"
+5. ConfirmDialog: "Encerrar esta sessão?"
+6. Confirma → sessão encerrada imediatamente
+7. Modal atualiza com 2 sessões
 8. Slot liberado para novo login
 ```
 
 ### 10.4 Renovar token expirado
 
 ```
-1. Clica "Detalhes" em uma licenÃ§a
-2. SeÃ§Ã£o "Token HMAC" mostra: "Expirado"
+1. Clica "Detalhes" em uma licença
+2. Seção "Token HMAC" mostra: "Expirado"
 3. Clica "Gerar token"
-4. Novo token gerado e exibido com botÃ£o "Copiar"
-5. Administrador copia e atualiza a configuraÃ§Ã£o do software cliente
+4. Novo token gerado e exibido com botão "Copiar"
+5. Administrador copia e atualiza a configuração do software cliente
 ```
 
 ---
 
-## 11. LimitaÃ§Ãµes conhecidas e trabalhos futuros
+## 11. Limitações conhecidas e trabalhos futuros
 
-| LimitaÃ§Ã£o | Fase planejada |
+| Limitação | Fase planejada |
 |---|---|
-| Portal do Cliente Final (ver suas prÃ³prias licenÃ§as) | Fase 9.2 |
+| Portal do Cliente Final (ver suas próprias licenças) | Fase 9.2 |
 | Login social (Google, Microsoft, GitHub) via OAuth | Fase 9.2 |
 | Setup de TOTP via QR code no portal | Fase 9.2 |
 | App Desktop/Mobile (MAUI) | Fase 10 |
-| Deploy em produÃ§Ã£o com host real | Fase 11 |
+| Deploy em produção com host real | Fase 11 |

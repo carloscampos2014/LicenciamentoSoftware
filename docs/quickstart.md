@@ -1,31 +1,31 @@
-﻿# Guia de InÃ­cio RÃ¡pido
+# Guia de Início Rápido
 
 ## 1. Criar conta
 
 Acesse [licensemanager.enzojb.com.br](https://licensemanager.enzojb.com.br) e clique em **Criar conta**.
 
-Preencha os dados da empresa (razÃ£o social, CPF/CNPJ, e-mail e telefone) e o cadastro do usuÃ¡rio administrador.
+Preencha os dados da empresa (razão social, CPF/CNPJ, e-mail e telefone) e o cadastro do usuário administrador.
 
-## 2. Criar uma aplicaÃ§Ã£o
+## 2. Criar uma aplicação
 
-ApÃ³s o login, acesse **AplicaÃ§Ãµes â†’ Nova AplicaÃ§Ã£o** e informe o nome do seu software.
+Após o login, acesse **Aplicações → Nova Aplicação** e informe o nome do seu software.
 
-## 3. Criar um tipo de licenÃ§a
+## 3. Criar um tipo de licença
 
-Acesse **Tipos de LicenÃ§a â†’ Novo** e escolha o modelo:
+Acesse **Tipos de Licença → Novo** e escolha o modelo:
 
-| Tipo | DescriÃ§Ã£o |
+| Tipo | Descrição |
 |---|---|
-| **Permanente** | Sem expiraÃ§Ã£o |
-| **Por PerÃ­odo** | Expira em uma data definida |
-| **Por UsuÃ¡rios** | Limita o nÃºmero de usuÃ¡rios simultÃ¢neos |
-| **Por InstalaÃ§Ã£o** | Limita o nÃºmero de mÃ¡quinas registradas |
+| **Permanente** | Sem expiração |
+| **Por Período** | Expira em uma data definida |
+| **Por Usuários** | Limita o número de usuários simultâneos |
+| **Por Instalação** | Limita o número de máquinas registradas |
 
-## 4. Emitir uma licenÃ§a
+## 4. Emitir uma licença
 
-Acesse **LicenÃ§as â†’ Nova LicenÃ§a**, selecione o cliente final, a aplicaÃ§Ã£o e o tipo de licenÃ§a.
+Acesse **Licenças → Nova Licença**, selecione o cliente final, a aplicação e o tipo de licença.
 
-ApÃ³s salvar, o sistema gera um **token HMAC** que serÃ¡ usado pela aplicaÃ§Ã£o do cliente para validar a licenÃ§a.
+Após salvar, o sistema gera um **token HMAC** que será usado pela aplicação do cliente para validar a licença.
 
 ## 5. Integrar o SDK
 
@@ -85,4 +85,4 @@ ApÃ³s salvar, o sistema gera um **token HMAC** que serÃ¡ usado pela aplicaÃ
 
 ## 6. Ativar 2FA (recomendado)
 
-No portal, acesse **Minha Conta â†’ AutenticaÃ§Ã£o de dois fatores** e configure o Google Authenticator ou Authy.
+No portal, acesse **Minha Conta → Autenticação de dois fatores** e configure o Google Authenticator ou Authy.
