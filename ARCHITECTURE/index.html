@@ -1068,7 +1068,7 @@
   <a href="#visao-geral" class="md-nav__link">
     <span class="md-ellipsis">
       
-        VisÃ£o geral
+        Visão geral
       
     </span>
   </a>
@@ -1076,10 +1076,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#projetos-da-soluaao" class="md-nav__link">
+  <a href="#projetos-da-solucao" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Projetos da soluÃ§Ã£o
+        Projetos da solução
       
     </span>
   </a>
@@ -1087,10 +1087,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#seguranaa" class="md-nav__link">
+  <a href="#seguranca" class="md-nav__link">
     <span class="md-ellipsis">
       
-        SeguranÃ§a
+        Segurança
       
     </span>
   </a>
@@ -1129,34 +1129,34 @@
 
 
 <h1 id="arquitetura">Arquitetura<a class="headerlink" href="#arquitetura" title="Permanent link">&para;</a></h1>
-<p>O LicenseManager Ã© construÃ­do sobre uma arquitetura em camadas com isolamento por tenant.</p>
-<h2 id="visao-geral">VisÃ£o geral<a class="headerlink" href="#visao-geral" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>â”‚                    Interfaces de Acesso                  â”‚
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>â”‚  Blazor WASM (Web)  â”‚  MAUI Windows  â”‚  MAUI Android    â”‚
-<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                               â”‚ JWT + HMAC
-<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>â”‚                    API REST (ASP.NET Core)               â”‚
-<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>â”‚  Controllers  â”‚  Middleware HMAC  â”‚  Anti-Replay         â”‚
-<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                               â”‚
-<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>â”‚                    Application Layer                     â”‚
-<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>â”‚  Handlers  â”‚  Commands  â”‚  Validators                   â”‚
-<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                               â”‚
-<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>â”‚                    Domain Layer                          â”‚
-<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>â”‚  Entities  â”‚  Value Objects  â”‚  Domain Events            â”‚
-<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                               â”‚
-<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â–¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>â”‚                 Infrastructure Layer                     â”‚
-<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>â”‚  DbUp (migrations)  â”‚  Dapper (queries)  â”‚  PostgreSQL   â”‚
-<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+<p>O LicenseManager é construído sobre uma arquitetura em camadas com isolamento por tenant.</p>
+<h2 id="visao-geral">Visão geral<a class="headerlink" href="#visao-geral" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>┌─────────────────────────────────────────────────────────┐
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>│                    Interfaces de Acesso                  │
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>│  Blazor WASM (Web)  │  MAUI Windows  │  MAUI Android    │
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>└──────────────────────────────┬──────────────────────────┘
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                               │ JWT + HMAC
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>┌──────────────────────────────▼──────────────────────────┐
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>│                    API REST (ASP.NET Core)               │
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>│  Controllers  │  Middleware HMAC  │  Anti-Replay         │
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>└──────────────────────────────┬──────────────────────────┘
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                               │
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>┌──────────────────────────────▼──────────────────────────┐
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>│                    Application Layer                     │
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>│  Handlers  │  Commands  │  Validators                   │
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>└──────────────────────────────┬──────────────────────────┘
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>                               │
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>┌──────────────────────────────▼──────────────────────────┐
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>│                    Domain Layer                          │
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>│  Entities  │  Value Objects  │  Domain Events            │
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>└──────────────────────────────┬──────────────────────────┘
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>                               │
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>┌──────────────────────────────▼──────────────────────────┐
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>│                 Infrastructure Layer                     │
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>│  DbUp (migrations)  │  Dapper (queries)  │  PostgreSQL   │
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>└─────────────────────────────────────────────────────────┘
 </code></pre></div>
-<h2 id="projetos-da-soluaao">Projetos da soluÃ§Ã£o<a class="headerlink" href="#projetos-da-soluaao" title="Permanent link">&para;</a></h2>
+<h2 id="projetos-da-solucao">Projetos da solução<a class="headerlink" href="#projetos-da-solucao" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -1167,19 +1167,19 @@
 <tbody>
 <tr>
 <td><code>Domain</code></td>
-<td>Entidades, value objects, invariantes de negÃ³cio</td>
+<td>Entidades, value objects, invariantes de negócio</td>
 </tr>
 <tr>
 <td><code>Application</code></td>
-<td>Handlers, commands, validators (sem dependÃªncia de infra)</td>
+<td>Handlers, commands, validators (sem dependência de infra)</td>
 </tr>
 <tr>
 <td><code>Infrastructure</code></td>
-<td>RepositÃ³rios Dapper, migrations DbUp, PostgreSQL</td>
+<td>Repositórios Dapper, migrations DbUp, PostgreSQL</td>
 </tr>
 <tr>
 <td><code>Api</code></td>
-<td>Controllers REST, middleware, configuraÃ§Ã£o de DI</td>
+<td>Controllers REST, middleware, configuração de DI</td>
 </tr>
 <tr>
 <td><code>Client</code></td>
@@ -1199,14 +1199,14 @@
 </tr>
 </tbody>
 </table>
-<h2 id="seguranaa">SeguranÃ§a<a class="headerlink" href="#seguranaa" title="Permanent link">&para;</a></h2>
+<h2 id="seguranca">Segurança<a class="headerlink" href="#seguranca" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>AutenticaÃ§Ã£o:</strong> JWT com claims de tenant e papel</li>
+<li><strong>Autenticação:</strong> JWT com claims de tenant e papel</li>
 <li><strong>2FA:</strong> TOTP (Google Authenticator / Authy)</li>
-<li><strong>ValidaÃ§Ã£o:</strong> HMAC-SHA256 com timestamp e nonce (proteÃ§Ã£o anti-replay Â±5 min)</li>
+<li><strong>Validação:</strong> HMAC-SHA256 com timestamp e nonce (proteção anti-replay ±5 min)</li>
 <li><strong>Isolamento:</strong> <code>IdCliente</code> sempre do JWT, nunca do body</li>
 <li>
-<p><strong>Auditoria:</strong> log transacional de todas as operaÃ§Ãµes de escrita</p>
+<p><strong>Auditoria:</strong> log transacional de todas as operações de escrita</p>
 </li>
 <li>
 <p><strong>Banco de dados:</strong> PostgreSQL hospedado na mesma Oracle Cloud VM da API. Migrations via <strong>DbUp</strong> (scripts SQL embarcados no assembly), acesso de leitura/escrita via <strong>Dapper</strong>.</p>
@@ -1227,7 +1227,7 @@
 </tr>
 <tr>
 <td>Blazor Web</td>
-<td>Mesmo servidor, build WASM estÃ¡tico servido pelo Nginx</td>
+<td>Mesmo servidor, build WASM estático servido pelo Nginx</td>
 </tr>
 <tr>
 <td>Banco</td>
