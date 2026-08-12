@@ -87,7 +87,7 @@ public sealed class ValidacaoController : ControllerBase
 
         var resultado = await _validarLoginHandler.HandleAsync(
             new ValidarLoginCommand(request.IdLicenca, request.IdentificadorUsuario,
-                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+                ObterIpCliente()), ct);
 
         return resultado switch
         {
@@ -145,7 +145,7 @@ public sealed class ValidacaoController : ControllerBase
 
         var resultado = await _heartbeatHandler.HandleAsync(
             new HeartbeatCommand(request.IdLicenca, request.IdSessao,
-                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+                ObterIpCliente()), ct);
 
         return resultado switch
         {
@@ -180,7 +180,7 @@ public sealed class ValidacaoController : ControllerBase
 
         var resultado = await _logoutHandler.HandleAsync(
             new LogoutValidacaoCommand(request.IdLicenca, request.IdSessao,
-                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+                ObterIpCliente()), ct);
 
         return resultado switch
         {
@@ -215,7 +215,7 @@ public sealed class ValidacaoController : ControllerBase
 
         var resultado = await _validarInstalacaoHandler.HandleAsync(
             new ValidarInstalacaoCommand(request.IdLicenca, request.IdentificadorMaquina,
-                HttpContext.Connection.RemoteIpAddress?.ToString()), ct);
+                ObterIpCliente()), ct);
 
         return resultado switch
         {
@@ -329,13 +329,33 @@ public sealed class ValidacaoController : ControllerBase
                 tipoOperacao,
                 resultado:   "erro",
                 motivoErro:  MotivoErroValidacao.TokenInvalido,
-                ipOrigem:    HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ipOrigem:    ObterIpCliente(),
                 ct);
         }
         catch
         {
             // Falha no log não deve impedir a resposta 401
         }
+    }
+
+    /// <summary>
+    /// Retorna o IP real do cliente, considerando Cloudflare (CF-Connecting-IP),
+    /// proxy reverso (X-Forwarded-For) e conexão direta (RemoteIpAddress).
+    /// </summary>
+    private string? ObterIpCliente()
+    {
+        // Cloudflare injeta o IP real do visitante neste header
+        if (Request.Headers.TryGetValue("CF-Connecting-IP", out var cfIp)
+            && !string.IsNullOrWhiteSpace(cfIp))
+            return cfIp.ToString();
+
+        // Fallback: primeiro IP da cadeia X-Forwarded-For
+        if (Request.Headers.TryGetValue("X-Forwarded-For", out var xffIp)
+            && !string.IsNullOrWhiteSpace(xffIp))
+            return xffIp.ToString().Split(',')[0].Trim();
+
+        // Conexão direta (sem proxy)
+        return HttpContext.Connection.RemoteIpAddress?.ToString();
     }
 }
 
@@ -358,3 +378,4 @@ public sealed record LogoutValidacaoRequest(
 public sealed record ValidarInstalacaoRequest(
     Guid IdLicenca,
     string IdentificadorMaquina);
+
