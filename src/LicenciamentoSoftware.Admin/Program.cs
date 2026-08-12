@@ -75,6 +75,11 @@ app.MapPost("/usuarios/{id}/reset-2fa", AdminController.ResetarTotp).RequireAuth
 app.MapGet("/reset-2fa/pendentes", AdminController.ListarSolicitacoesPendentes).RequireAuthorization();
 app.MapPost("/reset-2fa/{id}/aprovar", AdminController.AprovarSolicitacaoReset).RequireAuthorization();
 app.MapPost("/reset-2fa/{id}/rejeitar", AdminController.RejeitarSolicitacaoReset).RequireAuthorization();
+app.MapGet("/validacoes",                AdminController.ListarValidacoes).RequireAuthorization();
+app.MapGet("/sessoes",                   AdminController.ListarSessoes).RequireAuthorization();
+app.MapPost("/sessoes/{id}/encerrar",    AdminController.EncerrarSessao).RequireAuthorization();
+app.MapGet("/instalacoes",               AdminController.ListarInstalacoes).RequireAuthorization();
+app.MapPost("/instalacoes/{id}/liberar", AdminController.LiberarInstalacao).RequireAuthorization();
 app.MapGet("/health", () => Results.Ok("Admin operacional"));
 
 app.Run();

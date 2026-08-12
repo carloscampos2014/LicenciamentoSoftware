@@ -160,6 +160,199 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
         using var conn = factory.CreateConnection();
         return (await conn.QueryAsync<UsuarioAdminInfo>(sql)).AsList();
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Histórico de validações (paginado, com filtros)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public async Task<(IReadOnlyList<ValidacaoLogItem> Itens, long Total)> ListarValidacoesAsync(
+        int pagina, int tamanhoPagina,
+        string? resultado, string? tipoOperacao, string? motivo,
+        DateTime? dataInicio, DateTime? dataFim)
+    {
+        const string sqlCount = """
+            SELECT COUNT(*)
+            FROM validacao_log vl
+            INNER JOIN licenca l  ON l.id = vl.id_licenca
+            INNER JOIN cliente c  ON c.id = l.id_cliente
+            WHERE (@Resultado     IS NULL OR vl.resultado     = @Resultado)
+              AND (@TipoOperacao  IS NULL OR vl.tipo_operacao = @TipoOperacao)
+              AND (@Motivo        IS NULL OR vl.motivo_erro   = @Motivo)
+              AND (@DataInicio    IS NULL OR vl.criado_em    >= @DataInicio)
+              AND (@DataFim       IS NULL OR vl.criado_em    <= @DataFim)
+            """;
+
+        const string sqlItens = """
+            SELECT
+                vl.id               AS "Id",
+                vl.criado_em        AS "CriadoEm",
+                c.razao_social      AS "NomeCliente",
+                a.titulo            AS "AplicativoTitulo",
+                cf.razao_social     AS "ClienteFinalRazaoSocial",
+                vl.tipo_operacao    AS "TipoOperacao",
+                vl.resultado        AS "Resultado",
+                vl.motivo_erro      AS "MotivoErro",
+                vl.ip_origem        AS "IpOrigem"
+            FROM validacao_log vl
+            INNER JOIN licenca l      ON l.id  = vl.id_licenca
+            INNER JOIN cliente c      ON c.id  = l.id_cliente
+            INNER JOIN aplicacao a    ON a.id  = l.id_aplicativo
+            INNER JOIN cliente_final cf ON cf.id = l.id_cliente_final
+            WHERE (@Resultado     IS NULL OR vl.resultado     = @Resultado)
+              AND (@TipoOperacao  IS NULL OR vl.tipo_operacao = @TipoOperacao)
+              AND (@Motivo        IS NULL OR vl.motivo_erro   = @Motivo)
+              AND (@DataInicio    IS NULL OR vl.criado_em    >= @DataInicio)
+              AND (@DataFim       IS NULL OR vl.criado_em    <= @DataFim)
+            ORDER BY vl.criado_em DESC
+            LIMIT @Limite OFFSET @Offset
+            """;
+
+        var param = new
+        {
+            Resultado    = resultado,
+            TipoOperacao = tipoOperacao,
+            Motivo       = motivo,
+            DataInicio   = dataInicio,
+            DataFim      = dataFim,
+            Limite       = tamanhoPagina,
+            Offset       = (pagina - 1) * tamanhoPagina,
+        };
+
+        using var conn = factory.CreateConnection();
+        var total = await conn.ExecuteScalarAsync<long>(sqlCount, param);
+        var itens = (await conn.QueryAsync<ValidacaoLogItem>(sqlItens, param)).AsList();
+        return (itens, total);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Sessões ativas (paginado)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public async Task<(IReadOnlyList<SessaoAtivaItem> Itens, long Total)> ListarSessoesAtivasAsync(
+        int pagina, int tamanhoPagina, string? filtro)
+    {
+        const string sqlCount = """
+            SELECT COUNT(*)
+            FROM licenca_sessao ls
+            INNER JOIN licenca l      ON l.id  = ls.licenca_id
+            INNER JOIN cliente c      ON c.id  = l.id_cliente
+            INNER JOIN aplicacao a    ON a.id  = l.id_aplicativo
+            INNER JOIN cliente_final cf ON cf.id = l.id_cliente_final
+            WHERE ls.ativo = TRUE
+              AND (@Filtro IS NULL
+                   OR ls.identificador_usuario ILIKE '%' || @Filtro || '%'
+                   OR cf.razao_social           ILIKE '%' || @Filtro || '%'
+                   OR a.titulo                  ILIKE '%' || @Filtro || '%')
+            """;
+
+        const string sqlItens = """
+            SELECT
+                ls.id                    AS "Id",
+                l.id                     AS "IdLicenca",
+                c.razao_social           AS "NomeCliente",
+                cf.razao_social          AS "ClienteFinalRazaoSocial",
+                a.titulo                 AS "AplicativoTitulo",
+                ls.identificador_usuario AS "IdentificadorUsuario",
+                ls.data_login            AS "DataLogin",
+                ls.data_ultima_atividade AS "DataUltimaAtividade"
+            FROM licenca_sessao ls
+            INNER JOIN licenca l      ON l.id  = ls.licenca_id
+            INNER JOIN cliente c      ON c.id  = l.id_cliente
+            INNER JOIN aplicacao a    ON a.id  = l.id_aplicativo
+            INNER JOIN cliente_final cf ON cf.id = l.id_cliente_final
+            WHERE ls.ativo = TRUE
+              AND (@Filtro IS NULL
+                   OR ls.identificador_usuario ILIKE '%' || @Filtro || '%'
+                   OR cf.razao_social           ILIKE '%' || @Filtro || '%'
+                   OR a.titulo                  ILIKE '%' || @Filtro || '%')
+            ORDER BY ls.data_ultima_atividade DESC
+            LIMIT @Limite OFFSET @Offset
+            """;
+
+        var param = new
+        {
+            Filtro = string.IsNullOrWhiteSpace(filtro) ? null : filtro.Trim(),
+            Limite = tamanhoPagina,
+            Offset = (pagina - 1) * tamanhoPagina,
+        };
+
+        using var conn = factory.CreateConnection();
+        var total = await conn.ExecuteScalarAsync<long>(sqlCount, param);
+        var itens = (await conn.QueryAsync<SessaoAtivaItem>(sqlItens, param)).AsList();
+        return (itens, total);
+    }
+
+    public async Task EncerrarSessaoAsync(Guid idSessao)
+    {
+        const string sql = "UPDATE licenca_sessao SET ativo = FALSE WHERE id = @Id";
+        using var conn = factory.CreateConnection();
+        await conn.ExecuteAsync(sql, new { Id = idSessao });
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Instalações registradas ativas (paginado)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public async Task<(IReadOnlyList<InstalacaoAtivaItem> Itens, long Total)> ListarInstalacoesAtivasAsync(
+        int pagina, int tamanhoPagina, string? filtro)
+    {
+        const string sqlCount = """
+            SELECT COUNT(*)
+            FROM licenca_instalacao_registrada lir
+            INNER JOIN licenca l      ON l.id  = lir.licenca_id
+            INNER JOIN cliente c      ON c.id  = l.id_cliente
+            INNER JOIN aplicacao a    ON a.id  = l.id_aplicativo
+            INNER JOIN cliente_final cf ON cf.id = l.id_cliente_final
+            WHERE lir.ativo = TRUE
+              AND (@Filtro IS NULL
+                   OR lir.identificador_maquina ILIKE '%' || @Filtro || '%'
+                   OR cf.razao_social            ILIKE '%' || @Filtro || '%'
+                   OR a.titulo                   ILIKE '%' || @Filtro || '%')
+            """;
+
+        const string sqlItens = """
+            SELECT
+                lir.id                        AS "Id",
+                l.id                          AS "IdLicenca",
+                c.razao_social                AS "NomeCliente",
+                cf.razao_social               AS "ClienteFinalRazaoSocial",
+                a.titulo                      AS "AplicativoTitulo",
+                lir.identificador_maquina     AS "IdentificadorMaquina",
+                lir.data_registro             AS "DataRegistro",
+                lir.data_ultima_validacao     AS "DataUltimaValidacao"
+            FROM licenca_instalacao_registrada lir
+            INNER JOIN licenca l      ON l.id  = lir.licenca_id
+            INNER JOIN cliente c      ON c.id  = l.id_cliente
+            INNER JOIN aplicacao a    ON a.id  = l.id_aplicativo
+            INNER JOIN cliente_final cf ON cf.id = l.id_cliente_final
+            WHERE lir.ativo = TRUE
+              AND (@Filtro IS NULL
+                   OR lir.identificador_maquina ILIKE '%' || @Filtro || '%'
+                   OR cf.razao_social            ILIKE '%' || @Filtro || '%'
+                   OR a.titulo                   ILIKE '%' || @Filtro || '%')
+            ORDER BY lir.data_registro DESC
+            LIMIT @Limite OFFSET @Offset
+            """;
+
+        var param = new
+        {
+            Filtro = string.IsNullOrWhiteSpace(filtro) ? null : filtro.Trim(),
+            Limite = tamanhoPagina,
+            Offset = (pagina - 1) * tamanhoPagina,
+        };
+
+        using var conn = factory.CreateConnection();
+        var total = await conn.ExecuteScalarAsync<long>(sqlCount, param);
+        var itens = (await conn.QueryAsync<InstalacaoAtivaItem>(sqlItens, param)).AsList();
+        return (itens, total);
+    }
+
+    public async Task LiberarInstalacaoAsync(Guid idInstalacao)
+    {
+        const string sql = "UPDATE licenca_instalacao_registrada SET ativo = FALSE WHERE id = @Id";
+        using var conn = factory.CreateConnection();
+        await conn.ExecuteAsync(sql, new { Id = idInstalacao });
+    }
 }
 
 // ── Modelos de resultado ──────────────────────────────────────────────────────
@@ -182,3 +375,34 @@ public sealed record UltimoLogin(string Email, string? Ip, DateTime HoraUtc);
 public sealed record UsuarioAdminInfo(
     Guid Id, string Nome, string Email, bool Ativo,
     string NomeCliente, string? Papel, bool TotpAtivo);
+
+public sealed record ValidacaoLogItem(
+    Guid Id,
+    DateTime CriadoEm,
+    string NomeCliente,
+    string AplicativoTitulo,
+    string ClienteFinalRazaoSocial,
+    string TipoOperacao,
+    string Resultado,
+    string? MotivoErro,
+    string? IpOrigem);
+
+public sealed record SessaoAtivaItem(
+    Guid Id,
+    Guid IdLicenca,
+    string NomeCliente,
+    string ClienteFinalRazaoSocial,
+    string AplicativoTitulo,
+    string IdentificadorUsuario,
+    DateTime DataLogin,
+    DateTime DataUltimaAtividade);
+
+public sealed record InstalacaoAtivaItem(
+    Guid Id,
+    Guid IdLicenca,
+    string NomeCliente,
+    string ClienteFinalRazaoSocial,
+    string AplicativoTitulo,
+    string IdentificadorMaquina,
+    DateTime DataRegistro,
+    DateTime? DataUltimaValidacao);
