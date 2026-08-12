@@ -41,7 +41,12 @@ class LicenseManagerClient:
 
         self._base_url   = base_url.rstrip("/")
         self._token      = token
-        self._license_id = license_id
+        # Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+        try:
+            from uuid import UUID
+            self._license_id = str(UUID(license_id))
+        except ValueError:
+            self._license_id = license_id
 
         if session is not None:
             self._session = session

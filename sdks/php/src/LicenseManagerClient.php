@@ -26,16 +26,13 @@ class LicenseManagerClient
         private readonly string $licenseId,
         private readonly int    $timeoutSeconds = 30,
     ) {
-        if (empty(trim($baseUrl))) {
-            throw new \InvalidArgumentException('baseUrl é obrigatório');
-        }
-        if (empty(trim($token))) {
-            throw new \InvalidArgumentException('token é obrigatório');
-        }
-        if (empty(trim($licenseId))) {
-            throw new \InvalidArgumentException('licenseId é obrigatório');
-        }
-    }
+        $this->baseUrl   = rtrim($baseUrl, '/');
+        $this->token     = $token;
+        // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+        $this->licenseId = preg_match(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
+            $licenseId
+        ) ? strtolower($licenseId) : $licenseId;
 
     // -------------------------------------------------------------------------
     // Endpoints públicos

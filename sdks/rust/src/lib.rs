@@ -89,7 +89,10 @@ impl LicenseManagerClient {
             http,
             base_url:   config.base_url.trim_end_matches('/').to_string(),
             token:      config.token,
-            license_id: config.license_id,
+            // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+            license_id: Uuid::parse_str(&config.license_id)
+                .map(|u| u.to_string())
+                .unwrap_or(config.license_id),
         })
     }
 

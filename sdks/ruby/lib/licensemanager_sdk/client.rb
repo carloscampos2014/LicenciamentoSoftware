@@ -20,7 +20,10 @@ module LicenseManagerSdk
 
       @base_url   = base_url.chomp("/")
       @token      = token
-      @license_id = license_id
+      # Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+      @license_id = license_id.match?(/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i) \
+        ? license_id.downcase \
+        : license_id
       @timeout    = timeout
     end
 

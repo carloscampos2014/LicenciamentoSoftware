@@ -106,7 +106,8 @@ begin
   inherited Create;
   FBaseUrl   := ABaseUrl.TrimRight(['/']);
   FToken     := AToken;
-  FLicenseId := ALicenseId;
+  // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+  FLicenseId := ALicenseId.ToLower;
 
   FHttpClient := THTTPClient.Create;
   FHttpClient.ConnectionTimeout := 30000;
