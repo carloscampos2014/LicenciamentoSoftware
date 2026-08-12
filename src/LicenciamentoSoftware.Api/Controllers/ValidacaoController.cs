@@ -1,5 +1,6 @@
 using LicenciamentoSoftware.Application.Abstractions;
 using LicenciamentoSoftware.Application.Cliente.Abstractions;
+using LicenciamentoSoftware.Application.Licenca.Abstractions;
 using LicenciamentoSoftware.Application.Licenca.Commands;
 using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Results;
@@ -31,6 +32,7 @@ public sealed class ValidacaoController : ControllerBase
     private readonly ILicencaTokenRepository _tokenRepo;
     private readonly ILicencaRepository _licencaRepo;
     private readonly IClienteRepository _clienteRepo;
+    private readonly IValidacaoLogRepository _logRepo;
 
     private static readonly JsonSerializerOptions HmacJsonOpts = new()
     {
@@ -47,7 +49,8 @@ public sealed class ValidacaoController : ControllerBase
         IHmacLicencaTokenService hmac,
         ILicencaTokenRepository tokenRepo,
         ILicencaRepository licencaRepo,
-        IClienteRepository clienteRepo)
+        IClienteRepository clienteRepo,
+        IValidacaoLogRepository logRepo)
     {
         _validarLoginHandler      = validarLoginHandler;
         _heartbeatHandler         = heartbeatHandler;
@@ -57,6 +60,7 @@ public sealed class ValidacaoController : ControllerBase
         _tokenRepo                = tokenRepo;
         _licencaRepo              = licencaRepo;
         _clienteRepo              = clienteRepo;
+        _logRepo                  = logRepo;
     }
 
     // =========================================================================
@@ -76,7 +80,10 @@ public sealed class ValidacaoController : ControllerBase
         var hmacOk = await VerificarHmacAsync(
             request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
+        {
+            await GravarErroTokenAsync(request.IdLicenca, TipoOperacaoValidacao.Login, ct);
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
+        }
 
         var resultado = await _validarLoginHandler.HandleAsync(
             new ValidarLoginCommand(request.IdLicenca, request.IdentificadorUsuario,
@@ -131,7 +138,10 @@ public sealed class ValidacaoController : ControllerBase
         var hmacOk = await VerificarHmacAsync(
             request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
+        {
+            await GravarErroTokenAsync(request.IdLicenca, TipoOperacaoValidacao.Heartbeat, ct);
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
+        }
 
         var resultado = await _heartbeatHandler.HandleAsync(
             new HeartbeatCommand(request.IdLicenca, request.IdSessao,
@@ -163,7 +173,10 @@ public sealed class ValidacaoController : ControllerBase
         var hmacOk = await VerificarHmacAsync(
             request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
+        {
+            await GravarErroTokenAsync(request.IdLicenca, TipoOperacaoValidacao.Logout, ct);
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
+        }
 
         var resultado = await _logoutHandler.HandleAsync(
             new LogoutValidacaoCommand(request.IdLicenca, request.IdSessao,
@@ -195,7 +208,10 @@ public sealed class ValidacaoController : ControllerBase
         var hmacOk = await VerificarHmacAsync(
             request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
+        {
+            await GravarErroTokenAsync(request.IdLicenca, TipoOperacaoValidacao.Instalacao, ct);
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
+        }
 
         var resultado = await _validarInstalacaoHandler.HandleAsync(
             new ValidarInstalacaoCommand(request.IdLicenca, request.IdentificadorMaquina,
@@ -295,11 +311,37 @@ public sealed class ValidacaoController : ControllerBase
             segredoTexto,
             signatureRaw.ToString());
     }
+
+    // =========================================================================
+    // Helper privado — log de erro de token
+    // =========================================================================
+
+    /// <summary>
+    /// Grava no validacao_log uma tentativa negada por token HMAC inválido.
+    /// Fire-and-forget seguro — não bloqueia a resposta 401.
+    /// </summary>
+    private async Task GravarErroTokenAsync(Guid idLicenca, string tipoOperacao, CancellationToken ct)
+    {
+        try
+        {
+            await _logRepo.InserirAsync(
+                idLicenca,
+                tipoOperacao,
+                resultado:   "erro",
+                motivoErro:  MotivoErroValidacao.TokenInvalido,
+                ipOrigem:    HttpContext.Connection.RemoteIpAddress?.ToString(),
+                ct);
+        }
+        catch
+        {
+            // Falha no log não deve impedir a resposta 401
+        }
+    }
 }
 
-// =========================================================================
-// Request DTOs
-// =========================================================================
+    // =========================================================================
+    // Request DTOs
+    // =========================================================================
 
 public sealed record ValidarLoginRequest(
     Guid IdLicenca,
