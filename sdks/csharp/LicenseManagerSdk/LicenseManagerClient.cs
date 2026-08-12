@@ -152,8 +152,11 @@ public sealed class LicenseManagerClient : IDisposable
 
     private string ComputeSignature(string licenseId, string timestamp, string bodyJson)
     {
-        // Normaliza para lowercase com hífens (formato :D) — igual ao servidor
-        var normalizedId = Guid.Parse(licenseId).ToString("D");
+        // Normaliza para lowercase com hífens (formato :D) — igual ao servidor.
+        // Se não for um GUID válido, usa a string como está (compatibilidade).
+        var normalizedId = Guid.TryParse(licenseId, out var parsed)
+            ? parsed.ToString("D")
+            : licenseId;
         var payload = $"{normalizedId}:{timestamp}:{bodyJson}";
         var key     = Encoding.UTF8.GetBytes(_token);
         var data    = Encoding.UTF8.GetBytes(payload);

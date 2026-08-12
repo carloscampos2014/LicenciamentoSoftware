@@ -139,14 +139,27 @@ function TLicenseManagerClient.ComputeSignature(
   const ALicenseId, ATimestamp, ABodyJson: string): string;
 var
   Payload: string;
-  KeyBytes, DataBytes: TBytes;
-  HMAC: THMAC;
+  KeyBytes, DataBytes, HashBytes: TBytes;
+  I: Integer;
+  HexResult: string;
+  NormalizedId: string;
 begin
-  Payload   := ALicenseId + ':' + ATimestamp + ':' + ABodyJson;
+  // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+  NormalizedId := ALicenseId.ToLower;
+
+  Payload   := NormalizedId + ':' + ATimestamp + ':' + ABodyJson;
   KeyBytes  := TEncoding.UTF8.GetBytes(FToken);
   DataBytes := TEncoding.UTF8.GetBytes(Payload);
-  Result    := THashSHA2.GetHMACAsString(TEncoding.UTF8.GetString(DataBytes),
-                 TEncoding.UTF8.GetString(KeyBytes), SHA256).ToLower;
+
+  // HMAC-SHA256 correto usando THashSHA2 com bytes
+  HashBytes := THashSHA2.GetHMACAsBytes(DataBytes, KeyBytes, SHA256);
+
+  // Converte para hex lowercase
+  HexResult := '';
+  for I := 0 to High(HashBytes) do
+    HexResult := HexResult + IntToHex(HashBytes[I], 2).ToLower;
+
+  Result := HexResult;
 end;
 
 function TLicenseManagerClient.Post(
