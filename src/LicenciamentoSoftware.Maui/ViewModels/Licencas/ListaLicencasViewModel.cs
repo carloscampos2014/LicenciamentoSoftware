@@ -22,6 +22,7 @@ public partial class ListaLicencasViewModel(MauiApiClientFactory factory) : Base
 
     [ObservableProperty] LicencaResult? _licencaSelecionada;
     [ObservableProperty] bool _exibirDetalhe;
+    [ObservableProperty] string _textoBotaoCopiarId = "Copiar";
 
     private const int TamanhoPagina = 20;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
@@ -161,4 +162,14 @@ public partial class ListaLicencasViewModel(MauiApiClientFactory factory) : Base
     [RelayCommand]
     static async Task EmitirNovaAsync()
         => await Shell.Current.GoToAsync("licencas/emitir");
+
+    [RelayCommand]
+    async Task CopiarIdLicencaAsync()
+    {
+        if (LicencaSelecionada is null) return;
+        await Clipboard.SetTextAsync(LicencaSelecionada.Id.ToString().ToUpperInvariant());
+        TextoBotaoCopiarId = "✓ Copiado";
+        await Task.Delay(2000);
+        TextoBotaoCopiarId = "Copiar";
+    }
 }

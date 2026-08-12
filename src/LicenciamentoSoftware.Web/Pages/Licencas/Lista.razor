@@ -206,6 +206,19 @@ else
                 <span class="badge-pill @BadgeTipo(_detalhe.TipoLicenca)">@_detalhe.TipoLicenca</span>
                 <small class="text-muted align-self-center ms-1">@_detalhe.AplicativoTitulo</small>
             </div>
+
+            <!-- ID da Licença -->
+            <div class="item-card mb-3">
+                <p class="fw-semibold mb-2 small text-muted text-uppercase" style="letter-spacing:.05em">ID da Licença</p>
+                <div class="d-flex align-items-center gap-2">
+                    <code class="user-select-all" style="font-size:.75rem;word-break:break-all;flex:1">@_detalhe.Id.ToString().ToUpperInvariant()</code>
+                    <button class="btn btn-sm btn-outline-secondary py-0 px-2 flex-shrink-0" style="font-size:.7rem"
+                            @onclick="CopiarId">
+                        @(_copiado == "id" ? "✓ Copiado!" : "Copiar")
+                    </button>
+                </div>
+            </div>
+
             <ApiError Erro="@_erroDetalhe" />
             @if (_detalhe.Periodo is { } p)
             {
@@ -452,7 +465,7 @@ else
 
     // ── Token HMAC ─────────────────────────────────────
     private string? _tokenGerado;
-    private string? _copiado; // "emitir" ou "detalhe" — controla qual botão mostra "Copiado!"
+    private string? _copiado; // "emitir" | "detalhe" | "id" — controla qual botão mostra "Copiado!"
 
     private async Task CopiarToken(string token)
     {
@@ -461,6 +474,24 @@ else
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", token);
             // Detecta contexto pelo token ativo
             _copiado = _tokenEmitido == token ? "emitir" : "detalhe";
+            StateHasChanged();
+            await Task.Delay(2000);
+            _copiado = null;
+            StateHasChanged();
+        }
+        catch
+        {
+            // Clipboard API pode não estar disponível em contextos não-HTTPS
+        }
+    }
+
+    private async Task CopiarId()
+    {
+        if (_detalhe is null) return;
+        try
+        {
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", _detalhe.Id.ToString().ToUpperInvariant());
+            _copiado = "id";
             StateHasChanged();
             await Task.Delay(2000);
             _copiado = null;
