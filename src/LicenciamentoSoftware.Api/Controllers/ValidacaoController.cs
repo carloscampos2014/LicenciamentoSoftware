@@ -5,6 +5,8 @@ using LicenciamentoSoftware.Application.Licenca.Handlers;
 using LicenciamentoSoftware.Application.Licenca.Results;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace LicenciamentoSoftware.Api.Controllers;
 
@@ -29,6 +31,13 @@ public sealed class ValidacaoController : ControllerBase
     private readonly ILicencaTokenRepository _tokenRepo;
     private readonly ILicencaRepository _licencaRepo;
     private readonly IClienteRepository _clienteRepo;
+
+    private static readonly JsonSerializerOptions HmacJsonOpts = new()
+    {
+        PropertyNamingPolicy   = JsonNamingPolicy.CamelCase,
+        WriteIndented          = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
 
     public ValidacaoController(
         ValidarLoginHandler validarLoginHandler,
@@ -65,7 +74,7 @@ public sealed class ValidacaoController : ControllerBase
         CancellationToken ct)
     {
         var hmacOk = await VerificarHmacAsync(
-            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request), ct);
+            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
@@ -120,7 +129,7 @@ public sealed class ValidacaoController : ControllerBase
         CancellationToken ct)
     {
         var hmacOk = await VerificarHmacAsync(
-            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request), ct);
+            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
@@ -152,7 +161,7 @@ public sealed class ValidacaoController : ControllerBase
         CancellationToken ct)
     {
         var hmacOk = await VerificarHmacAsync(
-            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request), ct);
+            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
@@ -184,7 +193,7 @@ public sealed class ValidacaoController : ControllerBase
         CancellationToken ct)
     {
         var hmacOk = await VerificarHmacAsync(
-            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request), ct);
+            request.IdLicenca, body: System.Text.Json.JsonSerializer.Serialize(request, HmacJsonOpts), ct);
         if (!hmacOk)
             return Unauthorized(new { Erro = "Assinatura HMAC inválida ou token de licença não encontrado." });
 
