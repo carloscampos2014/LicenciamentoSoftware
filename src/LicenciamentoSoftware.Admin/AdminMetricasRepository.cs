@@ -173,8 +173,8 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
         const string sqlCount = """
             SELECT COUNT(*)
             FROM validacao_log vl
-            INNER JOIN licenca l  ON l.id = vl.id_licenca
-            INNER JOIN cliente c  ON c.id = l.id_cliente
+            LEFT JOIN licenca l  ON l.id = vl.id_licenca
+            LEFT JOIN cliente c  ON c.id = l.id_cliente
             WHERE (@Resultado     IS NULL OR vl.resultado     = @Resultado)
               AND (@TipoOperacao  IS NULL OR vl.tipo_operacao = @TipoOperacao)
               AND (@Motivo        IS NULL OR vl.motivo_erro   = @Motivo)
@@ -186,18 +186,18 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
             SELECT
                 vl.id               AS "Id",
                 vl.criado_em        AS "CriadoEm",
-                c.razao_social      AS "NomeCliente",
-                a.titulo            AS "AplicativoTitulo",
-                cf.razao_social     AS "ClienteFinalRazaoSocial",
+                COALESCE(c.razao_social, '—')   AS "NomeCliente",
+                COALESCE(a.titulo,       '—')   AS "AplicativoTitulo",
+                COALESCE(cf.razao_social,'—')   AS "ClienteFinalRazaoSocial",
                 vl.tipo_operacao    AS "TipoOperacao",
                 vl.resultado        AS "Resultado",
                 vl.motivo_erro      AS "MotivoErro",
                 vl.ip_origem        AS "IpOrigem"
             FROM validacao_log vl
-            INNER JOIN licenca l      ON l.id  = vl.id_licenca
-            INNER JOIN cliente c      ON c.id  = l.id_cliente
-            INNER JOIN aplicacao a    ON a.id  = l.id_aplicativo
-            INNER JOIN cliente_final cf ON cf.id = l.id_cliente_final
+            LEFT JOIN licenca l       ON l.id  = vl.id_licenca
+            LEFT JOIN cliente c       ON c.id  = l.id_cliente
+            LEFT JOIN aplicacao a     ON a.id  = l.id_aplicativo
+            LEFT JOIN cliente_final cf ON cf.id = l.id_cliente_final
             WHERE (@Resultado     IS NULL OR vl.resultado     = @Resultado)
               AND (@TipoOperacao  IS NULL OR vl.tipo_operacao = @TipoOperacao)
               AND (@Motivo        IS NULL OR vl.motivo_erro   = @Motivo)
