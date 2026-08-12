@@ -135,7 +135,9 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
                 lu.quantidade_maxima        AS "Usuarios_QuantidadeMaxima",
                 lu.max_sessoes_por_usuario  AS "Usuarios_MaxSessoesPorUsuario",
                 lu.tempo_limite_sessao_horas AS "Usuarios_TempoLimiteSessaoHoras",
-                li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima"
+                li.quantidade_maxima        AS "Instalacao_QuantidadeMaxima",
+                (SELECT COUNT(*) FROM licenca_instalacao_registrada lir
+                 WHERE lir.licenca_id = l.id AND lir.ativo = TRUE) AS "Instalacao_TotalAtivas"
             FROM licenca l
             JOIN cliente_final cf ON cf.id = l.id_cliente_final
             JOIN aplicacao a ON a.id = l.id_aplicativo
@@ -400,7 +402,12 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
             usuarios,
             instalacao,
             Sessoes: null,
-            InstalacoesRegistradas: null,
+            // Popula instalações com objetos placeholder apenas para exibir a contagem no card
+            InstalacoesRegistradas: instalacao is not null && r.Instalacao_TotalAtivas is not null
+                ? Enumerable.Range(0, (int)(long)r.Instalacao_TotalAtivas)
+                    .Select(_ => new InstalacaoRegistradaResult(Guid.Empty, Guid.Empty, string.Empty, DateTime.MinValue, true))
+                    .ToList()
+                : null,
             Token: r.Token_Id is null ? null
                 : new TokenInfoResult((Guid)r.Token_Id, (DateTime)r.Token_Expiracao, (bool)r.Token_Ativo));
     }
