@@ -1,6 +1,6 @@
 [package]
 name        = "licensemanager-sdk"
-version     = "1.0.2"
+version     = "1.0.3"
 edition     = "2021"
 description = "SDK cliente para a API de validação do LicenseManager"
 license     = "MIT"
