@@ -117,7 +117,11 @@ public sealed class LicenseManagerClient : ILicenseManagerClient
 
     internal string ComputeSignature(string licenseId, string timestamp, string bodyJson)
     {
-        var payload = $"{licenseId}:{timestamp}:{bodyJson}";
+        // Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
+        var normalizedId = Guid.TryParse(licenseId, out var parsed)
+            ? parsed.ToString("D")
+            : licenseId;
+        var payload = $"{normalizedId}:{timestamp}:{bodyJson}";
         var key     = Encoding.UTF8.GetBytes(_token);
         var data    = Encoding.UTF8.GetBytes(payload);
         using var hmac = new HMACSHA256(key);

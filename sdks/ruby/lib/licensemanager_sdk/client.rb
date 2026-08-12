@@ -67,7 +67,11 @@ module LicenseManagerSdk
 
     # @api private
     def compute_signature(license_id, timestamp, body_json)
-      payload = "#{license_id}:#{timestamp}:#{body_json}"
+      # Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
+      normalized_id = license_id.match?(/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/i) \
+        ? license_id.downcase \
+        : license_id
+      payload = "#{normalized_id}:#{timestamp}:#{body_json}"
       OpenSSL::HMAC.hexdigest("SHA256", @token, payload)
     end
 
