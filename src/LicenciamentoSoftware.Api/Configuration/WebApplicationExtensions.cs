@@ -3,6 +3,7 @@ using LicenciamentoSoftware.Api.Middleware;
 using LicenciamentoSoftware.Application.Jobs;
 using LicenciamentoSoftware.Infrastructure.Jobs;
 using LicenciamentoSoftware.Infrastructure.Persistence;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
@@ -17,6 +18,13 @@ internal static class WebApplicationExtensions
 {
     internal static WebApplication UseApiPipeline(this WebApplication app)
     {
+        // Forwarded headers — deve ser o PRIMEIRO middleware para que RemoteIpAddress
+        // reflita o IP real do cliente quando a API está atrás do Nginx/proxy reverso.
+        app.UseForwardedHeaders(new ForwardedHeadersOptions
+        {
+            ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto,
+        });
+
         // Tratamento global de erros — deve ser o primeiro middleware.
         app.UseExceptionHandler();
         app.UseStatusCodePages();
