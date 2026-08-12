@@ -345,8 +345,7 @@ public sealed class ValidacaoController : ControllerBase
 
 public sealed record ValidarLoginRequest(
     Guid IdLicenca,
-    string IdentificadorUsuario,
-    string Assinatura = "");
+    string IdentificadorUsuario);
 
 public sealed record HeartbeatRequest(
     Guid IdLicenca,
