@@ -119,7 +119,13 @@ class LicenseManagerClient:
         return response.json()
 
     def _compute_signature(self, license_id: str, timestamp: str, body_json: str) -> str:
-        payload   = f"{license_id}:{timestamp}:{body_json}"
+        # Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
+        try:
+            from uuid import UUID
+            normalized_id = str(UUID(license_id))
+        except ValueError:
+            normalized_id = license_id
+        payload   = f"{normalized_id}:{timestamp}:{body_json}"
         key       = self._token.encode("utf-8")
         data      = payload.encode("utf-8")
         signature = hmac.new(key, data, hashlib.sha256).hexdigest()

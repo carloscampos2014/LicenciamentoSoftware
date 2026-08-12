@@ -196,7 +196,11 @@ impl LicenseManagerClient {
     }
 
     pub fn compute_signature(&self, license_id: &str, timestamp: &str, body_json: &str) -> String {
-        let payload = format!("{license_id}:{timestamp}:{body_json}");
+        // Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
+        let normalized_id = Uuid::parse_str(license_id)
+            .map(|u| u.to_string())
+            .unwrap_or_else(|_| license_id.to_string());
+        let payload = format!("{normalized_id}:{timestamp}:{body_json}");
         let mut mac = HmacSha256::new_from_slice(self.token.as_bytes())
             .expect("HMAC aceita qualquer tamanho de chave");
         mac.update(payload.as_bytes());

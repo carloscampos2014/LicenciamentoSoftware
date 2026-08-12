@@ -106,6 +106,10 @@ class LicenseManagerClient
      */
     public function computeSignature(string $licenseId, string $timestamp, string $bodyJson): string
     {
+        // Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
+        if (preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $licenseId)) {
+            $licenseId = strtolower($licenseId);
+        }
         $payload = "{$licenseId}:{$timestamp}:{$bodyJson}";
         return hash_hmac('sha256', $payload, $this->token);
     }

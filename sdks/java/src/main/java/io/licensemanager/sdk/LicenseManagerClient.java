@@ -132,7 +132,14 @@ public class LicenseManagerClient {
 
     String computeSignature(String licenseId, String timestamp, String bodyJson) {
         try {
-            var payload = licenseId + ":" + timestamp + ":" + bodyJson;
+            // Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
+            String normalizedId;
+            try {
+                normalizedId = UUID.fromString(licenseId).toString();
+            } catch (IllegalArgumentException e) {
+                normalizedId = licenseId;
+            }
+            var payload = normalizedId + ":" + timestamp + ":" + bodyJson;
             var mac = Mac.getInstance("HmacSHA256");
             mac.init(new SecretKeySpec(token.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
             var hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
