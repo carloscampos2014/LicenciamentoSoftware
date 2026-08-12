@@ -459,16 +459,18 @@ public static class AdminController
         if (logins.Count > 0)
         {
             sb.AppendLine("""
-                <h5 class='text-muted mb-3'>Últimos Logins Válidos</h5>
-                <div class='card shadow-sm mb-4'>
-                  <div class='card-body p-0'>
-                    <table class='table table-sm table-hover mb-0'>
-                      <thead><tr><th>E-mail / Tenant</th><th>IP</th><th>Data/Hora (UTC)</th></tr></thead>
-                      <tbody>
+                <div class='row g-3 mt-2 mb-4'>
+                  <div class='col-12'>
+                    <h5 class='text-muted mb-3'>🔐 Últimos Logins Válidos</h5>
+                    <div class='card shadow-sm'>
+                      <div class='card-body p-0'>
+                        <table class='table table-sm table-hover mb-0'>
+                          <thead><tr><th>E-mail / Tenant</th><th>IP</th><th>Data/Hora (UTC)</th></tr></thead>
+                          <tbody>
                 """);
             foreach (var l in logins)
                 sb.AppendLine(ic, $"<tr><td>{l.Email}</td><td><code>{l.Ip ?? "-"}</code></td><td>{l.HoraUtc.ToString("dd/MM/yyyy HH:mm:ss", ic)}</td></tr>");
-            sb.AppendLine("</tbody></table></div></div>");
+            sb.AppendLine("</tbody></table></div></div></div></div>");
         }
 
         sb.AppendLine("""
