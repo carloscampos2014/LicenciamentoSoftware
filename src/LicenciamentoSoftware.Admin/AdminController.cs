@@ -201,6 +201,11 @@ public static class AdminController
               <div class="container-fluid">
                 <span class="navbar-brand fw-bold">🔧 LicenciamentoSoftware — Painel Admin</span>
                 <div class="d-flex align-items-center gap-3">
+                  <a href="/validacoes" class="text-white text-decoration-none small">📋 Validações</a>
+                  <a href="/sessoes"    class="text-white text-decoration-none small">👤 Sessões</a>
+                  <a href="/instalacoes" class="text-white text-decoration-none small">💻 Instalações</a>
+                  <a href="/usuarios"  class="text-white text-decoration-none small">🔑 Usuários</a>
+                  <span class="text-white-50 small">|</span>
                   <span class="text-white-50 small">
                     Atualizado: 
             """);
@@ -623,6 +628,365 @@ public static class AdminController
             await uow.RollbackAsync();
             throw;
         }
+        return Results.NoContent();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /validacoes — histórico de validações paginado com filtros
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ListarValidacoes(
+        AdminMetricasRepository repo,
+        int pagina = 1,
+        string? resultado = null,
+        string? tipoOperacao = null,
+        string? motivo = null,
+        string? dataInicio = null,
+        string? dataFim = null)
+    {
+        const int tamPagina = 50;
+
+        DateTime? dtInicio = DateTime.TryParse(dataInicio, out var di) ? di : null;
+        DateTime? dtFim    = DateTime.TryParse(dataFim,    out var df) ? df.AddDays(1).AddTicks(-1) : null;
+
+        var (itens, total) = await repo.ListarValidacoesAsync(
+            pagina, tamPagina, resultado, tipoOperacao, motivo, dtInicio, dtFim);
+
+        var totalPaginas = (int)Math.Ceiling((double)total / tamPagina);
+        var ic = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+
+        sb.AppendLine("""
+            <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Validações — Painel Admin</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+            <style>
+              thead th { background:#6c63ff;color:#fff; }
+              .badge-sucesso { background:#d1fae5;color:#065f46; }
+              .badge-erro    { background:#fee2e2;color:#991b1b; }
+            </style>
+            </head><body class="bg-light p-3">
+            <div class="container-fluid">
+            """);
+
+        sb.AppendLine(ic, $"""
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <h4 class="mb-0">📋 Histórico de Validações</h4>
+              <a href="/" class="btn btn-sm btn-outline-secondary">← Voltar</a>
+              <span class="text-muted small ms-auto">{total.ToString(ic)} registro(s) encontrado(s)</span>
+            </div>
+            """);
+
+        // ── Filtros ────────────────────────────────────────────────────────
+        sb.AppendLine(ic, $"""
+            <form method="get" class="row g-2 mb-3 bg-white p-3 rounded shadow-sm">
+              <div class="col-auto">
+                <select name="resultado" class="form-select form-select-sm">
+                  <option value="">Resultado: todos</option>
+                  <option value="sucesso" {(resultado == "sucesso" ? "selected" : "")}>Sucesso</option>
+                  <option value="erro"    {(resultado == "erro"    ? "selected" : "")}>Erro</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <select name="tipoOperacao" class="form-select form-select-sm">
+                  <option value="">Tipo: todos</option>
+                  <option value="login"      {(tipoOperacao == "login"      ? "selected" : "")}>Login</option>
+                  <option value="heartbeat"  {(tipoOperacao == "heartbeat"  ? "selected" : "")}>Heartbeat</option>
+                  <option value="logout"     {(tipoOperacao == "logout"     ? "selected" : "")}>Logout</option>
+                  <option value="instalacao" {(tipoOperacao == "instalacao" ? "selected" : "")}>Instalação</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <select name="motivo" class="form-select form-select-sm">
+                  <option value="">Motivo: todos</option>
+                  <option value="token_invalido"        {(motivo == "token_invalido"        ? "selected" : "")}>Token inválido</option>
+                  <option value="licenca_nao_encontrada"{(motivo == "licenca_nao_encontrada"? "selected" : "")}>Licença não encontrada</option>
+                  <option value="licenca_inativa"       {(motivo == "licenca_inativa"       ? "selected" : "")}>Licença inativa</option>
+                  <option value="licenca_expirada"      {(motivo == "licenca_expirada"      ? "selected" : "")}>Licença expirada</option>
+                  <option value="limite_excedido"       {(motivo == "limite_excedido"       ? "selected" : "")}>Limite excedido</option>
+                  <option value="replay_detectado"      {(motivo == "replay_detectado"      ? "selected" : "")}>Replay detectado</option>
+                  <option value="sessao_invalida"       {(motivo == "sessao_invalida"       ? "selected" : "")}>Sessão inválida</option>
+                  <option value="instalacao_invalida"   {(motivo == "instalacao_invalida"   ? "selected" : "")}>Instalação inválida</option>
+                </select>
+              </div>
+              <div class="col-auto">
+                <input type="date" name="dataInicio" class="form-control form-control-sm" value="{dataInicio ?? ""}" placeholder="Data início">
+              </div>
+              <div class="col-auto">
+                <input type="date" name="dataFim" class="form-control form-control-sm" value="{dataFim ?? ""}" placeholder="Data fim">
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">Filtrar</button>
+                <a href="/validacoes" class="btn btn-sm btn-outline-secondary ms-1">Limpar</a>
+              </div>
+            </form>
+            """);
+
+        // ── Tabela ─────────────────────────────────────────────────────────
+        if (itens.Count == 0)
+        {
+            sb.AppendLine("<div class='alert alert-info'>Nenhum registro encontrado para os filtros selecionados.</div>");
+        }
+        else
+        {
+            sb.AppendLine("""
+                <div class="card shadow-sm">
+                  <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                      <thead><tr>
+                        <th>Data/Hora (UTC)</th><th>Tenant</th><th>Cliente Final</th>
+                        <th>Aplicativo</th><th>Tipo</th><th>Resultado</th><th>Motivo</th><th>IP</th>
+                      </tr></thead>
+                      <tbody>
+                """);
+
+            foreach (var v in itens)
+            {
+                var badgeClass = v.Resultado == "sucesso" ? "badge-sucesso" : "badge-erro";
+                sb.AppendLine(ic, $"""
+                    <tr>
+                      <td style="white-space:nowrap;font-size:.8rem">{v.CriadoEm:dd/MM/yyyy HH:mm:ss}</td>
+                      <td style="font-size:.8rem">{v.NomeCliente}</td>
+                      <td style="font-size:.8rem">{v.ClienteFinalRazaoSocial}</td>
+                      <td style="font-size:.8rem">{v.AplicativoTitulo}</td>
+                      <td><span class="badge bg-secondary" style="font-size:.72rem">{v.TipoOperacao}</span></td>
+                      <td><span class="badge {badgeClass}" style="font-size:.72rem">{v.Resultado}</span></td>
+                      <td style="font-size:.78rem">{v.MotivoErro ?? "—"}</td>
+                      <td><code style="font-size:.72rem">{v.IpOrigem ?? "—"}</code></td>
+                    </tr>
+                    """);
+            }
+
+            sb.AppendLine("</tbody></table></div></div>");
+        }
+
+        // ── Paginação ──────────────────────────────────────────────────────
+        if (totalPaginas > 1)
+        {
+            sb.AppendLine("<nav class='mt-3'><ul class='pagination pagination-sm'>");
+            var qs = $"resultado={resultado}&tipoOperacao={tipoOperacao}&motivo={motivo}&dataInicio={dataInicio}&dataFim={dataFim}";
+            for (var p = 1; p <= totalPaginas; p++)
+            {
+                var active = p == pagina ? " active" : "";
+                sb.AppendLine(ic, $"<li class='page-item{active}'><a class='page-link' href='/validacoes?pagina={p}&{qs}'>{p}</a></li>");
+            }
+            sb.AppendLine("</ul></nav>");
+        }
+
+        sb.AppendLine("</div></body></html>");
+        return Results.Content(sb.ToString(), "text/html; charset=utf-8");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /sessoes — sessões ativas paginadas
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ListarSessoes(
+        AdminMetricasRepository repo,
+        int pagina = 1,
+        string? filtro = null)
+    {
+        const int tamPagina = 50;
+        var (itens, total) = await repo.ListarSessoesAtivasAsync(pagina, tamPagina, filtro);
+        var totalPaginas = (int)Math.Ceiling((double)total / tamPagina);
+        var ic = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+
+        sb.AppendLine(ic, $$"""
+            <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Sessões Ativas — Painel Admin</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+            <style>thead th { background:#6c63ff;color:#fff; }</style>
+            </head><body class="bg-light p-3">
+            <div class="container-fluid">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <h4 class="mb-0">👤 Sessões Ativas</h4>
+              <a href="/" class="btn btn-sm btn-outline-secondary">← Voltar</a>
+              <span class="text-muted small ms-auto">{{total.ToString(ic)}} sessão(ões) ativa(s)</span>
+            </div>
+            <form method="get" class="row g-2 mb-3">
+              <div class="col-auto">
+                <input type="text" name="filtro" class="form-control form-control-sm"
+                       placeholder="Buscar por usuário, cliente, aplicativo..."
+                       value="{{filtro ?? ""}}" style="width:350px">
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">Buscar</button>
+                <a href="/sessoes" class="btn btn-sm btn-outline-secondary ms-1">Limpar</a>
+              </div>
+            </form>
+            """);
+
+        if (itens.Count == 0)
+        {
+            sb.AppendLine("<div class='alert alert-success'>Nenhuma sessão ativa encontrada.</div>");
+        }
+        else
+        {
+            sb.AppendLine("""
+                <div class="card shadow-sm">
+                  <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                      <thead><tr>
+                        <th>Tenant</th><th>Cliente Final</th><th>Aplicativo</th>
+                        <th>Usuário</th><th>Login</th><th>Última Atividade</th><th>Ação</th>
+                      </tr></thead><tbody>
+                """);
+
+            foreach (var s in itens)
+            {
+                var idLicencaStr = s.IdLicenca.ToString();
+                var idSessaoStr  = s.Id.ToString();
+                sb.AppendLine(ic, $$"""
+                    <tr>
+                      <td style="font-size:.8rem">{{s.NomeCliente}}</td>
+                      <td style="font-size:.8rem">{{s.ClienteFinalRazaoSocial}}</td>
+                      <td style="font-size:.8rem">{{s.AplicativoTitulo}}</td>
+                      <td><code style="font-size:.78rem">{{s.IdentificadorUsuario}}</code></td>
+                      <td style="font-size:.78rem;white-space:nowrap">{{s.DataLogin:dd/MM/yyyy HH:mm}}</td>
+                      <td style="font-size:.78rem;white-space:nowrap">{{s.DataUltimaAtividade:dd/MM/yyyy HH:mm}}</td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem"
+                          onclick="if(confirm('Encerrar esta sessão?')){
+                            fetch('/sessoes/{{idSessaoStr}}/encerrar',{method:'POST'})
+                              .then(r=>r.ok?location.reload():alert('Erro ao encerrar sessão.'));
+                          }">Encerrar</button>
+                      </td>
+                    </tr>
+                    """);
+            }
+
+            sb.AppendLine("</tbody></table></div></div>");
+        }
+
+        // Paginação
+        if (totalPaginas > 1)
+        {
+            sb.AppendLine("<nav class='mt-3'><ul class='pagination pagination-sm'>");
+            for (var p = 1; p <= totalPaginas; p++)
+            {
+                var active = p == pagina ? " active" : "";
+                sb.AppendLine(ic, $"<li class='page-item{active}'><a class='page-link' href='/sessoes?pagina={p}&filtro={filtro}'>{p}</a></li>");
+            }
+            sb.AppendLine("</ul></nav>");
+        }
+
+        sb.AppendLine("</div></body></html>");
+        return Results.Content(sb.ToString(), "text/html; charset=utf-8");
+    }
+
+    public static async Task<IResult> EncerrarSessao(Guid id, AdminMetricasRepository repo)
+    {
+        await repo.EncerrarSessaoAsync(id);
+        return Results.NoContent();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // GET /instalacoes — instalações ativas paginadas
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public static async Task<IResult> ListarInstalacoes(
+        AdminMetricasRepository repo,
+        int pagina = 1,
+        string? filtro = null)
+    {
+        const int tamPagina = 50;
+        var (itens, total) = await repo.ListarInstalacoesAtivasAsync(pagina, tamPagina, filtro);
+        var totalPaginas = (int)Math.Ceiling((double)total / tamPagina);
+        var ic = CultureInfo.InvariantCulture;
+        var sb = new StringBuilder();
+
+        sb.AppendLine(ic, $$"""
+            <!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1">
+            <title>Instalações — Painel Admin</title>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+            <style>thead th { background:#6c63ff;color:#fff; }</style>
+            </head><body class="bg-light p-3">
+            <div class="container-fluid">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <h4 class="mb-0">💻 Instalações Registradas</h4>
+              <a href="/" class="btn btn-sm btn-outline-secondary">← Voltar</a>
+              <span class="text-muted small ms-auto">{{total.ToString(ic)}} instalação(ões) ativa(s)</span>
+            </div>
+            <form method="get" class="row g-2 mb-3">
+              <div class="col-auto">
+                <input type="text" name="filtro" class="form-control form-control-sm"
+                       placeholder="Buscar por máquina, cliente, aplicativo..."
+                       value="{{filtro ?? ""}}" style="width:350px">
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-sm btn-primary">Buscar</button>
+                <a href="/instalacoes" class="btn btn-sm btn-outline-secondary ms-1">Limpar</a>
+              </div>
+            </form>
+            """);
+
+        if (itens.Count == 0)
+        {
+            sb.AppendLine("<div class='alert alert-info'>Nenhuma instalação ativa encontrada.</div>");
+        }
+        else
+        {
+            sb.AppendLine("""
+                <div class="card shadow-sm">
+                  <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                      <thead><tr>
+                        <th>Tenant</th><th>Cliente Final</th><th>Aplicativo</th>
+                        <th>Máquina</th><th>Registro</th><th>Última Validação</th><th>Ação</th>
+                      </tr></thead><tbody>
+                """);
+
+            foreach (var ins in itens)
+            {
+                var idStr     = ins.Id.ToString();
+                var ultValid  = ins.DataUltimaValidacao.HasValue
+                    ? ins.DataUltimaValidacao.Value.ToString("dd/MM/yyyy HH:mm", ic)
+                    : "—";
+                sb.AppendLine(ic, $$"""
+                    <tr>
+                      <td style="font-size:.8rem">{{ins.NomeCliente}}</td>
+                      <td style="font-size:.8rem">{{ins.ClienteFinalRazaoSocial}}</td>
+                      <td style="font-size:.8rem">{{ins.AplicativoTitulo}}</td>
+                      <td><code style="font-size:.78rem">{{ins.IdentificadorMaquina}}</code></td>
+                      <td style="font-size:.78rem;white-space:nowrap">{{ins.DataRegistro:dd/MM/yyyy HH:mm}}</td>
+                      <td style="font-size:.78rem;white-space:nowrap">{{ultValid}}</td>
+                      <td>
+                        <button class="btn btn-sm btn-outline-danger py-0 px-2" style="font-size:.75rem"
+                          onclick="if(confirm('Liberar esta instalação?')){
+                            fetch('/instalacoes/{{idStr}}/liberar',{method:'POST'})
+                              .then(r=>r.ok?location.reload():alert('Erro ao liberar instalação.'));
+                          }">Liberar</button>
+                      </td>
+                    </tr>
+                    """);
+            }
+
+            sb.AppendLine("</tbody></table></div></div>");
+        }
+
+        // Paginação
+        if (totalPaginas > 1)
+        {
+            sb.AppendLine("<nav class='mt-3'><ul class='pagination pagination-sm'>");
+            for (var p = 1; p <= totalPaginas; p++)
+            {
+                var active = p == pagina ? " active" : "";
+                sb.AppendLine(ic, $"<li class='page-item{active}'><a class='page-link' href='/instalacoes?pagina={p}&filtro={filtro}'>{p}</a></li>");
+            }
+            sb.AppendLine("</ul></nav>");
+        }
+
+        sb.AppendLine("</div></body></html>");
+        return Results.Content(sb.ToString(), "text/html; charset=utf-8");
+    }
+
+    public static async Task<IResult> LiberarInstalacao(Guid id, AdminMetricasRepository repo)
+    {
+        await repo.LiberarInstalacaoAsync(id);
         return Results.NoContent();
     }
 }
