@@ -72,23 +72,24 @@ public class HmacTests
     }
 
     [Fact]
-    public void ComputeSignature_GuidMaiusculas_NormalizaParaLowercase()
+    public void Constructor_NormalizaGuidParaLowercase_NoBody()
     {
-        // O servidor usa idLicenca:D (lowercase com hifens).
-        // O SDK deve normalizar independente do case recebido.
+        // O construtor deve normalizar o licenseId para lowercase com hífens.
+        // Isso garante que o body JSON e o payload da assinatura usem o mesmo formato.
         var guidLower = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
         var guidUpper = guidLower.ToUpperInvariant();
-
-        var clientLower = new LicenseManagerClient("https://api.example.com", "tok", guidLower, new HttpClient());
-        var clientUpper = new LicenseManagerClient("https://api.example.com", "tok", guidUpper, new HttpClient());
 
         const string ts   = "2026-01-01T00:00:00Z";
         const string body = "{}";
 
-        var sigLower = InvokeComputeSignature(clientLower, guidLower, ts, body);
-        var sigUpper = InvokeComputeSignature(clientUpper, guidUpper, ts, body);
+        // Cliente com GUID maiúsculo — deve normalizar internamente
+        var clientUpper = new LicenseManagerClient("https://api.example.com", "tok", guidUpper, new HttpClient());
+        var clientLower = new LicenseManagerClient("https://api.example.com", "tok", guidLower, new HttpClient());
 
-        sigLower.Should().Be(sigUpper, "GUID em maiusculas deve gerar a mesma assinatura que em minusculas");
+        var sigUpper = InvokeComputeSignature(clientUpper, guidLower, ts, body); // já normalizado no ctor
+        var sigLower = InvokeComputeSignature(clientLower, guidLower, ts, body);
+
+        sigUpper.Should().Be(sigLower, "GUID normalizado no construtor deve gerar a mesma assinatura");
     }
 
     [Fact]

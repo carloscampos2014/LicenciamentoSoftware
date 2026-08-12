@@ -39,7 +39,9 @@ public sealed class LicenseManagerClient : IDisposable
         if (string.IsNullOrWhiteSpace(licenseId)) throw new ArgumentException("licenseId é obrigatório.", nameof(licenseId));
 
         _token     = token;
-        _licenseId = licenseId;
+        _licenseId = Guid.TryParse(licenseId, out var parsed)
+            ? parsed.ToString("D")   // normaliza para lowercase com hífens uma única vez
+            : licenseId;
 
         if (httpClient is not null)
         {
@@ -152,12 +154,8 @@ public sealed class LicenseManagerClient : IDisposable
 
     private string ComputeSignature(string licenseId, string timestamp, string bodyJson)
     {
-        // Normaliza para lowercase com hífens (formato :D) — igual ao servidor.
-        // Se não for um GUID válido, usa a string como está (compatibilidade).
-        var normalizedId = Guid.TryParse(licenseId, out var parsed)
-            ? parsed.ToString("D")
-            : licenseId;
-        var payload = $"{normalizedId}:{timestamp}:{bodyJson}";
+        // licenseId já foi normalizado no construtor (lowercase com hífens)
+        var payload = $"{licenseId}:{timestamp}:{bodyJson}";
         var key     = Encoding.UTF8.GetBytes(_token);
         var data    = Encoding.UTF8.GetBytes(payload);
         var hash    = HMACSHA256.HashData(key, data);
