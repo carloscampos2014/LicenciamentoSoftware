@@ -54,7 +54,10 @@ public sealed class LicenseManagerClient : ILicenseManagerClient
 
         _baseUrl   = baseUrl.TrimEnd('/');
         _token     = token;
-        _licenseId = licenseId;
+        // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+        _licenseId = Guid.TryParse(licenseId, out var parsedGuid)
+            ? parsedGuid.ToString("D")
+            : licenseId;
     }
 
     /// <summary>Construtor sem parâmetros exigido pelo COM.</summary>

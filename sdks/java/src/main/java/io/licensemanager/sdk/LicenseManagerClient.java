@@ -43,7 +43,14 @@ public class LicenseManagerClient {
 
         this.baseUrl   = baseUrl.stripTrailing().endsWith("/") ? baseUrl : baseUrl + "/";
         this.token     = token;
-        this.licenseId = licenseId;
+        // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+        String normalizedId;
+        try {
+            normalizedId = UUID.fromString(licenseId).toString();
+        } catch (IllegalArgumentException e) {
+            normalizedId = licenseId;
+        }
+        this.licenseId = normalizedId;
         this.http      = http;
         this.mapper    = new ObjectMapper()
             .setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);

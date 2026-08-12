@@ -54,7 +54,10 @@ export class LicenseManagerClient {
 
     this.baseUrl   = config.baseUrl.replace(/\/$/, "");
     this.token     = config.token;
-    this.licenseId = config.licenseId;
+    // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
+    this.licenseId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(config.licenseId)
+      ? config.licenseId.toLowerCase()
+      : config.licenseId;
     this.timeoutMs = config.timeoutMs ?? 30_000;
   }
 
