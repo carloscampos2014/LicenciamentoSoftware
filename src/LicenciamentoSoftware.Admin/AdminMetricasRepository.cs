@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using LicenciamentoSoftware.Infrastructure.Persistence;
+using System.Data;
 
 namespace LicenciamentoSoftware.Admin;
 
@@ -170,19 +171,50 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
         string? resultado, string? tipoOperacao, string? motivo,
         DateTime? dataInicio, DateTime? dataFim)
     {
-        const string sqlCount = """
+        // SQL dinâmico — evita 42P08 do Npgsql com parâmetros nullable
+        // em cláusulas IS NULL + comparação na mesma expressão
+        var where = new List<string>();
+        var dp    = new DynamicParameters();
+
+        if (!string.IsNullOrEmpty(resultado))
+        {
+            where.Add("vl.resultado = @Resultado");
+            dp.Add("Resultado", resultado, DbType.String);
+        }
+        if (!string.IsNullOrEmpty(tipoOperacao))
+        {
+            where.Add("vl.tipo_operacao = @TipoOperacao");
+            dp.Add("TipoOperacao", tipoOperacao, DbType.String);
+        }
+        if (!string.IsNullOrEmpty(motivo))
+        {
+            where.Add("vl.motivo_erro = @Motivo");
+            dp.Add("Motivo", motivo, DbType.String);
+        }
+        if (dataInicio.HasValue)
+        {
+            where.Add("vl.criado_em >= @DataInicio");
+            dp.Add("DataInicio", dataInicio.Value, DbType.DateTime);
+        }
+        if (dataFim.HasValue)
+        {
+            where.Add("vl.criado_em <= @DataFim");
+            dp.Add("DataFim", dataFim.Value, DbType.DateTime);
+        }
+
+        var whereClause = where.Count > 0 ? "WHERE " + string.Join(" AND ", where) : "";
+        dp.Add("Limite", tamanhoPagina,              DbType.Int32);
+        dp.Add("Offset", (pagina - 1) * tamanhoPagina, DbType.Int32);
+
+        var sqlCount = $"""
             SELECT COUNT(*)
             FROM validacao_log vl
             LEFT JOIN licenca l  ON l.id = vl.id_licenca
             LEFT JOIN cliente c  ON c.id = l.id_cliente
-            WHERE (@Resultado     IS NULL OR vl.resultado     = @Resultado)
-              AND (@TipoOperacao  IS NULL OR vl.tipo_operacao = @TipoOperacao)
-              AND (@Motivo        IS NULL OR vl.motivo_erro   = @Motivo)
-              AND (@DataInicio    IS NULL OR vl.criado_em    >= @DataInicio)
-              AND (@DataFim       IS NULL OR vl.criado_em    <= @DataFim)
+            {whereClause}
             """;
 
-        const string sqlItens = """
+        var sqlItens = $"""
             SELECT
                 vl.id               AS "Id",
                 vl.criado_em        AS "CriadoEm",
@@ -198,29 +230,14 @@ public sealed class AdminMetricasRepository(DbConnectionFactory factory)
             LEFT JOIN cliente c       ON c.id  = l.id_cliente
             LEFT JOIN aplicacao a     ON a.id  = l.id_aplicativo
             LEFT JOIN cliente_final cf ON cf.id = l.id_cliente_final
-            WHERE (@Resultado     IS NULL OR vl.resultado     = @Resultado)
-              AND (@TipoOperacao  IS NULL OR vl.tipo_operacao = @TipoOperacao)
-              AND (@Motivo        IS NULL OR vl.motivo_erro   = @Motivo)
-              AND (@DataInicio    IS NULL OR vl.criado_em    >= @DataInicio)
-              AND (@DataFim       IS NULL OR vl.criado_em    <= @DataFim)
+            {whereClause}
             ORDER BY vl.criado_em DESC
             LIMIT @Limite OFFSET @Offset
             """;
 
-        var param = new
-        {
-            Resultado    = resultado,
-            TipoOperacao = tipoOperacao,
-            Motivo       = motivo,
-            DataInicio   = dataInicio,
-            DataFim      = dataFim,
-            Limite       = tamanhoPagina,
-            Offset       = (pagina - 1) * tamanhoPagina,
-        };
-
         using var conn = factory.CreateConnection();
-        var total = await conn.ExecuteScalarAsync<long>(sqlCount, param);
-        var itens = (await conn.QueryAsync<ValidacaoLogItem>(sqlItens, param)).AsList();
+        var total = await conn.ExecuteScalarAsync<long>(sqlCount, dp);
+        var itens = (await conn.QueryAsync<ValidacaoLogItem>(sqlItens, dp)).AsList();
         return (itens, total);
     }
 
