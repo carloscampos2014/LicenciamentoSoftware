@@ -20,18 +20,24 @@ class LicenseManagerClient
 {
     private const MAX_RETRIES = 3;
 
+    private string $baseUrl;
+    private string $token;
+    private string $licenseId;
+    private int    $timeoutSeconds;
+
     public function __construct(
-        private readonly string $baseUrl,
-        private readonly string $token,
-        private readonly string $licenseId,
-        private readonly int    $timeoutSeconds = 30,
+        string $baseUrl,
+        string $token,
+        string $licenseId,
+        int    $timeoutSeconds = 30,
     ) {
         if (empty(trim($baseUrl)))   throw new \InvalidArgumentException('baseUrl é obrigatório');
         if (empty(trim($token)))     throw new \InvalidArgumentException('token é obrigatório');
         if (empty(trim($licenseId))) throw new \InvalidArgumentException('licenseId é obrigatório');
 
-        $this->baseUrl   = rtrim($baseUrl, '/');
-        $this->token     = $token;
+        $this->baseUrl        = rtrim($baseUrl, '/');
+        $this->token          = $token;
+        $this->timeoutSeconds = $timeoutSeconds;
         // Normaliza GUID para lowercase com hífens — igual ao servidor (idLicenca:D)
         $this->licenseId = preg_match(
             '/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i',
