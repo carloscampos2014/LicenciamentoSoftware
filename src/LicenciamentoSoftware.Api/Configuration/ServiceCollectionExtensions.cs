@@ -305,6 +305,11 @@ internal static class ServiceCollectionExtensions
         services.AddScoped<EncerrarSessaoHandler>();
         services.AddScoped<LiberarInstalacaoHandler>();
 
+        // Issue #219 — edição de detalhes
+        services.AddScoped<EditarDetalhesUsuariosHandler>();
+        services.AddScoped<EditarDetalhesInstalacaoHandler>();
+        services.AddScoped<EditarRenovacaoAutomaticaHandler>();
+
         // Fase 9.1 — handlers do dashboard
         services.AddScoped<BuscarDashboardResumoHandler>();
         services.AddScoped<BuscarDashboardAlertasHandler>();

@@ -38,6 +38,11 @@ public interface ILicencaGestaoRepository
     Task<DetalhePeriodoResult?> BuscarPeriodoPorLicencaAsync(Guid idLicenca, CancellationToken ct = default);
     Task AtualizarDataFimPeriodoAsync(Guid idLicenca, DateTime novaDataFim, CancellationToken ct = default);
 
+    // Edição de detalhes (Fase 10 — issue #219)
+    Task AtualizarDetalhesUsuariosAsync(Guid idLicenca, int quantidadeMaxima, int maxSessoesPorUsuario, CancellationToken ct = default);
+    Task AtualizarDetalhesInstalacaoAsync(Guid idLicenca, int quantidadeMaxima, CancellationToken ct = default);
+    Task AtualizarRenovacaoAutomaticaAsync(Guid idLicenca, bool renovacaoAutomatica, CancellationToken ct = default);
+
     // -------------------------------------------------------------------------
     // Fase 8 — jobs de expiração, renovação automática e notificação
     // -------------------------------------------------------------------------

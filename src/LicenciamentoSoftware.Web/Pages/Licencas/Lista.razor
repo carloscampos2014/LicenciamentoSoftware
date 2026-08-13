@@ -227,7 +227,19 @@ else
                     <div class="row g-2 mb-2">
                         <div class="col-4"><small class="text-muted d-block">Início</small>@p.DataInicio.ToString("dd/MM/yyyy")</div>
                         <div class="col-4"><small class="text-muted d-block">Fim</small>@p.DataFim.ToString("dd/MM/yyyy")</div>
-                        <div class="col-4"><small class="text-muted d-block">Renovação auto</small>@(p.RenovacaoAutomatica ? "Sim" : "Não")</div>
+                        <div class="col-4">
+                            <small class="text-muted d-block">Renovação auto</small>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="form-check form-switch mb-0">
+                                    <input class="form-check-input" type="checkbox" @bind="_editRenovacaoAuto" />
+                                </div>
+                                @if (_editRenovacaoAuto != p.RenovacaoAutomatica)
+                                {
+                                    <button class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size:.7rem"
+                                            @onclick="SalvarRenovacaoAutomatica" disabled="@_salvandoDetalhe">Salvar</button>
+                                }
+                            </div>
+                        </div>
                     </div>
                     <div class="d-flex gap-2 align-items-center mt-2">
                         <label class="form-label mb-0 small">Nova data fim:</label>
@@ -240,7 +252,19 @@ else
             {
                 <div class="item-card mb-3">
                     <p class="fw-semibold mb-2 small text-muted text-uppercase" style="letter-spacing:.05em">Usuários</p>
-                    <small class="text-muted">Máx: <strong>@u.QuantidadeMaxima</strong> | Sessões/usuário: <strong>@u.MaxSessoesPorUsuario</strong></small>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-5">
+                            <label class="form-label small mb-1">Máx. usuários</label>
+                            <InputNumber class="form-control form-control-sm" @bind-Value="_editQtdUsuarios" />
+                        </div>
+                        <div class="col-5">
+                            <label class="form-label small mb-1">Sessões/usuário</label>
+                            <InputNumber class="form-control form-control-sm" @bind-Value="_editMaxSessoes" />
+                        </div>
+                        <div class="col-2">
+                            <button class="btn btn-outline-primary btn-sm w-100" @onclick="SalvarDetalhesUsuarios" disabled="@_salvandoDetalhe">Salvar</button>
+                        </div>
+                    </div>
                 </div>
             }
             @if (_detalhe.Sessoes?.Any(s => s.Ativo) == true)
@@ -266,6 +290,21 @@ else
                             }
                         </tbody>
                     </table>
+                </div>
+            }
+            @if (_detalhe.Instalacao is { } inst)
+            {
+                <div class="item-card mb-3">
+                    <p class="fw-semibold mb-2 small text-muted text-uppercase" style="letter-spacing:.05em">Instalação — Limite</p>
+                    <div class="row g-2 align-items-end">
+                        <div class="col-8">
+                            <label class="form-label small mb-1">Máx. instalações</label>
+                            <InputNumber class="form-control form-control-sm" @bind-Value="_editQtdInstalacoes" />
+                        </div>
+                        <div class="col-4">
+                            <button class="btn btn-outline-primary btn-sm w-100" @onclick="SalvarDetalhesInstalacao" disabled="@_salvandoDetalhe">Salvar</button>
+                        </div>
+                    </div>
                 </div>
             }
             @if (_detalhe.InstalacoesRegistradas?.Any(i => i.Ativo) == true)
@@ -377,6 +416,11 @@ else
     private string? _erroDetalhe; private LicencaResult? _detalhe;
     private DateTime _novaDataFim = DateTime.Today.AddMonths(1);
 
+    // Edição de detalhes (issue #219)
+    private int _editQtdUsuarios; private int _editMaxSessoes;
+    private int _editQtdInstalacoes;
+    private bool _editRenovacaoAuto;
+
     protected override async Task OnInitializedAsync() => await CarregarAsync();
 
     private async Task CarregarAsync()
@@ -424,7 +468,14 @@ else
         _detalhe = null; _erroDetalhe = null; _tokenGerado = null;
         _modalDetalhe = true; _carregandoDetalhe = true;
         _detalhe = await Service.BuscarPorIdAsync(id);
-        if (_detalhe is not null) _novaDataFim = _detalhe.Periodo?.DataFim.AddYears(1) ?? DateTime.Today.AddMonths(1);
+        if (_detalhe is not null)
+        {
+            _novaDataFim = _detalhe.Periodo?.DataFim.AddYears(1) ?? DateTime.Today.AddMonths(1);
+            _editRenovacaoAuto = _detalhe.Periodo?.RenovacaoAutomatica ?? false;
+            _editQtdUsuarios = _detalhe.Usuarios?.QuantidadeMaxima ?? 10;
+            _editMaxSessoes = _detalhe.Usuarios?.MaxSessoesPorUsuario ?? 5;
+            _editQtdInstalacoes = _detalhe.Instalacao?.QuantidadeMaxima ?? 1;
+        }
         _carregandoDetalhe = false;
     }
 
@@ -459,6 +510,34 @@ else
         if (!await _confirmAcao.MostrarAsync()) return;
         _salvandoDetalhe = true;
         var (sucesso, erro) = await Service.LiberarInstalacaoAsync(_detalhe.Id, idInstalacao);
+        _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
+        if (sucesso) await AbrirDetalhe(_detalhe.Id);
+    }
+
+    // ── Edição de detalhes (issue #219) ────────────────
+    private async Task SalvarDetalhesUsuarios()
+    {
+        if (_detalhe is null) return;
+        _salvandoDetalhe = true; _erroDetalhe = null;
+        var (sucesso, erro) = await Service.EditarDetalhesUsuariosAsync(_detalhe.Id, _editQtdUsuarios, _editMaxSessoes);
+        _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
+        if (sucesso) await AbrirDetalhe(_detalhe.Id);
+    }
+
+    private async Task SalvarDetalhesInstalacao()
+    {
+        if (_detalhe is null) return;
+        _salvandoDetalhe = true; _erroDetalhe = null;
+        var (sucesso, erro) = await Service.EditarDetalhesInstalacaoAsync(_detalhe.Id, _editQtdInstalacoes);
+        _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
+        if (sucesso) await AbrirDetalhe(_detalhe.Id);
+    }
+
+    private async Task SalvarRenovacaoAutomatica()
+    {
+        if (_detalhe is null) return;
+        _salvandoDetalhe = true; _erroDetalhe = null;
+        var (sucesso, erro) = await Service.EditarRenovacaoAutomaticaAsync(_detalhe.Id, _editRenovacaoAuto);
         _erroDetalhe = sucesso ? null : erro; _salvandoDetalhe = false;
         if (sucesso) await AbrirDetalhe(_detalhe.Id);
     }

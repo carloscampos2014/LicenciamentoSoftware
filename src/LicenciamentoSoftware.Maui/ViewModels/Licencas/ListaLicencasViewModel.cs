@@ -24,6 +24,12 @@ public partial class ListaLicencasViewModel(MauiApiClientFactory factory) : Base
     [ObservableProperty] bool _exibirDetalhe;
     [ObservableProperty] string _textoBotaoCopiarId = "Copiar";
 
+    // Edição de detalhes (issue #219)
+    [ObservableProperty] int _editQtdUsuarios;
+    [ObservableProperty] int _editMaxSessoes;
+    [ObservableProperty] int _editQtdInstalacoes;
+    [ObservableProperty] bool _editRenovacaoAuto;
+
     private const int TamanhoPagina = 20;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
@@ -119,13 +125,18 @@ public partial class ListaLicencasViewModel(MauiApiClientFactory factory) : Base
         try
         {
             LicencaSelecionada = await factory.Licenca.BuscarPorIdAsync(item.Id) ?? item;
-            ExibirDetalhe = true;
         }
         catch
         {
             LicencaSelecionada = item;
-            ExibirDetalhe = true;
         }
+
+        // Inicializar campos de edição
+        EditQtdUsuarios = LicencaSelecionada.Usuarios?.QuantidadeMaxima ?? 10;
+        EditMaxSessoes = LicencaSelecionada.Usuarios?.MaxSessoesPorUsuario ?? 5;
+        EditQtdInstalacoes = LicencaSelecionada.Instalacao?.QuantidadeMaxima ?? 1;
+        EditRenovacaoAuto = LicencaSelecionada.Periodo?.RenovacaoAutomatica ?? false;
+        ExibirDetalhe = true;
     }
 
     [RelayCommand]
@@ -171,5 +182,40 @@ public partial class ListaLicencasViewModel(MauiApiClientFactory factory) : Base
         TextoBotaoCopiarId = "✓ Copiado";
         await Task.Delay(2000);
         TextoBotaoCopiarId = "Copiar";
+    }
+
+    // ── Edição de detalhes (issue #219) ────────────────
+
+    [RelayCommand]
+    async Task SalvarDetalhesUsuariosAsync()
+    {
+        if (LicencaSelecionada is null) return;
+        Erro = null;
+        var (sucesso, erro) = await factory.Licenca.EditarDetalhesUsuariosAsync(
+            LicencaSelecionada.Id, EditQtdUsuarios, EditMaxSessoes);
+        if (sucesso) await VerDetalheAsync(LicencaSelecionada);
+        else Erro = erro ?? "Erro ao salvar detalhes de usuários.";
+    }
+
+    [RelayCommand]
+    async Task SalvarDetalhesInstalacaoAsync()
+    {
+        if (LicencaSelecionada is null) return;
+        Erro = null;
+        var (sucesso, erro) = await factory.Licenca.EditarDetalhesInstalacaoAsync(
+            LicencaSelecionada.Id, EditQtdInstalacoes);
+        if (sucesso) await VerDetalheAsync(LicencaSelecionada);
+        else Erro = erro ?? "Erro ao salvar detalhes de instalação.";
+    }
+
+    [RelayCommand]
+    async Task SalvarRenovacaoAutomaticaAsync()
+    {
+        if (LicencaSelecionada is null) return;
+        Erro = null;
+        var (sucesso, erro) = await factory.Licenca.EditarRenovacaoAutomaticaAsync(
+            LicencaSelecionada.Id, EditRenovacaoAuto);
+        if (sucesso) await VerDetalheAsync(LicencaSelecionada);
+        else Erro = erro ?? "Erro ao salvar renovação automática.";
     }
 }

@@ -41,4 +41,9 @@ public sealed class LicencaPeriodo
 
         DataFim = novaDataFim;
     }
+
+    public void AlterarRenovacaoAutomatica(bool valor)
+    {
+        RenovacaoAutomatica = valor;
+    }
 }
