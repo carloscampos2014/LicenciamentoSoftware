@@ -30,8 +30,8 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Instalar workload MAUI Windows
-        run: dotnet workload install maui-windows
+      - name: Instalar workloads MAUI
+        run: dotnet workload restore src/LicenciamentoSoftware.Maui/LicenciamentoSoftware.Maui.csproj
 
       - name: Cache NuGet
         uses: actions/cache@v6
