@@ -74,10 +74,10 @@ public sealed class LicencaSessaoRepository : ILicencaSessaoRepository
     // Fase 7 — validação de login (dentro de transação serializável)
     // -------------------------------------------------------------------------
 
-    public async Task<int> ContarAtivasPorLicencaAsync(Guid idLicenca, CancellationToken ct = default)
+    public async Task<int> ContarUsuariosDistintosAtivosPorLicencaAsync(Guid idLicenca, CancellationToken ct = default)
     {
         const string sql = """
-            SELECT COUNT(*) FROM licenca_sessao
+            SELECT COUNT(DISTINCT identificador_usuario) FROM licenca_sessao
             WHERE licenca_id = @IdLicenca AND ativo = TRUE
             """;
         return await _uow.Connection.ExecuteScalarAsync<int>(
