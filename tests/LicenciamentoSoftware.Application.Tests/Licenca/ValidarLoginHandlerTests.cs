@@ -159,8 +159,8 @@ public class ValidarLoginHandlerTests
         _validacaoRepo.BuscarParaValidacaoAsync(IdLicenca, Arg.Any<CancellationToken>())
             .Returns(LicencaInfoUsuarios(quantidadeMaxima: 5, maxPorUsuario: 3));
 
-        _sessaoRepo.ContarAtivasPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
-            .Returns(4);  // 4 de 5 usadas
+        _sessaoRepo.ContarUsuariosDistintosAtivosPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
+            .Returns(4);  // 4 de 5 usuários distintos
         _sessaoRepo.ContarAtivasPorUsuarioAsync(IdLicenca, IdentificadorUsuario, Arg.Any<CancellationToken>())
             .Returns(0);  // usuário sem sessões
 
@@ -184,8 +184,8 @@ public class ValidarLoginHandlerTests
         _validacaoRepo.BuscarParaValidacaoAsync(IdLicenca, Arg.Any<CancellationToken>())
             .Returns(LicencaInfoUsuarios(quantidadeMaxima: 3, maxPorUsuario: 5));
 
-        _sessaoRepo.ContarAtivasPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
-            .Returns(3);  // exatamente no limite
+        _sessaoRepo.ContarUsuariosDistintosAtivosPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
+            .Returns(3);  // exatamente no limite de usuários
 
         var resultado = await CriarHandler().HandleAsync(Command());
 
@@ -207,7 +207,7 @@ public class ValidarLoginHandlerTests
         _validacaoRepo.BuscarParaValidacaoAsync(IdLicenca, Arg.Any<CancellationToken>())
             .Returns(LicencaInfoUsuarios(quantidadeMaxima: 10, maxPorUsuario: 2));
 
-        _sessaoRepo.ContarAtivasPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
+        _sessaoRepo.ContarUsuariosDistintosAtivosPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
             .Returns(5);   // dentro do limite global
         _sessaoRepo.ContarAtivasPorUsuarioAsync(IdLicenca, IdentificadorUsuario, Arg.Any<CancellationToken>())
             .Returns(2);   // exatamente no limite por usuário
@@ -228,15 +228,15 @@ public class ValidarLoginHandlerTests
     [Fact]
     public async Task Handle_LicencaUsuarios_ConcorrenciaUltimoSlot_SegundoRetornaLimite()
     {
-        // Simula: dois handlers consultam simultaneamente e ambos veem 4 de 5.
-        // O segundo chama também ContarAtivasPorLicencaAsync e vê 5 (após o primeiro ter inserido).
+        // Simula: dois handlers consultam simultaneamente e ambos veem 4 de 5 usuários.
+        // O segundo chama também ContarUsuariosDistintosAtivosPorLicencaAsync e vê 5 (após o primeiro ter inserido).
         // Esse teste verifica o comportamento do handler quando o contador já está no limite.
         ConfigurarUowParaTransacao();
         _validacaoRepo.BuscarParaValidacaoAsync(IdLicenca, Arg.Any<CancellationToken>())
             .Returns(LicencaInfoUsuarios(quantidadeMaxima: 5, maxPorUsuario: 10));
 
         // Segunda chamada vê o slot cheio (simulando que o primeiro handler já inseriu)
-        _sessaoRepo.ContarAtivasPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
+        _sessaoRepo.ContarUsuariosDistintosAtivosPorLicencaAsync(IdLicenca, Arg.Any<CancellationToken>())
             .Returns(5);
 
         var resultado = await CriarHandler().HandleAsync(Command());

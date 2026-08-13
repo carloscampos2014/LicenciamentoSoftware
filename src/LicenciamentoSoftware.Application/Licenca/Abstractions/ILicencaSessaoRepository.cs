@@ -20,11 +20,11 @@ public interface ILicencaSessaoRepository
     // -------------------------------------------------------------------------
 
     /// <summary>
-    /// Conta sessões ativas para a licença (todos os usuários).
-    /// Usado para verificar o limite global antes de abrir nova sessão.
+    /// Conta usuários distintos com sessões ativas para a licença.
+    /// Usado para verificar o limite global de usuários simultâneos antes de abrir nova sessão.
     /// Deve ser chamado dentro de transação serializável.
     /// </summary>
-    Task<int> ContarAtivasPorLicencaAsync(Guid idLicenca, CancellationToken ct = default);
+    Task<int> ContarUsuariosDistintosAtivosPorLicencaAsync(Guid idLicenca, CancellationToken ct = default);
 
     /// <summary>
     /// Conta sessões ativas para um usuário específico dentro de uma licença.

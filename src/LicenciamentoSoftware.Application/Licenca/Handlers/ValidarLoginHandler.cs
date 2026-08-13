@@ -112,7 +112,7 @@ public sealed class ValidarLoginHandler
         await _uow.BeginAsync(IsolationLevel.Serializable, ct);
         try
         {
-            var totalAtivas = await _sessaoRepo.ContarAtivasPorLicencaAsync(licenca.Id, ct);
+            var totalAtivas = await _sessaoRepo.ContarUsuariosDistintosAtivosPorLicencaAsync(licenca.Id, ct);
             if (totalAtivas >= quantidadeMaxima)
             {
                 await _uow.RollbackAsync(ct);
