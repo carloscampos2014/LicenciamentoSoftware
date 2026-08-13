@@ -155,4 +155,47 @@ public sealed class LicencaApiService(HttpClient http)
         string? Aviso);
     private sealed record ErroResponse(string? Erro);
     private sealed record ErrosResponse(string? Erro, IReadOnlyList<string>? Erros);
+
+    // =========================================================================
+    // Issue #219 — Edição de detalhes
+    // =========================================================================
+
+    public async Task<(bool Sucesso, string? Erro)> EditarDetalhesUsuariosAsync(
+        Guid idLicenca, int quantidadeMaxima, int maxSessoesPorUsuario,
+        CancellationToken ct = default)
+    {
+        var response = await http.PutAsJsonAsync(
+            $"licencas/{idLicenca}/detalhes-usuarios",
+            new { QuantidadeMaxima = quantidadeMaxima, MaxSessoesPorUsuario = maxSessoesPorUsuario },
+            ct);
+        if (response.IsSuccessStatusCode) return (true, null);
+        var erro = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
+        return (false, erro?.Erro ?? "Erro inesperado.");
+    }
+
+    public async Task<(bool Sucesso, string? Erro)> EditarDetalhesInstalacaoAsync(
+        Guid idLicenca, int quantidadeMaxima,
+        CancellationToken ct = default)
+    {
+        var response = await http.PutAsJsonAsync(
+            $"licencas/{idLicenca}/detalhes-instalacao",
+            new { QuantidadeMaxima = quantidadeMaxima },
+            ct);
+        if (response.IsSuccessStatusCode) return (true, null);
+        var erro = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
+        return (false, erro?.Erro ?? "Erro inesperado.");
+    }
+
+    public async Task<(bool Sucesso, string? Erro)> EditarRenovacaoAutomaticaAsync(
+        Guid idLicenca, bool renovacaoAutomatica,
+        CancellationToken ct = default)
+    {
+        var response = await http.PutAsJsonAsync(
+            $"licencas/{idLicenca}/detalhes-periodo",
+            new { RenovacaoAutomatica = renovacaoAutomatica },
+            ct);
+        if (response.IsSuccessStatusCode) return (true, null);
+        var erro = await response.Content.ReadFromJsonAsync<ErroResponse>(ct);
+        return (false, erro?.Erro ?? "Erro inesperado.");
+    }
 }

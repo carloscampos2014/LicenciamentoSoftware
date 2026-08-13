@@ -25,4 +25,12 @@ public sealed class LicencaInstalacao
             QuantidadeMaxima = quantidadeMaxima
         };
     }
+
+    public void Atualizar(int quantidadeMaxima)
+    {
+        if (quantidadeMaxima <= 0)
+            throw new DomainException("Quantidade máxima de instalações deve ser maior que zero.");
+
+        QuantidadeMaxima = quantidadeMaxima;
+    }
 }

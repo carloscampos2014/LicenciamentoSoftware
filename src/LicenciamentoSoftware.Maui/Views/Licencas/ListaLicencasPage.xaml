@@ -243,6 +243,62 @@
                                         </FormattedString>
                                     </Label.FormattedText>
                                 </Label>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8" Margin="0,4,0,0"
+                                      BindingContext="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext}">
+                                    <Label Grid.Column="0" Text="Renovação auto:" FontSize="13"
+                                           TextColor="{StaticResource TextSecondary}" VerticalOptions="Center" />
+                                    <Switch Grid.Column="1" IsToggled="{Binding EditRenovacaoAuto}"
+                                            HorizontalOptions="Start" VerticalOptions="Center" />
+                                    <Button Grid.Column="2" Text="Salvar"
+                                            Command="{Binding SalvarRenovacaoAutomaticaCommand}"
+                                            BackgroundColor="{StaticResource Surface}"
+                                            TextColor="{StaticResource Primary}"
+                                            BorderColor="{StaticResource Primary}" BorderWidth="1"
+                                            CornerRadius="6" FontSize="11"
+                                            HeightRequest="32" WidthRequest="64" />
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Usuários — edição -->
+                            <VerticalStackLayout IsVisible="{Binding Usuarios, Converter={StaticResource StringNotNullConverter}}" Spacing="4"
+                                                 BindingContext="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext}">
+                                <Label Style="{StaticResource LabelSecao}" Text="Usuários" />
+                                <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="4">
+                                    <Label Grid.Row="0" Grid.Column="0" Text="Máx. usuários" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                    <Entry Grid.Row="1" Grid.Column="0" Keyboard="Numeric"
+                                           Text="{Binding EditQtdUsuarios}" FontSize="13"
+                                           BackgroundColor="{StaticResource Background}" />
+                                    <Label Grid.Row="0" Grid.Column="1" Text="Sessões/usuário" FontSize="11" TextColor="{StaticResource TextMuted}" />
+                                    <Entry Grid.Row="1" Grid.Column="1" Keyboard="Numeric"
+                                           Text="{Binding EditMaxSessoes}" FontSize="13"
+                                           BackgroundColor="{StaticResource Background}" />
+                                    <Button Grid.Row="1" Grid.Column="2" Text="Salvar"
+                                            Command="{Binding SalvarDetalhesUsuariosCommand}"
+                                            BackgroundColor="{StaticResource Surface}"
+                                            TextColor="{StaticResource Primary}"
+                                            BorderColor="{StaticResource Primary}" BorderWidth="1"
+                                            CornerRadius="6" FontSize="11"
+                                            HeightRequest="36" WidthRequest="64"
+                                            VerticalOptions="End" />
+                                </Grid>
+                            </VerticalStackLayout>
+
+                            <!-- Instalação — edição -->
+                            <VerticalStackLayout IsVisible="{Binding Instalacao, Converter={StaticResource StringNotNullConverter}}" Spacing="4"
+                                                 BindingContext="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext}">
+                                <Label Style="{StaticResource LabelSecao}" Text="Instalação — Limite" />
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                    <Entry Grid.Column="0" Keyboard="Numeric"
+                                           Text="{Binding EditQtdInstalacoes}" FontSize="13"
+                                           BackgroundColor="{StaticResource Background}" />
+                                    <Button Grid.Column="1" Text="Salvar"
+                                            Command="{Binding SalvarDetalhesInstalacaoCommand}"
+                                            BackgroundColor="{StaticResource Surface}"
+                                            TextColor="{StaticResource Primary}"
+                                            BorderColor="{StaticResource Primary}" BorderWidth="1"
+                                            CornerRadius="6" FontSize="11"
+                                            HeightRequest="36" WidthRequest="64" />
+                                </Grid>
                             </VerticalStackLayout>
 
                             <!-- Sessões -->

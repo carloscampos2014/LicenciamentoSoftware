@@ -39,4 +39,16 @@ public sealed class LicencaUsuarios
             TempoLimiteSessaoHoras = tempoLimiteSessaoHoras
         };
     }
+
+    public void Atualizar(int quantidadeMaxima, int maxSessoesPorUsuario)
+    {
+        if (quantidadeMaxima <= 0)
+            throw new DomainException("Quantidade máxima de usuários deve ser maior que zero.");
+
+        if (maxSessoesPorUsuario <= 0)
+            throw new DomainException("Máximo de sessões por usuário deve ser maior que zero.");
+
+        QuantidadeMaxima = quantidadeMaxima;
+        MaxSessoesPorUsuario = maxSessoesPorUsuario;
+    }
 }

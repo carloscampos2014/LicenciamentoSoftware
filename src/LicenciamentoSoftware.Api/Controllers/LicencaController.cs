@@ -31,6 +31,11 @@ public sealed class LicencaController : ControllerBase
     private readonly EncerrarSessaoHandler _encerrarSessaoHandler;
     private readonly LiberarInstalacaoHandler _liberarInstalacaoHandler;
 
+    // Issue #219 — edição de detalhes
+    private readonly EditarDetalhesUsuariosHandler _editarUsuariosHandler;
+    private readonly EditarDetalhesInstalacaoHandler _editarInstalacaoHandler;
+    private readonly EditarRenovacaoAutomaticaHandler _editarRenovacaoHandler;
+
     private readonly ICurrentUser _currentUser;
 
     public LicencaController(
@@ -43,6 +48,9 @@ public sealed class LicencaController : ControllerBase
         RenovarPeriodoHandler renovarPeriodoHandler,
         EncerrarSessaoHandler encerrarSessaoHandler,
         LiberarInstalacaoHandler liberarInstalacaoHandler,
+        EditarDetalhesUsuariosHandler editarUsuariosHandler,
+        EditarDetalhesInstalacaoHandler editarInstalacaoHandler,
+        EditarRenovacaoAutomaticaHandler editarRenovacaoHandler,
         ICurrentUser currentUser)
     {
         _emitirTokenHandler       = emitirTokenHandler;
@@ -54,6 +62,9 @@ public sealed class LicencaController : ControllerBase
         _renovarPeriodoHandler    = renovarPeriodoHandler;
         _encerrarSessaoHandler    = encerrarSessaoHandler;
         _liberarInstalacaoHandler = liberarInstalacaoHandler;
+        _editarUsuariosHandler    = editarUsuariosHandler;
+        _editarInstalacaoHandler  = editarInstalacaoHandler;
+        _editarRenovacaoHandler   = editarRenovacaoHandler;
         _currentUser              = currentUser;
     }
 
@@ -276,6 +287,62 @@ public sealed class LicencaController : ControllerBase
             _                                      => StatusCode(500),
         };
     }
+
+    // =========================================================================
+    // Edição de detalhes (Issue #219)
+    // =========================================================================
+
+    /// <summary>Edita os limites de uma licença Por Usuários.</summary>
+    [HttpPut("{id:guid}/detalhes-usuarios")]
+    [Authorize(Policy = "AdministradorCliente")]
+    public async Task<IActionResult> EditarDetalhesUsuarios(
+        Guid id,
+        [FromBody] EditarDetalhesUsuariosRequest request,
+        CancellationToken ct)
+    {
+        var resultado = await _editarUsuariosHandler.HandleAsync(
+            new EditarDetalhesUsuariosCommand(id, request.QuantidadeMaxima, request.MaxSessoesPorUsuario), ct);
+
+        return MapEditarResult(resultado);
+    }
+
+    /// <summary>Edita o limite de uma licença Por Instalação.</summary>
+    [HttpPut("{id:guid}/detalhes-instalacao")]
+    [Authorize(Policy = "AdministradorCliente")]
+    public async Task<IActionResult> EditarDetalhesInstalacao(
+        Guid id,
+        [FromBody] EditarDetalhesInstalacaoRequest request,
+        CancellationToken ct)
+    {
+        var resultado = await _editarInstalacaoHandler.HandleAsync(
+            new EditarDetalhesInstalacaoCommand(id, request.QuantidadeMaxima), ct);
+
+        return MapEditarResult(resultado);
+    }
+
+    /// <summary>Edita a renovação automática de uma licença Por Período.</summary>
+    [HttpPut("{id:guid}/detalhes-periodo")]
+    [Authorize(Policy = "AdministradorCliente")]
+    public async Task<IActionResult> EditarDetalhesPeriodo(
+        Guid id,
+        [FromBody] EditarRenovacaoAutomaticaRequest request,
+        CancellationToken ct)
+    {
+        var resultado = await _editarRenovacaoHandler.HandleAsync(
+            new EditarRenovacaoAutomaticaCommand(id, request.RenovacaoAutomatica), ct);
+
+        return MapEditarResult(resultado);
+    }
+
+    private IActionResult MapEditarResult(EditarDetalhesResult resultado) => resultado switch
+    {
+        EditarDetalhesResult.Sucesso             => NoContent(),
+        EditarDetalhesResult.LicencaNaoEncontrada => NotFound(new { Erro = "Licença não encontrada." }),
+        EditarDetalhesResult.LicencaInativa      => Conflict(new { Erro = "Licença está inativa." }),
+        EditarDetalhesResult.TipoIncompativel t  => UnprocessableEntity(new { Erro = t.Motivo }),
+        EditarDetalhesResult.Invalido i          => UnprocessableEntity(new { Erros = i.Erros }),
+        _                                        => StatusCode(500),
+    };
 }
 
 // =========================================================================
@@ -304,3 +371,8 @@ public sealed record RenovarPeriodoRequest(DateTime NovaDataFim);
 // Fase 4 — mantidos
 public sealed record EmitirTokenRequest(int? ExpiracaoMinutos = null);
 public sealed record RenovarTokenRequest(int? ExpiracaoMinutos = null);
+
+// Issue #219 — edição de detalhes
+public sealed record EditarDetalhesUsuariosRequest(int QuantidadeMaxima, int MaxSessoesPorUsuario);
+public sealed record EditarDetalhesInstalacaoRequest(int QuantidadeMaxima);
+public sealed record EditarRenovacaoAutomaticaRequest(bool RenovacaoAutomatica);

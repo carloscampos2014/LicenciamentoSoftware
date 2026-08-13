@@ -270,6 +270,49 @@ public sealed class LicencaGestaoRepository(DbConnectionFactory factory) : ILice
             cancellationToken: ct));
     }
 
+    public async Task AtualizarDetalhesUsuariosAsync(
+        Guid idLicenca, int quantidadeMaxima, int maxSessoesPorUsuario, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE licenca_usuarios
+            SET quantidade_maxima = @QuantidadeMaxima,
+                max_sessoes_por_usuario = @MaxSessoesPorUsuario
+            WHERE licenca_id = @IdLicenca
+            """;
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(new CommandDefinition(sql,
+            new { IdLicenca = idLicenca, QuantidadeMaxima = quantidadeMaxima, MaxSessoesPorUsuario = maxSessoesPorUsuario },
+            cancellationToken: ct));
+    }
+
+    public async Task AtualizarDetalhesInstalacaoAsync(
+        Guid idLicenca, int quantidadeMaxima, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE licenca_instalacao
+            SET quantidade_maxima = @QuantidadeMaxima
+            WHERE licenca_id = @IdLicenca
+            """;
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(new CommandDefinition(sql,
+            new { IdLicenca = idLicenca, QuantidadeMaxima = quantidadeMaxima },
+            cancellationToken: ct));
+    }
+
+    public async Task AtualizarRenovacaoAutomaticaAsync(
+        Guid idLicenca, bool renovacaoAutomatica, CancellationToken ct = default)
+    {
+        const string sql = """
+            UPDATE licenca_periodo
+            SET renovacao_automatica = @RenovacaoAutomatica
+            WHERE licenca_id = @IdLicenca
+            """;
+        using var conn = _factory.CreateConnection();
+        await conn.ExecuteAsync(new CommandDefinition(sql,
+            new { IdLicenca = idLicenca, RenovacaoAutomatica = renovacaoAutomatica },
+            cancellationToken: ct));
+    }
+
     // -------------------------------------------------------------------------
     // Fase 8 — jobs de expiração, renovação automática e notificação
     // -------------------------------------------------------------------------
