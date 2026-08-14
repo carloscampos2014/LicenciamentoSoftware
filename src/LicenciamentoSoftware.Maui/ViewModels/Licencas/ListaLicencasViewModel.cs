@@ -140,10 +140,11 @@ public partial class ListaLicencasViewModel(MauiApiClientFactory factory) : Base
     }
 
     [RelayCommand]
-    void FecharDetalhe()
+    async Task FecharDetalheAsync()
     {
         ExibirDetalhe = false;
         LicencaSelecionada = null;
+        await RecarregarAsync();
     }
 
     [RelayCommand]
