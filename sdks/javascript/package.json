@@ -1,6 +1,6 @@
 {
   "name": "licensemanager-sdk",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "SDK cliente para a API de validação do LicenseManager",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

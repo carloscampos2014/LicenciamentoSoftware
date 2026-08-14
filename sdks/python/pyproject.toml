@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name        = "licensemanager-sdk"
-version     = "1.0.3"
+version     = "1.0.4"
 description = "SDK cliente para a API de validação do LicenseManager"
 readme      = "README.md"
 license     = { text = "MIT" }

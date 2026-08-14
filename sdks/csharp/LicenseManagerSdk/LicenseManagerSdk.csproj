@@ -10,7 +10,7 @@
 
     <!-- NuGet metadata -->
     <PackageId>LicenseManagerSdk</PackageId>
-    <Version>1.0.3</Version>
+    <Version>1.0.4</Version>
     <Authors>LicenciamentoSoftware</Authors>
     <Description>SDK cliente para a API de validação do LicenseManager. Encapsula autenticação HMAC-SHA256 e os endpoints de validação de licença.</Description>
     <PackageTags>licensemanager;sdk;licensing;hmac</PackageTags>
