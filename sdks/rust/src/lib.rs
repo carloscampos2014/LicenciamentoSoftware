@@ -153,14 +153,14 @@ impl LicenseManagerClient {
         body: &serde_json::Value,
     ) -> Result<String, LicenseManagerError> {
         let body_json = serde_json::to_string(body).unwrap();
-        let timestamp = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
-        let nonce     = Uuid::new_v4().to_string().replace('-', "");
-        let signature = self.compute_signature(&self.license_id, &timestamp, &body_json);
-
         let url = format!("{}/{}", self.base_url, path);
 
         let mut last_err = None;
         for attempt in 1u32..=3 {
+            let timestamp = Utc::now().format("%Y-%m-%dT%H:%M:%SZ").to_string();
+            let nonce     = Uuid::new_v4().to_string().replace('-', "");
+            let signature = self.compute_signature(&self.license_id, &timestamp, &body_json);
+
             let response = self
                 .http
                 .post(&url)

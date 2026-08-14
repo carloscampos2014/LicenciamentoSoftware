@@ -128,14 +128,15 @@ class LicenseManagerClient
     private function post(string $path, array $body): array
     {
         $bodyJson  = json_encode($body, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        $timestamp = gmdate('Y-m-d\TH:i:s\Z');
-        $nonce     = bin2hex(random_bytes(16));
-        $signature = $this->computeSignature($this->licenseId, $timestamp, $bodyJson);
         $url       = rtrim($this->baseUrl, '/') . '/' . $path;
 
         $lastError = null;
 
         for ($attempt = 1; $attempt <= self::MAX_RETRIES; $attempt++) {
+            $timestamp = gmdate('Y-m-d\TH:i:s\Z');
+            $nonce     = bin2hex(random_bytes(16));
+            $signature = $this->computeSignature($this->licenseId, $timestamp, $bodyJson);
+
             $ch = curl_init($url);
             curl_setopt_array($ch, [
                 CURLOPT_POST           => true,

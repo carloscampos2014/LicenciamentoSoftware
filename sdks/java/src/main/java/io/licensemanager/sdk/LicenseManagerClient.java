@@ -94,23 +94,22 @@ public class LicenseManagerClient {
             throw new LicenseManagerException(0, "Erro ao serializar body: " + e.getMessage());
         }
 
-        var timestamp = ISO_UTC.format(Instant.now());
-        var nonce     = UUID.randomUUID().toString().replace("-", "");
-        var signature = computeSignature(licenseId, timestamp, bodyJson);
-
-        var requestBody = RequestBody.create(bodyJson, JSON);
-        var request = new Request.Builder()
-            .url(baseUrl + path)
-            .post(requestBody)
-            .addHeader("X-Token",     token)
-            .addHeader("X-Timestamp", timestamp)
-            .addHeader("X-Nonce",     nonce)
-            .addHeader("X-Signature", signature)
-            .build();
-
         int attempts = 0;
         while (true) {
             attempts++;
+            var timestamp = ISO_UTC.format(Instant.now());
+            var nonce     = UUID.randomUUID().toString().replace("-", "");
+            var signature = computeSignature(licenseId, timestamp, bodyJson);
+
+            var requestBody = RequestBody.create(bodyJson, JSON);
+            var request = new Request.Builder()
+                .url(baseUrl + path)
+                .post(requestBody)
+                .addHeader("X-Token",     token)
+                .addHeader("X-Timestamp", timestamp)
+                .addHeader("X-Nonce",     nonce)
+                .addHeader("X-Signature", signature)
+                .build();
             try (Response response = http.newCall(request).execute()) {
                 var code = response.code();
                 if (code == 429 || code >= 500) {

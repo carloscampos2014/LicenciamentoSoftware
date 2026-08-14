@@ -100,21 +100,22 @@ export class LicenseManagerClient {
 
   private async post(path: string, body: object): Promise<Record<string, unknown>> {
     const bodyJson  = JSON.stringify(body);
-    const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
-    const nonce     = randomUUID().replace(/-/g, "");
-    const signature = this.computeSignature(this.licenseId, timestamp, bodyJson);
-
     const url = `${this.baseUrl}/${path}`;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      "X-Token":      this.token,
-      "X-Timestamp":  timestamp,
-      "X-Nonce":      nonce,
-      "X-Signature":  signature,
-    };
 
     let lastError: unknown;
     for (let attempt = 1; attempt <= 3; attempt++) {
+      const timestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
+      const nonce     = randomUUID().replace(/-/g, "");
+      const signature = this.computeSignature(this.licenseId, timestamp, bodyJson);
+
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+        "X-Token":      this.token,
+        "X-Timestamp":  timestamp,
+        "X-Nonce":      nonce,
+        "X-Signature":  signature,
+      };
+
       try {
         const controller = new AbortController();
         const timer      = setTimeout(() => controller.abort(), this.timeoutMs);

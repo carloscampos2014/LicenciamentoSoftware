@@ -134,12 +134,12 @@ public sealed class LicenseManagerClient : ILicenseManagerClient
 
     private string PostSync(string path, string bodyJson)
     {
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
-        var nonce     = Guid.NewGuid().ToString("N");
-        var signature = ComputeSignature(_licenseId, timestamp, bodyJson);
-
         for (var attempt = 1; attempt <= 3; attempt++)
         {
+            var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+            var nonce     = Guid.NewGuid().ToString("N");
+            var signature = ComputeSignature(_licenseId, timestamp, bodyJson);
+
             var request = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/{path}")
             {
                 Content = new StringContent(bodyJson, Encoding.UTF8, "application/json"),
