@@ -479,7 +479,7 @@ else
         _carregandoDetalhe = false;
     }
 
-    private void FecharDetalhe() => _modalDetalhe = false;
+    private async Task FecharDetalhe() { _modalDetalhe = false; await CarregarAsync(); }
 
     private async Task RenovarPeriodo()
     {
