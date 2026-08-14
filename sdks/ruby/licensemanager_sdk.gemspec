@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "licensemanager-sdk"
-  spec.version       = "1.0.0"
+  spec.version       = "1.0.4"
   spec.authors       = ["LicenciamentoSoftware"]
   spec.summary       = "SDK cliente para a API de validação do LicenseManager"
   spec.description   = "Encapsula autenticação HMAC-SHA256 e os endpoints de validação de licença."
