@@ -82,22 +82,23 @@ module LicenseManagerSdk
 
     def post(path, body)
       body_json  = JSON.generate(body)
-      timestamp  = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ")
-      nonce      = SecureRandom.hex(16)
-      signature  = compute_signature(@license_id, timestamp, body_json)
-
       uri = URI.parse("#{@base_url}/#{path}")
-      headers = {
-        "Content-Type" => "application/json",
-        "X-Token"      => @token,
-        "X-Timestamp"  => timestamp,
-        "X-Nonce"      => nonce,
-        "X-Signature"  => signature
-      }
 
       last_error = nil
       MAX_RETRIES.times do |attempt|
         begin
+          timestamp  = Time.now.utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+          nonce      = SecureRandom.hex(16)
+          signature  = compute_signature(@license_id, timestamp, body_json)
+
+          headers = {
+            "Content-Type" => "application/json",
+            "X-Token"      => @token,
+            "X-Timestamp"  => timestamp,
+            "X-Nonce"      => nonce,
+            "X-Signature"  => signature
+          }
+
           http = Net::HTTP.new(uri.host, uri.port)
           http.use_ssl     = uri.scheme == "https"
           http.read_timeout = @timeout

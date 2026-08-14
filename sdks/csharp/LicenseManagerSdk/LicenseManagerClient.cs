@@ -111,14 +111,15 @@ public sealed class LicenseManagerClient : IDisposable
     private async Task<HttpResponseMessage> SendAsync(string path, object body, CancellationToken ct)
     {
         var bodyJson  = JsonSerializer.Serialize(body, JsonOpts);
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
-        var nonce     = Guid.NewGuid().ToString("N");
-        var signature = ComputeSignature(_licenseId, timestamp, bodyJson);
 
         var attempts = 0;
         while (true)
         {
             attempts++;
+            var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
+            var nonce     = Guid.NewGuid().ToString("N");
+            var signature = ComputeSignature(_licenseId, timestamp, bodyJson);
+
             var request = new HttpRequestMessage(HttpMethod.Post, path)
             {
                 Content = new StringContent(bodyJson, Encoding.UTF8, "application/json"),

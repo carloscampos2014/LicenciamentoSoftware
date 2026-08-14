@@ -8,8 +8,6 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util.retry import Retry
 
 from .exceptions import LicenseManagerException
 from .models import InstallationResult, LoginResult
@@ -52,15 +50,6 @@ class LicenseManagerClient:
             self._session = session
         else:
             self._session = requests.Session()
-            retry = Retry(
-                total=3,
-                backoff_factor=1,
-                status_forcelist=[429, 500, 502, 503, 504],
-                allowed_methods=["POST"],
-            )
-            adapter = HTTPAdapter(max_retries=retry)
-            self._session.mount("http://", adapter)
-            self._session.mount("https://", adapter)
 
     # -------------------------------------------------------------------------
     # Endpoints públicos
@@ -101,27 +90,41 @@ class LicenseManagerClient:
 
     def _post(self, path: str, body: dict) -> dict:
         body_json = json.dumps(body, separators=(",", ":"))
-        timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-        nonce     = uuid.uuid4().hex
-        signature = self._compute_signature(self._license_id, timestamp, body_json)
-
-        headers = {
-            "Content-Type": "application/json",
-            "X-Token":      self._token,
-            "X-Timestamp":  timestamp,
-            "X-Nonce":      nonce,
-            "X-Signature":  signature,
-        }
-
         url = f"{self._base_url}/{path}"
-        response = self._session.post(url, data=body_json, headers=headers, timeout=30)
 
-        if not response.ok:
-            raise LicenseManagerException(response.status_code, response.text)
+        for attempt in range(1, 4):
+            timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+            nonce     = uuid.uuid4().hex
+            signature = self._compute_signature(self._license_id, timestamp, body_json)
 
-        if response.status_code == 204 or not response.content:
-            return {}
-        return response.json()
+            headers = {
+                "Content-Type": "application/json",
+                "X-Token":      self._token,
+                "X-Timestamp":  timestamp,
+                "X-Nonce":      nonce,
+                "X-Signature":  signature,
+            }
+
+            try:
+                response = self._session.post(url, data=body_json, headers=headers, timeout=30)
+            except requests.RequestException:
+                if attempt < 3:
+                    time.sleep(2 ** attempt)
+                    continue
+                raise
+
+            if (response.status_code == 429 or response.status_code >= 500) and attempt < 3:
+                time.sleep(2 ** attempt)
+                continue
+
+            if not response.ok:
+                raise LicenseManagerException(response.status_code, response.text)
+
+            if response.status_code == 204 or not response.content:
+                return {}
+            return response.json()
+
+        raise LicenseManagerException(0, "Número máximo de tentativas excedido.")
 
     def _compute_signature(self, license_id: str, timestamp: str, body_json: str) -> str:
         # Normaliza para lowercase com hífens — igual ao servidor (idLicenca:D)
