@@ -134,7 +134,7 @@ jobs:
 
       - name: Criar ou atualizar GitHub Release
         if: steps.keystore.outputs.TEMP_KEYSTORE != 'true'
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: android-v${{ steps.version.outputs.DISPLAY_VERSION }}
           name: LicenseManager Android v${{ steps.version.outputs.DISPLAY_VERSION }}

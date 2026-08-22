@@ -141,7 +141,7 @@ jobs:
           if-no-files-found: error
 
       - name: Criar ou atualizar GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: windows-v${{ steps.version.outputs.DISPLAY_VERSION }}
           name: LicenseManager Windows v${{ steps.version.outputs.DISPLAY_VERSION }}
