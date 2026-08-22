@@ -1,0 +1,293 @@
+@page "/sdks"
+@attribute [Authorize]
+
+<PageTitle>SDKs — LicenseManager</PageTitle>
+
+<div class="page-header">
+    <h1 class="page-title">SDKs de Integração</h1>
+    <p class="page-subtitle">Bibliotecas cliente para integrar sua aplicação à API de validação de licenças.</p>
+</div>
+
+<!-- Autenticação -->
+<div class="item-card mb-4">
+    <div class="d-flex align-items-center gap-2 mb-3">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#6c63ff">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+        </svg>
+        <h2 style="font-size:1rem;font-weight:700;margin:0">Autenticação HMAC</h2>
+    </div>
+    <p style="font-size:.875rem;color:#495057;margin-bottom:.75rem">
+        Cada SDK utiliza autenticação <strong>HMAC-SHA256</strong>. O token é gerado na tela de detalhe
+        de cada licença e deve ser armazenado com segurança na sua aplicação.
+    </p>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+        <a href="/licencas" class="btn btn-sm btn-outline-primary" style="font-size:.8rem">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="me-1">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+            </svg>
+            Gerenciar licenças e tokens
+        </a>
+        <a href="https://licensemanager-api.enzojb.com.br/scalar/v1" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.8rem">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="me-1">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+            </svg>
+            Documentação da API (Scalar)
+        </a>
+    </div>
+</div>
+
+<!-- Label de seção -->
+<p class="fw-semibold small text-muted text-uppercase mb-3" style="letter-spacing:.05em">
+    Por gerenciador de pacotes
+</p>
+
+<!-- .NET / C# -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">.NET / C#</span>
+                <span class="badge-pill" style="background:#e8f4fd;color:#0063b1;font-size:.72rem;padding:.2rem .6rem">NuGet</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">net6.0 · net8.0 · net10.0</p>
+        </div>
+        <a href="https://www.nuget.org/packages/LicenseManagerSdk/" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">NuGet ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>dotnet add package LicenseManagerSdk</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>var client = new LicenseManagerClient(
+    baseUrl:   "https://licensemanager-api.enzojb.com.br",
+    token:     "seu-token",
+    licenseId: "guid-da-licenca"
+);
+var login = await client.LoginAsync("usuario@empresa.com");
+if (login.Authorized)
+    await client.HeartbeatAsync(login.SessionId!);</code></pre>
+</div>
+
+<!-- Python -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">Python</span>
+                <span class="badge-pill" style="background:#fef9e7;color:#7d6608;font-size:.72rem;padding:.2rem .6rem">PyPI</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">Python 3.9+</p>
+        </div>
+        <a href="https://pypi.org/project/licensemanager-sdk/" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">PyPI ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>pip install licensemanager-sdk</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>from licensemanager_sdk import LicenseManagerClient
+
+client = LicenseManagerClient(
+    base_url   = "https://licensemanager-api.enzojb.com.br",
+    token      = "seu-token",
+    license_id = "guid-da-licenca"
+)
+login = client.login("usuario@empresa.com")
+if login.authorized:
+    client.heartbeat(login.session_id)</code></pre>
+</div>
+
+<!-- JavaScript / TypeScript -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">JavaScript / TypeScript</span>
+                <span class="badge-pill" style="background:#fdf2f8;color:#6f2da8;font-size:.72rem;padding:.2rem .6rem">npm</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">Node.js 18+ · Browser (fetch nativo)</p>
+        </div>
+        <a href="https://www.npmjs.com/package/licensemanager-sdk" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">npm ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>npm install licensemanager-sdk</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>import { LicenseManagerClient } from 'licensemanager-sdk';
+
+const client = new LicenseManagerClient({
+  baseUrl:   'https://licensemanager-api.enzojb.com.br',
+  token:     'seu-token',
+  licenseId: 'guid-da-licenca',
+});
+const login = await client.login('usuario@empresa.com');
+if (login.authorized)
+  await client.heartbeat(login.sessionId!);</code></pre>
+</div>
+
+<!-- Java -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">Java / Kotlin</span>
+                <span class="badge-pill" style="background:#fff3e0;color:#e65100;font-size:.72rem;padding:.2rem .6rem">Maven Central</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">Java 11+ · Kotlin</p>
+        </div>
+        <a href="https://central.sonatype.com/artifact/io.github.carloscampos2014/licensemanager-sdk" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">Maven ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>&lt;dependency&gt;
+  &lt;groupId&gt;io.github.carloscampos2014&lt;/groupId&gt;
+  &lt;artifactId&gt;licensemanager-sdk&lt;/artifactId&gt;
+  &lt;version&gt;1.0.4&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>LicenseManagerClient client = new LicenseManagerClient(
+    "https://licensemanager-api.enzojb.com.br",
+    "seu-token",
+    "guid-da-licenca"
+);
+LoginResult login = client.login("usuario@empresa.com");
+if (login.isAuthorized())
+    client.heartbeat(login.getSessionId());</code></pre>
+</div>
+
+<!-- Ruby -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">Ruby</span>
+                <span class="badge-pill" style="background:#fdecea;color:#b71c1c;font-size:.72rem;padding:.2rem .6rem">RubyGems</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">Ruby 3.0+</p>
+        </div>
+        <a href="https://rubygems.org/gems/licensemanager-sdk" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">RubyGems ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>gem install licensemanager-sdk</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>require 'licensemanager_sdk'
+
+client = LicenseManagerSdk::Client.new(
+  base_url:   'https://licensemanager-api.enzojb.com.br',
+  token:      'seu-token',
+  license_id: 'guid-da-licenca'
+)
+login = client.login('usuario@empresa.com')
+client.heartbeat(login.session_id) if login.authorized</code></pre>
+</div>
+
+<!-- Rust -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">Rust</span>
+                <span class="badge-pill" style="background:#fff8e1;color:#f57f17;font-size:.72rem;padding:.2rem .6rem">crates.io</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">Rust 2021 · async (tokio)</p>
+        </div>
+        <a href="https://crates.io/crates/licensemanager-sdk" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">crates.io ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code># Cargo.toml
+licensemanager-sdk = "1.0"
+tokio = { version = "1", features = ["full"] }</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>use licensemanager_sdk::{LicenseManagerClient, LicenseManagerConfig};
+
+let client = LicenseManagerClient::new(LicenseManagerConfig {
+    base_url:   "https://licensemanager-api.enzojb.com.br".into(),
+    token:      "seu-token".into(),
+    license_id: "guid-da-licenca".into(),
+    timeout_secs: None,
+})?;
+let login = client.login("usuario@empresa.com").await?;
+if login.authorized { client.heartbeat(&login.session_id.unwrap()).await?; }</code></pre>
+</div>
+
+<!-- PHP -->
+<div class="item-card mb-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">PHP</span>
+                <span class="badge-pill" style="background:#eef0fb;color:#4f5b93;font-size:.72rem;padding:.2rem .6rem">Composer</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">PHP 8.1+ · ext-curl · ext-json</p>
+        </div>
+        <a href="https://packagist.org/packages/carloscampos2014/licensemanager-sdk" target="_blank"
+           class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">Packagist ↗</a>
+    </div>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>composer require carloscampos2014/licensemanager-sdk</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>&lt;?php
+require 'vendor/autoload.php';
+use LicenseManager\Sdk\LicenseManagerClient;
+
+$client = new LicenseManagerClient(
+    baseUrl:   'https://licensemanager-api.enzojb.com.br',
+    token:     'seu-token',
+    licenseId: 'guid-da-licenca'
+);
+$login = $client->login('usuario@empresa.com');
+if ($login->authorized)
+    $client->heartbeat($login->sessionId);</code></pre>
+</div>
+
+<!-- Label de seção: Download direto -->
+<p class="fw-semibold small text-muted text-uppercase mb-3" style="letter-spacing:.05em">
+    Download direto (GitHub Releases)
+</p>
+
+<!-- Delphi -->
+<div class="item-card mb-3">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">Delphi</span>
+                <span class="badge-pill" style="background:#e8f5e9;color:#1b5e20;font-size:.72rem;padding:.2rem .6rem">Arquivo único</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">Delphi 10.4 Sydney+ · Sem dependências externas</p>
+        </div>
+        <a href="https://github.com/carloscampos2014/LicenciamentoSoftware/releases/tag/sdk-delphi-v1.0.3"
+           target="_blank" class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">
+            Download ↗
+        </a>
+    </div>
+    <p style="font-size:.825rem;color:#495057;margin-bottom:.75rem">
+        Baixe <code>LicenseManagerSdk.pas</code>, copie para seu projeto e adicione ao <code>uses</code>.
+    </p>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>uses LicenseManagerSdk;
+
+var Client: TLicenseManagerClient; Login: TLoginResult;
+begin
+  Client := TLicenseManagerClient.Create(
+    'https://licensemanager-api.enzojb.com.br',
+    'seu-token', 'guid-da-licenca');
+  try
+    Login := Client.Login('usuario@empresa.com');
+    if Login.Authorized then Client.Heartbeat(Login.SessionId);
+  finally Client.Free; end;
+end;</code></pre>
+</div>
+
+<!-- VB6 / COM -->
+<div class="item-card mb-4">
+    <div class="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="fw-bold" style="font-size:.95rem">VB6 / COM</span>
+                <span class="badge-pill" style="background:#f3e5f5;color:#4a148c;font-size:.72rem;padding:.2rem .6rem">DLL COM</span>
+            </div>
+            <p class="text-muted mb-0" style="font-size:.8rem">VB6 · VBA · Delphi · qualquer linguagem COM</p>
+        </div>
+        <a href="https://github.com/carloscampos2014/LicenciamentoSoftware/releases/tag/sdk-vb6-v1.0.3"
+           target="_blank" class="btn btn-sm btn-outline-secondary" style="font-size:.75rem">
+            Download ↗
+        </a>
+    </div>
+    <p style="font-size:.825rem;color:#495057;margin-bottom:.5rem">
+        Baixe <code>LicenseManagerSdk.dll</code> e <code>LicenseManagerSdk.tlb</code> e registre como Administrador:
+    </p>
+    <pre style="background:#f8f9fa;border-radius:6px;padding:.75rem 1rem;font-size:.78rem;margin-bottom:.75rem;overflow-x:auto"><code>regasm /codebase /tlb LicenseManagerSdk.dll</code></pre>
+    <pre style="background:#1e1e2e;color:#cdd6f4;border-radius:6px;padding:.75rem 1rem;font-size:.75rem;overflow-x:auto"><code>' VB6
+Set client = CreateObject("LicenseManagerSdk.LicenseManagerClient")
+Dim result As String
+result = client.Login("usuario@empresa.com")</code></pre>
+</div>

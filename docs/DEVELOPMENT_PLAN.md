@@ -410,3 +410,15 @@ Acesso: `ssh -L 16000:localhost:5020 <vm>` → `http://localhost:16000`
 **Resultado:** 388 testes aprovados (inalterado — sem novos testes unitários nessa fase). Fluxos de segurança de conta completos em Web e MAUI. Admin pode aprovar resets de 2FA pendentes em http://localhost:16000/reset-2fa/pendentes via SSH tunnel.
 
 **Demo:** Login → tela TOTP → "Não tenho acesso ao autenticador" → informar senha → e-mail enviado → clicar link → solicitação Pendente criada → Admin aprova em /reset-2fa/pendentes → usuário recebe e-mail de confirmação → 2FA removido, pode configurar novo no próximo login.
+
+---
+
+## Fase 18 — Página de SDKs no portal Web ✅ Concluída
+
+**Objetivo:** centralizar no portal Web a documentação de todos os SDKs disponíveis para integração com a API de validação de licenças.
+
+1. ✅ **[#239]** Página `/sdks` no Blazor WASM — nova rota autenticada com cards para todos os 9 SDKs disponíveis: .NET/C# (NuGet), Python (PyPI), JavaScript/TypeScript (npm), Java (Maven Central), Ruby (RubyGems), Rust (crates.io), PHP (Composer), Delphi (GitHub Releases — arquivo único) e VB6/COM (GitHub Releases — DLL COM). Cada card exibe o comando de instalação, snippet mínimo de uso e link para o repositório/pacote. Seção de autenticação HMAC e link para a documentação Scalar da API. Link "SDKs" adicionado ao menu lateral após "Licenças".
+
+**Resultado:** 251 testes aprovados (inalterado — página estática sem lógica de negócio).
+
+**Demo:** Login → menu lateral → SDKs → cards com instalação e snippets de uso para cada linguagem.
