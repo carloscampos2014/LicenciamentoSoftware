@@ -314,26 +314,6 @@
   
   
   
-    
-    
-      <li class="md-tabs__item">
-        <a href="../installation/windows/" class="md-tabs__link">
-          
-  
-  
-  Instalação
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
     <li class="md-tabs__item">
       <a href="../api-validacao/" class="md-tabs__link">
         
@@ -847,123 +827,6 @@
     
   
     VB6 / COM
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Instalação
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Instalação
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../installation/windows/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Windows (MSIX)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../installation/android/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Android (APK)
   
 
     
@@ -2033,13 +1896,13 @@ Quando o access token expira (401), o <code>BearerTokenHandler</code> chama auto
 <hr />
 <h2 id="6-componentes-compartilhados">6. Componentes compartilhados<a class="headerlink" href="#6-componentes-compartilhados" title="Permanent link">&para;</a></h2>
 <h3 id="61-modalrazor">6.1 Modal.razor<a class="headerlink" href="#61-modalrazor" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;Modal Visivel=&quot;@_aberto&quot; Titulo=&quot;Título&quot; OnFechar=&quot;Fechar&quot;&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>&lt;Modal Visivel="@_aberto" Titulo="Título" OnFechar="Fechar"&gt;
 <a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    &lt;ChildContent&gt;
 <a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        &lt;!-- conteúdo do formulário --&gt;
 <a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    &lt;/ChildContent&gt;
 <a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    &lt;Footer&gt;
-<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        &lt;button @onclick=&quot;Fechar&quot;&gt;Cancelar&lt;/button&gt;
-<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        &lt;button @onclick=&quot;Salvar&quot;&gt;Salvar&lt;/button&gt;
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        &lt;button @onclick="Fechar"&gt;Cancelar&lt;/button&gt;
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>        &lt;button @onclick="Salvar"&gt;Salvar&lt;/button&gt;
 <a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    &lt;/Footer&gt;
 <a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>&lt;/Modal&gt;
 </code></pre></div>
@@ -2050,7 +1913,7 @@ Quando o access token expira (401), o <code>BearerTokenHandler</code> chama auto
 <li>Largura máxima de 560px (responsivo)</li>
 </ul>
 <h3 id="62-confirmdialograzor">6.2 ConfirmDialog.razor<a class="headerlink" href="#62-confirmdialograzor" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">_confirmDialog</span><span class="p">.</span><span class="n">Mensagem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Mensagem de confirmação&quot;</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">_confirmDialog</span><span class="p">.</span><span class="n">Mensagem</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"Mensagem de confirmação"</span><span class="p">;</span>
 <a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="kt">bool</span><span class="w"> </span><span class="n">confirmado</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">_confirmDialog</span><span class="p">.</span><span class="n">MostrarAsync</span><span class="p">();</span>
 <a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">confirmado</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
 <a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1">// executa ação</span>
@@ -2060,15 +1923,15 @@ Quando o access token expira (401), o <code>BearerTokenHandler</code> chama auto
 <li>Botão de confirmação vermelho, cancelar neutro</li>
 </ul>
 <h3 id="63-apierrorrazor">6.3 ApiError.razor<a class="headerlink" href="#63-apierrorrazor" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>&lt;ApiError Erro=&quot;@_erro&quot; Erros=&quot;@_erros&quot; /&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>&lt;ApiError Erro="@_erro" Erros="@_erros" /&gt;
 </code></pre></div>
 <ul>
 <li>Exibe <code>Erro</code> (string única) ou <code>Erros</code> (lista) como alert vermelho</li>
 <li>Visível apenas quando há conteúdo</li>
 </ul>
 <h3 id="64-paginacaorazor">6.4 Paginacao.razor<a class="headerlink" href="#64-paginacaorazor" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;Paginacao PaginaAtual=&quot;_pagina&quot; TotalPaginas=&quot;_totalPaginas&quot;
-<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>           Total=&quot;_total&quot; OnPaginaMudou=&quot;MudarPagina&quot; /&gt;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;Paginacao PaginaAtual="_pagina" TotalPaginas="_totalPaginas"
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>           Total="_total" OnPaginaMudou="MudarPagina" /&gt;
 </code></pre></div>
 <ul>
 <li>Exibe até 5 páginas numeradas com <code>...</code> implícito</li>
@@ -2259,9 +2122,9 @@ O projeto <code>Web</code> não precisa estar em Start — o <code>Web.Server</c
 <h3 id="101-primeiro-acesso-novo-cliente">10.1 Primeiro acesso (novo cliente)<a class="headerlink" href="#101-primeiro-acesso-novo-cliente" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>1. Acessa https://localhost:7152
 <a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>2. Não autenticado → redireciona para /login
-<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>3. Clica &quot;Cadastre-se&quot; → /cadastro
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>3. Clica "Cadastre-se" → /cadastro
 <a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>4. Preenche dados da empresa + responsável → POST /bff/cadastrar
-<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>5. Conta criada → tela de sucesso → clica &quot;Ir para login&quot;
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>5. Conta criada → tela de sucesso → clica "Ir para login"
 <a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>6. Login com e-mail + senha → POST /bff/login
 <a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>7. Se 2FA não configurado → autenticado diretamente
 <a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>8. Se 2FA configurado → redireciona para /totp
@@ -2269,32 +2132,32 @@ O projeto <code>Web</code> não precisa estar em Start — o <code>Web.Server</c
 </code></pre></div>
 <h3 id="102-emitir-uma-licenca-com-token">10.2 Emitir uma licença com token<a class="headerlink" href="#102-emitir-uma-licenca-com-token" title="Permanent link">&para;</a></h3>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>1. Acessa /licencas
-<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>2. Clica &quot;+ Nova Licença&quot;
-<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>3. Modal abre — seleciona Aplicação (ex: &quot;Meu CRM (Por Usuários)&quot;)
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>2. Clica "+ Nova Licença"
+<a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>3. Modal abre — seleciona Aplicação (ex: "Meu CRM (Por Usuários)")
 <a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>4. Seleciona Cliente Final
 <a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>5. Campos de usuários aparecem: máx. 10 simultâneos
-<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>6. Marca &quot;Gerar token HMAC&quot;
-<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>7. Clica &quot;Emitir licença&quot;
-<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>8. Modal mostra: &quot;Licença emitida com sucesso!&quot;
-<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>9. Token exibido com botão &quot;Copiar&quot;
+<a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>6. Marca "Gerar token HMAC"
+<a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>7. Clica "Emitir licença"
+<a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>8. Modal mostra: "Licença emitida com sucesso!"
+<a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>9. Token exibido com botão "Copiar"
 <a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>10. Administrador copia o token e configura no software cliente
 <a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>11. Fecha o modal
 </code></pre></div>
 <h3 id="103-gerenciar-sessoes-ativas">10.3 Gerenciar sessões ativas<a class="headerlink" href="#103-gerenciar-sessoes-ativas" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1. Na lista de licenças, clica &quot;Detalhes&quot; em uma licença &quot;Por Usuários&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>1. Na lista de licenças, clica "Detalhes" em uma licença "Por Usuários"
 <a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>2. Modal abre com dados completos
-<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>3. Seção &quot;Sessões ativas&quot; mostra as 3 sessões abertas
-<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>4. Clica &quot;Encerrar&quot; na sessão do usuário &quot;pedro@empresa.com&quot;
-<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>5. ConfirmDialog: &quot;Encerrar esta sessão?&quot;
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>3. Seção "Sessões ativas" mostra as 3 sessões abertas
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>4. Clica "Encerrar" na sessão do usuário "pedro@empresa.com"
+<a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>5. ConfirmDialog: "Encerrar esta sessão?"
 <a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>6. Confirma → sessão encerrada imediatamente
 <a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>7. Modal atualiza com 2 sessões
 <a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>8. Slot liberado para novo login
 </code></pre></div>
 <h3 id="104-renovar-token-expirado">10.4 Renovar token expirado<a class="headerlink" href="#104-renovar-token-expirado" title="Permanent link">&para;</a></h3>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>1. Clica &quot;Detalhes&quot; em uma licença
-<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>2. Seção &quot;Token HMAC&quot; mostra: &quot;Expirado&quot;
-<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>3. Clica &quot;Gerar token&quot;
-<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>4. Novo token gerado e exibido com botão &quot;Copiar&quot;
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>1. Clica "Detalhes" em uma licença
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>2. Seção "Token HMAC" mostra: "Expirado"
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>3. Clica "Gerar token"
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>4. Novo token gerado e exibido com botão "Copiar"
 <a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>5. Administrador copia e atualiza a configuração do software cliente
 </code></pre></div>
 <hr />

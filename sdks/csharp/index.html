@@ -320,26 +320,6 @@
   
   
   
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../installation/windows/" class="md-tabs__link">
-          
-  
-  
-  Instalação
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
     <li class="md-tabs__item">
       <a href="../../api-validacao/" class="md-tabs__link">
         
@@ -973,123 +953,6 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Instalação
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Instalação
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../installation/windows/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Windows (MSIX)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../installation/android/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Android (APK)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../api-validacao/" class="md-nav__link">
         
@@ -1243,13 +1106,13 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">using</span><span class="w"> </span><span class="nn">LicenseManagerSdk</span><span class="p">;</span>
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kt">var</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">LicenseManagerClient</span><span class="p">(</span>
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">baseUrl</span><span class="p">:</span><span class="w">   </span><span class="s">&quot;https://licensemanager-api.enzojb.com.br&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">token</span><span class="p">:</span><span class="w">     </span><span class="s">&quot;seu-token&quot;</span><span class="p">,</span>
-<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">licenseId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;guid-da-licenca&quot;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="n">baseUrl</span><span class="p">:</span><span class="w">   </span><span class="s">"https://licensemanager-api.enzojb.com.br"</span><span class="p">,</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">    </span><span class="n">token</span><span class="p">:</span><span class="w">     </span><span class="s">"seu-token"</span><span class="p">,</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">    </span><span class="n">licenseId</span><span class="p">:</span><span class="w"> </span><span class="s">"guid-da-licenca"</span>
 <a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">);</span>
 <a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
 <a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1">// Login</span>
-<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="kt">var</span><span class="w"> </span><span class="n">login</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">LoginAsync</span><span class="p">(</span><span class="s">&quot;usuario@empresa.com&quot;</span><span class="p">);</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="kt">var</span><span class="w"> </span><span class="n">login</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">LoginAsync</span><span class="p">(</span><span class="s">"usuario@empresa.com"</span><span class="p">);</span>
 <a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">login</span><span class="p">.</span><span class="n">Authorized</span><span class="p">)</span>
 <a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="p">{</span>
 <a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">    </span><span class="c1">// Heartbeat periódico</span>
@@ -1262,13 +1125,13 @@
 <a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="c1">// Validar instalação</span>
 <a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="kt">var</span><span class="w"> </span><span class="n">inst</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="n">client</span><span class="p">.</span><span class="n">ValidateInstallationAsync</span><span class="p">(</span><span class="n">Environment</span><span class="p">.</span><span class="n">MachineName</span><span class="p">);</span>
 <a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">inst</span><span class="p">.</span><span class="n">Authorized</span><span class="p">)</span>
-<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$&quot;Instalação: {inst.InstallationId}&quot;</span><span class="p">);</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">    </span><span class="n">Console</span><span class="p">.</span><span class="n">WriteLine</span><span class="p">(</span><span class="s">$"Instalação: {inst.InstallationId}"</span><span class="p">);</span>
 </code></pre></div>
 <h2 id="injecao-de-dependencia-aspnet-core">Injeção de dependência (ASP.NET Core)<a class="headerlink" href="#injecao-de-dependencia-aspnet-core" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">builder</span><span class="p">.</span><span class="n">Services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">LicenseManagerClient</span><span class="p">(</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">baseUrl</span><span class="p">:</span><span class="w">   </span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">&quot;LicenseManager:Url&quot;</span><span class="p">]</span><span class="o">!</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">token</span><span class="p">:</span><span class="w">     </span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">&quot;LicenseManager:Token&quot;</span><span class="p">]</span><span class="o">!</span><span class="p">,</span>
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">licenseId</span><span class="p">:</span><span class="w"> </span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">&quot;LicenseManager:LicenseId&quot;</span><span class="p">]</span><span class="o">!</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="n">baseUrl</span><span class="p">:</span><span class="w">   </span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">"LicenseManager:Url"</span><span class="p">]</span><span class="o">!</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">token</span><span class="p">:</span><span class="w">     </span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">"LicenseManager:Token"</span><span class="p">]</span><span class="o">!</span><span class="p">,</span>
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="n">licenseId</span><span class="p">:</span><span class="w"> </span><span class="n">builder</span><span class="p">.</span><span class="n">Configuration</span><span class="p">[</span><span class="s">"LicenseManager:LicenseId"</span><span class="p">]</span><span class="o">!</span>
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">));</span>
 </code></pre></div>
 

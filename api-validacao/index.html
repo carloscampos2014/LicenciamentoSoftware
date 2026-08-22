@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://carloscampos2014.github.io/LicenciamentoSoftware/api-validacao/">
       
       
-        <link rel="prev" href="../installation/android/">
+        <link rel="prev" href="../sdks/vb6/">
       
       
         <link rel="next" href="../contributing/">
@@ -306,26 +306,6 @@
   
   
   SDKs
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../installation/windows/" class="md-tabs__link">
-          
-  
-  
-  Instalação
 
         </a>
       </li>
@@ -877,123 +857,6 @@
       
   
   
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Instalação
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Instalação
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../installation/windows/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Windows (MSIX)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../installation/android/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Android (APK)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
     
   
   
@@ -1344,14 +1207,14 @@ Requisições fora dessa janela são rejeitadas como proteção anti-replay.</p>
 <p>Valida o login de um usuário na licença.</p>
 <p><strong>Request:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
-<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;idLicenca&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-licenca&quot;</span><span class="p">,</span>
-<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;identificadorUsuario&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;usuario@empresa.com&quot;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">"idLicenca"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-licenca"</span><span class="p">,</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">"identificadorUsuario"</span><span class="p">:</span><span class="w"> </span><span class="s2">"usuario@empresa.com"</span>
 <a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="p">}</span>
 </code></pre></div></p>
 <p><strong>Response 200:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;autorizado&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;idSessao&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-sessao&quot;</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">"autorizado"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">"idSessao"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-sessao"</span>
 <a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
 </code></pre></div></p>
 <hr />
@@ -1359,8 +1222,8 @@ Requisições fora dessa janela são rejeitadas como proteção anti-replay.</p>
 <p>Mantém a sessão ativa. Deve ser chamado periodicamente.</p>
 <p><strong>Request:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;idLicenca&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-licenca&quot;</span><span class="p">,</span>
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;idSessao&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-sessao&quot;</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">"idLicenca"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-licenca"</span><span class="p">,</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">"idSessao"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-sessao"</span>
 <a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
 </code></pre></div></p>
 <p><strong>Response:</strong> <code>204 No Content</code></p>
@@ -1369,8 +1232,8 @@ Requisições fora dessa janela são rejeitadas como proteção anti-replay.</p>
 <p>Encerra a sessão (idempotente).</p>
 <p><strong>Request:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;idLicenca&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-licenca&quot;</span><span class="p">,</span>
-<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;idSessao&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-sessao&quot;</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">"idLicenca"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-licenca"</span><span class="p">,</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">"idSessao"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-sessao"</span>
 <a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">}</span>
 </code></pre></div></p>
 <p><strong>Response:</strong> <code>204 No Content</code></p>
@@ -1379,15 +1242,15 @@ Requisições fora dessa janela são rejeitadas como proteção anti-replay.</p>
 <p>Valida ou registra uma instalação na máquina.</p>
 <p><strong>Request:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
-<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;idLicenca&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-licenca&quot;</span><span class="p">,</span>
-<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;identificadorMaquina&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;NOME-DA-MAQUINA&quot;</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">"idLicenca"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-licenca"</span><span class="p">,</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">"identificadorMaquina"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NOME-DA-MAQUINA"</span>
 <a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
 </code></pre></div></p>
 <p><strong>Response 200:</strong>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
-<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;autorizado&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;idInstalacao&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;guid-da-instalacao&quot;</span><span class="p">,</span>
-<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;jaRegistrada&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">"autorizado"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">"idInstalacao"</span><span class="p">:</span><span class="w"> </span><span class="s2">"guid-da-instalacao"</span><span class="p">,</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">"jaRegistrada"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
 <a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">}</span>
 </code></pre></div></p>
 <h2 id="codigos-de-erro">Códigos de erro<a class="headerlink" href="#codigos-de-erro" title="Permanent link">&para;</a></h2>

@@ -18,7 +18,7 @@
         <link rel="prev" href="../php/">
       
       
-        <link rel="next" href="../../installation/windows/">
+        <link rel="next" href="../../api-validacao/">
       
       
         
@@ -308,26 +308,6 @@
   
   
   SDKs
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
-  
-    
-    
-      <li class="md-tabs__item">
-        <a href="../../installation/windows/" class="md-tabs__link">
-          
-  
-  
-  Instalação
 
         </a>
       </li>
@@ -984,123 +964,6 @@
   
   
   
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
-        
-          
-          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Instalação
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Instalação
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../installation/windows/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Windows (MSIX)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../installation/android/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Android (APK)
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
     <li class="md-nav__item">
       <a href="../../api-validacao/" class="md-nav__link">
         
@@ -1259,16 +1122,16 @@
 <div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>regasm /codebase /tlb LicenseManagerSdk.dll
 </code></pre></div>
 <h2 id="uso-vb6">Uso (VB6)<a class="headerlink" href="#uso-vb6" title="Permanent link">&para;</a></h2>
-<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Set client = CreateObject(&quot;LicenseManagerSdk.LicenseManagerClient&quot;)
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Set client = CreateObject("LicenseManagerSdk.LicenseManagerClient")
 <a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
 <a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Dim json As String
-<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>json = client.Login(&quot;usuario@empresa.com&quot;)
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>json = client.Login("usuario@empresa.com")
 </code></pre></div>
 <h2 id="uso-vba-a-excelaccess">Uso (VBA â€” Excel/Access)<a class="headerlink" href="#uso-vba-a-excelaccess" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Sub ValidarLicenca()
 <a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    Dim client As Object
-<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    Set client = CreateObject(&quot;LicenseManagerSdk.LicenseManagerClient&quot;)
-<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    MsgBox client.Login(&quot;usuario@empresa.com&quot;)
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    Set client = CreateObject("LicenseManagerSdk.LicenseManagerClient")
+<a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    MsgBox client.Login("usuario@empresa.com")
 <a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>End Sub
 </code></pre></div>
 <h2 id="desregistrar">Desregistrar<a class="headerlink" href="#desregistrar" title="Permanent link">&para;</a></h2>
