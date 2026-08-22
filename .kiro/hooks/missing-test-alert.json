@@ -2,13 +2,13 @@
   "version": "v1",
   "hooks": [
     {
-      "name": "Alerta de teste ausente",
+      "name": "Alerta de Teste Ausente",
       "trigger": "PostFileCreate",
-      "description": "Alerta quando um arquivo de implementação C# é criado sem um arquivo de teste correspondente",
-      "matcher": "src\\\\.*\\.cs$",
+      "description": "Alerta quando um arquivo de implementação é criado sem um arquivo de teste correspondente",
+      "matcher": "src\\\\.*\\.(cs|ts|tsx|py|java|go|rb)$",
       "action": {
         "type": "agent",
-        "prompt": "Um novo arquivo de implementação C# foi criado em src/. Verifique se existe um arquivo de teste correspondente em tests/ para ele. Se não existir, avise o usuário de forma objetiva: informe o nome do arquivo criado e sugira o caminho esperado do teste. Não crie o arquivo de teste automaticamente — apenas alerte. Se o arquivo criado for uma interface, DTO, enum ou configuração de DI, não é necessário alertar."
+        "prompt": "Um novo arquivo de implementação foi criado em src/. Verifique se existe um arquivo de teste correspondente em tests/ (ou __tests__/, spec/, etc. conforme a convenção do projeto).\n\nSe não existir, avise o usuário de forma objetiva:\n- Informe o nome do arquivo criado\n- Sugira o caminho esperado do teste seguindo a convenção do projeto\n- Não crie o arquivo de teste automaticamente — apenas alerte\n\nNão alertar para:\n- Interfaces, DTOs, enums, tipos\n- Arquivos de configuração (Program.cs, Startup.cs)\n- Arquivos de recursos, estilos, assets\n- Arquivos de migração de banco de dados\n- index.ts, index.cs e outros barrel files"
       }
     }
   ]
