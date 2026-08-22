@@ -507,3 +507,6 @@ scripts/install-ssh-tunnels-task.ps1
 
 # RAG Knowledge Base — banco de dados local (grande, não versionar)
 data/chroma_db/
+
+# Sessões de conhecimento — locais, não versionar
+.kiro/knowledge/sessions/
