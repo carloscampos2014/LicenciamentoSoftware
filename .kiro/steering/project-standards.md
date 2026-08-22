@@ -8,7 +8,6 @@ inclusion: auto
 
 - **Backend:** .NET 10, C#, ASP.NET Core, PostgreSQL, Dapper (sem EF Core), DbUp (migrations)
 - **Frontend web:** Blazor WebAssembly + BFF (ASP.NET Core + YARP)
-- **Desktop/Mobile:** .NET MAUI (Windows, Android)
 - **Testes:** xUnit, FluentAssertions, Testcontainers, NSubstitute, NetArchTest
 - **Validação:** FluentValidation
 - **Autenticação gestão:** JWT + 2FA TOTP (Google Authenticator / Authy)
@@ -22,15 +21,13 @@ src/
   LicenciamentoSoftware.Application/
   LicenciamentoSoftware.Infrastructure/
   LicenciamentoSoftware.Api/
-  LicenciamentoSoftware.Client/       ← cliente HTTP compartilhado (Web + MAUI)
+  LicenciamentoSoftware.Client/       ← cliente HTTP compartilhado (Web)
   LicenciamentoSoftware.Web/          ← Blazor WASM
   LicenciamentoSoftware.Web.Server/   ← BFF (proxy YARP + cookie HttpOnly)
-  LicenciamentoSoftware.Maui/         ← MAUI Desktop (Windows) + Mobile (Android)
 tests/
   LicenciamentoSoftware.Domain.Tests/
   LicenciamentoSoftware.Application.Tests/
   LicenciamentoSoftware.IntegrationTests/
-  LicenciamentoSoftware.Maui.Tests/
 ```
 
 ## Regras de dependência (verificadas por teste de arquitetura)
@@ -73,7 +70,4 @@ Application/Clientes/
 ## Interfaces e distribuição
 
 - **Web:** Blazor WASM + BFF publicado na Oracle Cloud VM (Nginx)
-- **Desktop:** MAUI Windows, distribuição via instalador
-- **Mobile:** MAUI Android, distribuição via Google Play
-- As três interfaces consomem a mesma API REST de gestão
-- Lógica de cliente HTTP e modelos compartilhados entre Web e MAUI via `LicenciamentoSoftware.Client`
+- A interface consome a API REST de gestão

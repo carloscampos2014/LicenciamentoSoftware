@@ -47,10 +47,6 @@ jobs:
           cp docs/api-validacao.md        wiki/API-de-Validacao.md
           cp docs/contributing.md         wiki/Contribuindo.md
 
-          # Instalação
-          cp docs/instalacao-windows.md   wiki/Instalacao-Windows.md
-          cp docs/instalacao-android.md   wiki/Instalacao-Android.md
-
       - name: Commit e push na wiki
         run: |
           cd wiki

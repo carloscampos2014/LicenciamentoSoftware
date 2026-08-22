@@ -15,7 +15,7 @@ Sistema de licenciamento de software construído com .NET 10, Clean Architecture
 | Segurança | BCrypt, JWT, TOTP (OTP.NET), HMAC-SHA256, cookie HttpOnly (BFF) |
 | Jobs | BackgroundService + PeriodicTimer (interface IScheduledJob) |
 | E-mail | MailKit (SMTP) com templates HTML embarcados |
-| Mobile/Desktop | .NET MAUI (Android + Windows), CommunityToolkit.Mvvm 8.4.2 |
+| Mobile/Desktop | Portal Web (PWA via Blazor WASM) |
 | Testes | xUnit, FluentAssertions, NSubstitute, NetArchTest |
 
 ## Estrutura de projetos
@@ -26,16 +26,14 @@ src/
   LicenciamentoSoftware.Application/      Handlers, Commands, interfaces de porta, Jobs
   LicenciamentoSoftware.Infrastructure/   Repositórios Dapper, DbUp, Email (MailKit), Jobs
   LicenciamentoSoftware.Api/              Controllers, Middleware, configuração DI
-  LicenciamentoSoftware.Client/           Cliente HTTP compartilhado (Web + MAUI) — DTOs e services
+  LicenciamentoSoftware.Client/           Cliente HTTP compartilhado — DTOs e services
   LicenciamentoSoftware.Web/              Blazor WASM — páginas, componentes, autenticação em memória
   LicenciamentoSoftware.Web.Server/       BFF — serve o WASM, proxy YARP para API, cookie HttpOnly
-  LicenciamentoSoftware.Maui/             App Desktop/Mobile MAUI — Windows e Android, MVVM com CommunityToolkit.Mvvm
 
 tests/
   LicenciamentoSoftware.Domain.Tests/     Testes unitários de domínio
   LicenciamentoSoftware.Application.Tests/ Testes unitários de handlers, serviços e jobs
   LicenciamentoSoftware.IntegrationTests/ Testes de integração (requer PostgreSQL)
-  LicenciamentoSoftware.Maui.Tests/       Testes unitários de ViewModels e Converters MAUI
 ```
 
 ## Status das fases
@@ -52,18 +50,18 @@ tests/
 | 8 | Jobs agendados — sessões, expiração, renovação, rotação de tokens, e-mail | ✅ Concluída |
 | 9 | Frontend Web — Blazor WASM + BFF, CRUD em modais, token HMAC inline | ✅ Concluída |
 | 9.1 | Dashboard Web + instrumentação de métricas e alertas | ✅ Concluída |
-| 10 | MAUI Desktop + Mobile — Windows e Android | ✅ Concluída |
+| 10 | MAUI Desktop + Mobile — removido | ~~Removido~~ |
 | 11 | CI/CD e infraestrutura — GitHub Actions + Oracle VM + PostgreSQL local | ✅ Concluída |
 | — | LGPD — consentimento no cadastro, páginas públicas, exclusão de conta | ✅ Concluída |
-| 12.1 | Encerramento de conta de empresa + 2FA MAUI — página /minha-empresa, encerrar conta com exclusão opcional, bloqueio HMAC, job de limpeza, notificação de clientes finais | ✅ Concluída |
+| 12.1 | Encerramento de conta de empresa — página /minha-empresa, encerrar conta com exclusão opcional, bloqueio HMAC, job de limpeza, notificação de clientes finais | ✅ Concluída |
 | 12 | Melhorias do portal — CNPJ alfanumérico, 2FA setup Web, perfil empresa, testes de integração CI | ✅ Concluída |
-| 13 | Instaladores — MSIX Windows (certificado autoassinado), APK Android (keystore própria) | ✅ Concluída |
+| 13 | Instaladores — removidos com MAUI | ~~Removido~~ |
 | 14 | SDKs principais — C#/.NET, Java/Kotlin, Python, JavaScript+TypeScript, Rust, Ruby | ✅ Concluída |
 | 15 | SDKs secundários — Delphi, PHP, VB6 (DLL COM) | ✅ Concluída |
 | 16 | Painel Admin — monitoramento da plataforma via SSH tunnel, backup do banco | ✅ Concluída |
-| 17 | Segurança de conta — reset 2FA via Admin, alterar senha, recuperação de senha, Minha Empresa MAUI | ✅ Concluída |
+| 17 | Segurança de conta — reset 2FA via Admin, alterar senha, recuperação de senha | ✅ Concluída |
 
-**Testes:** 388 aprovados, 0 falhas (340 backend + 48 MAUI).
+**Testes:** 251 aprovados, 0 falhas.
 
 ## Infraestrutura de Produção
 
@@ -315,83 +313,6 @@ $env:EmailSettings__Usuario = "seu@email.com"
 $env:EmailSettings__Senha = "sua-senha-smtp"
 $env:EmailSettings__EmailRemetente = "noreply@suaempresa.com"
 ```
-
-## Instaladores (Fase 13)
-
-### Windows — MSIX
-
-O app MAUI é distribuído para Windows como pacote MSIX assinado com certificado autoassinado.
-O workflow **Build MSIX (Windows)** roda em `windows-latest` e gera dois artefatos:
-
-| Arquivo | Uso |
-|---|---|
-| `LicenseManager-<versão>-windows.msix` | Instalador do app |
-| `LicenseManager.cer` | Certificado autoassinado (instalar uma única vez) |
-
-Siga as instruções completas em **[docs/instalacao-windows.md](docs/instalacao-windows.md)**.
-
-### Android — APK
-
-O app MAUI é distribuído para Android como APK assinado com keystore própria.
-O workflow **Build APK (Android)** roda em `ubuntu-latest` e gera:
-
-| Arquivo | Uso |
-|---|---|
-| `LicenseManager-<versão>-android.apk` | APK assinado para sideload |
-
-Siga as instruções completas em **[docs/instalacao-android.md](docs/instalacao-android.md)**.
-
-Para configurar a keystore Android como GitHub Secret, execute:
-
-```powershell
-.\scripts\setup-github-secrets.ps1 -ApenasAndroid
-```
-
-Secrets necessários: `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`, `ANDROID_STORE_PASSWORD`.
-
-Para gerar uma nova keystore:
-
-```bash
-keytool -genkey -v -keystore licensemanager.keystore \
-        -alias licensemanager \
-        -keyalg RSA -keysize 2048 \
-        -validity 10000
-```
-
----
-
-## App MAUI (Desktop + Mobile)
-
-O aplicativo MAUI oferece paridade funcional com o portal web para Windows e Android.
-
-**Arquitetura MVVM:**
-- `CommunityToolkit.Mvvm 8.4.0` com source generators (`[ObservableProperty]`, `[RelayCommand]`)
-- `BaseViewModel`: `Ocupado`, `NaoOcupado`, `Titulo`, `OnAppearing()`
-- Todos os ViewModels são `Transient`; `MauiApiClientFactory` e `MauiAuthService` são `Singleton`
-
-**Autenticação:**
-- `MauiAuthService`: login, TOTP, refresh silencioso, logout
-- Tokens armazenados via `SecureStorage` (Android Keystore / Windows DPAPI)
-- `JwtSecurityTokenHandler` para verificar expiração antes de restaurar sessão
-
-**Navegação:**
-- Shell com flyout lateral; guard de rotas redireciona para `//login` se não autenticado
-- Rotas registradas: `totp`, `cadastro`, `licencas/emitir`
-
-**Telas implementadas:**
-- Login, TOTP, Cadastro (auto-cadastro público)
-- Dashboard (7 métricas + alertas de sessões/limites/erros)
-- Clientes Finais, Usuários, Aplicações (lista paginada + formulário overlay inline)
-- Licenças (lista + painel de detalhe com sessões e instalações)
-- Emitir Licença (wizard 3 passos: seleção → configuração por tipo → resultado com token)
-
-**Controls reutilizáveis:**
-- `MetricaCardView`: card com `BindableProperty` Titulo/Valor/Subtitulo/CorValor
-- `ConfirmPopup`: diálogo de confirmação com `ShowAsync()` retornando `Task<bool>`
-
-**Testes:**
-- `LicenciamentoSoftware.Maui.Tests` (net10.0, sem targets de plataforma)
-- 46 testes: Converters, BaseViewModel, EmitirLicença lógica pura, Dashboard lógica pura
 
 ## Frontend Web (Blazor WASM + BFF)
 

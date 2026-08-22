@@ -5,6 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- Suprimir diagnosticos do Dapper AOT analyzer nos testes de integracao:
+         DAP005: TestDatabase usa dynamic e SQL nao-estatico incompativel com AOT
+         DAP028: .ToList() vs .AsList() — padrao de teste, nao codigo de producao
+         DAP037: tipo dynamic em AuditLogTests — intencional para validar schema do banco -->
+    <NoWarn>$(NoWarn);DAP005;DAP028;DAP037</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

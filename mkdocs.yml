@@ -69,8 +69,5 @@ nav:
     - Delphi: sdks/delphi.md
     - PHP: sdks/php.md
     - VB6 / COM: sdks/vb6.md
-  - Instalação:
-    - Windows (MSIX): installation/windows.md
-    - Android (APK): installation/android.md
   - API de Validação: api-validacao.md
   - Contribuindo: contributing.md
