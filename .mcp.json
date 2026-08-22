@@ -1,0 +1,46 @@
+﻿{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "C:\\Dev\\LicenciamentoSoftware"]
+    },
+    "git": {
+      "command": "uvx",
+      "args": [
+        "--from", "mcp-server-git==0.5.0",
+        "--with", "mcp==1.1.2",
+        "mcp-server-git",
+        "--repository", "C:\\Dev\\LicenciamentoSoftware"
+      ]
+    },
+    "fetch": {
+      "command": "uvx",
+      "args": ["--with", "mcp==1.1.2", "mcp-server-fetch"]
+    },
+    "knowledge-rag": {
+      "command": "uvx",
+      "args": ["knowledge-rag@latest"],
+      "env": {
+        "KNOWLEDGE_BASE_PATH": "C:\\Dev\\LicenciamentoSoftware\\.kiro\\knowledge"
+      }
+    },
+    "memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "C:\\Dev\\LicenciamentoSoftware\\.kiro\\knowledge\\memory.jsonl"
+      }
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+    }
+  }
+}
