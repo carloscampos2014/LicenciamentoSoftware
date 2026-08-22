@@ -1,7 +1,7 @@
 ﻿# LicenciamentoSoftware — Instruções para GitHub Copilot
 
 Projeto: Sistema de licenciamento de software com .NET 10, Clean Architecture, PostgreSQL, Dapper e DbUp.
-Stack: .NET 10, C#, ASP.NET Core, Blazor WASM, .NET MAUI, PostgreSQL, Dapper, DbUp, xUnit
+Stack: .NET 10, C#, ASP.NET Core, Blazor WASM, PostgreSQL, Dapper, DbUp, xUnit
 
 ---
 

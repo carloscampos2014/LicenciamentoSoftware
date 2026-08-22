@@ -44,9 +44,6 @@ jobs:
           key: nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: nuget-
 
-      # MAUI requer workloads de plataforma não disponíveis no ubuntu-latest.
-      # Os projetos backend e Client são compilados aqui.
-      # MAUI é compilado e testado localmente.
       - name: Restore
         run: |
           dotnet restore src/LicenciamentoSoftware.Domain/LicenciamentoSoftware.Domain.csproj
@@ -59,7 +56,6 @@ jobs:
           dotnet restore tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj
           dotnet restore tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj
           dotnet restore tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj
-          dotnet restore tests/LicenciamentoSoftware.Maui.Tests/LicenciamentoSoftware.Maui.Tests.csproj
 
       - name: Build
         run: |
@@ -73,7 +69,6 @@ jobs:
           dotnet build tests/LicenciamentoSoftware.Domain.Tests/LicenciamentoSoftware.Domain.Tests.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.Application.Tests/LicenciamentoSoftware.Application.Tests.csproj --no-restore -c Release
           dotnet build tests/LicenciamentoSoftware.IntegrationTests/LicenciamentoSoftware.IntegrationTests.csproj --no-restore -c Release
-          dotnet build tests/LicenciamentoSoftware.Maui.Tests/LicenciamentoSoftware.Maui.Tests.csproj --no-restore -c Release
 
       - name: Testes unitários — Domain
         run: |
@@ -89,13 +84,6 @@ jobs:
             --no-build -c Release \
             --filter "Category!=Integration" \
             --logger "trx;LogFileName=application-results.trx" \
-            --results-directory ./test-results
-
-      - name: Testes unitários — MAUI (Converters e ViewModels)
-        run: |
-          dotnet test tests/LicenciamentoSoftware.Maui.Tests \
-            --no-build -c Release \
-            --logger "trx;LogFileName=maui-results.trx" \
             --results-directory ./test-results
 
       - name: Testes de integração
