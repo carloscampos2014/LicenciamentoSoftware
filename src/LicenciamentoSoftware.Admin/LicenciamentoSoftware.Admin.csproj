@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>LicenciamentoSoftware.Admin</RootNamespace>
+    <!-- DAP005: AdminMetricasRepository usa SQL dinâmico com DynamicParameters em runtime
+         que é incompatível com Dapper AOT (requer SQL estático analisável em compile-time) -->
+    <NoWarn>$(NoWarn);DAP005</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
