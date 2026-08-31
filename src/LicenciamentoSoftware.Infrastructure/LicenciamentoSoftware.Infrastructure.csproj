@@ -9,7 +9,7 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="Dapper" Version="2.1.79" />
     <PackageReference Include="dbup-postgresql" Version="5.0.37" />
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.24" />
+    <PackageReference Include="Hangfire.AspNetCore" Version="1.8.25" />
     <PackageReference Include="Hangfire.PostgreSql" Version="1.21.1" />
     <!-- Override da dependência transitiva vulnerável trazida pelo Hangfire.PostgreSql -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
